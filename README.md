@@ -1,4 +1,9 @@
-<h1 align="center">VJ-Link</h1>
+<h1 align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="images/logo-for-dark.png">
+    <img src="images/logo-for-light.png" alt="VJ-Link" width="360">
+  </picture>
+</h1>
 
 <p align="center"><b>Visuals, die das Lichtpult steuert.</b><br>Einfache VJ-Software für LJs. Pult, OSC und LJ-Link geben Takt und Farben vor.</p>
 
