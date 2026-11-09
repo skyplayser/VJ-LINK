@@ -1,114 +1,210 @@
-<h1 align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="images/logo-for-dark.png">
-    <img src="images/logo-for-light.png" alt="VJ-Link" width="360">
-  </picture>
-</h1>
-
-<p align="center"><b>Visuals, die das Lichtpult steuert.</b><br>Einfache VJ-Software für LJs. Pult, OSC und LJ-Link geben Takt und Farben vor.</p>
-
 <p align="center">
-  <img alt="Status: in Entwicklung" src="https://img.shields.io/badge/Status-in%20Entwicklung-FF5C93?style=for-the-badge">
-  <img alt="Coming soon" src="https://img.shields.io/badge/Coming-soon-3DDC84?style=for-the-badge">
+  <img src="docs/images/logo.png" width="104" alt="VJ-Link logo">
 </p>
 
-<p align="center"><img src="images/app-show-drop.png" alt="VJ-Link, Show-Ansicht mit Szene „Drop“" width="900"></p>
+<h1 align="center">VJ-Link</h1>
 
-> **VJ-Link ist noch nicht veröffentlicht.** Hier gibt es noch keinen Download und keinen Quellcode. Diese Seite zeigt, woran gerade gearbeitet wird. Die Programmoberfläche oben ist ein Screenshot vom aktuellen Entwicklungsstand.
+<p align="center">
+  Live visuals, run by your lighting desk.<br>
+  150 visuals, 50 effects, scenes and outputs, in time with the music.
+</p>
 
-VJ-Link ist das Schwesterprojekt von [LJ-Link](https://github.com/skyplayser/LJ-Link). LJ-Link zeigt dem Lichtjockey, was die DJs spielen. VJ-Link nutzt dieselben Daten, damit die Visuals im Takt der Musik laufen und der Lichttechniker sie vom Pult aus steuern kann, ohne einen zweiten Rechner zu bedienen.
+<p align="center">
+  <a href="https://skyplayser.github.io/VJ-LINK/">Website</a> &nbsp;·&nbsp;
+  <a href="https://github.com/skyplayser/VJ-LINK/releases/latest">Download</a> &nbsp;·&nbsp;
+  <a href="#quick-start">Quick start</a> &nbsp;·&nbsp;
+  <a href="README.de.md">Deutsch</a> &nbsp;·&nbsp;
+  <a href="https://skyplayser.github.io/VJ-LINK/wiki.html">Wiki</a> &nbsp;·&nbsp;
+  <a href="https://discord.gg/N6DMca4Bjk">Discord</a>
+</p>
 
-## Warum noch ein VJ-Programm?
+<p align="center">
+  <img alt="Status: alpha 0.0.1" src="https://img.shields.io/badge/status-alpha%200.0.1-FF5C93">
+  <img alt="macOS and Windows, free" src="https://img.shields.io/badge/macOS%20%7C%20Windows-free-3DDC84">
+</p>
 
-Die großen VJ-Programme können sehr viel, brauchen aber Einarbeitung. Einfache Programme sind schnell gelernt, lassen sich aber nicht ins Lichtpult einbinden. VJ-Link soll beides verbinden:
+![VJ-Link with eight layers, the clip grid, color slots and scenes](docs/images/visuals.png)
 
-1. **Einfach.** Vier Ansichten, keine versteckten Menüs. In fünf Minuten steht das erste Bild.
-2. **Das Pult führt.** Szenen, Farben, Helligkeit, Strobe und Blackout kommen per DMX oder OSC.
-3. **Alles im Takt.** Der Takt kommt aus LJ-Link, per OSC oder von Hand per Tap.
+At most events nobody has time for a second computer full of VJ software. VJ-Link is built for the lighting jockey: the light
+desk sends the scene, the colors, the brightness, the strobe and the blackout, and the visuals follow the tempo of the music on
+their own. It plays on any number of screens, projectors and LED walls, maps onto walls and boxes, and runs as a timed show with
+videos and cues.
 
-## So sieht der aktuelle Stand aus
+It runs locally. There is no account, no cloud and no telemetry. The only connections outside your network are the update check
+(GitHub) and a problem report, when you send one.
 
-Screenshots aus der laufenden Entwicklungsversion.
+> [!WARNING]
+> **This is the first public alpha (0.0.1).** It runs well on our machines, but large parts have not met real stage hardware
+> yet. Please do not rely on it for an important show, and tell us what you find: **Help → Report a problem** in the program.
 
-| | |
+## What you get
+
+- **150 visuals in 16 categories:** minimal and monochrome, 3D and space, fractals, demoscene, sacred geometry, data and glitch,
+  op art, organic and fluid, audio and equalizer, particles, retro and synthwave, geometry and tunnels, light and space, and 16
+  laser looks for a projector in haze. All written for VJ-Link, all react to the beat or the audio.
+- **50 effects** in a stack of up to six per layer: feedback, datamosh, slit-scan, VHS, bloom, kaleidoscope, halftone, LCD,
+  pixel sort, luma key, color strobe, beat flip and many more.
+- **Up to eight layers** with blend modes, opacity, position, size and rotation. Each layer chooses its drive: audio when there is
+  some, otherwise the beat; only the beat; only the audio; or static.
+- **Colors from the desk:** five color slots (A–E) set by DMX, MIDI or OSC. A layer takes one slot, several, a gradient or a
+  rainbow.
+- **Scenes** with their own transition (cut, beats or seconds, fade or through black) and an automatic order: next after bars,
+  seconds or a phrase change from [LJ-Link](https://github.com/skyplayser/LJ-Link).
+- **The light desk leads:** Art-Net and sACN with a fixed desk profile (channel list as CSV), plus free mapping for keyboard,
+  MIDI, DMX and OSC like in Daslight: click an element, move the fader. Templates for Akai APC mini and Korg nanoKONTROL2, LED
+  feedback, modulation with LFOs or audio bands.
+- **Tempo from everywhere:** LJ-Link (found automatically, also on other computers), Ableton Link (through Carabiner), OSC,
+  MIDI clock, the audio input or tap.
+- **Outputs:** one window per screen in any resolution, the same picture on all of them or one canvas across all, a window output
+  for OBS, NDI and Syphon tools, test patterns, and **projection mapping** with corner pin, grid warp (3×3, 5×5) and masks.
+- **SHOW:** a running order of video, image, camera, black, scene and timecode cues with GO on the space bar, and a timeline
+  where scenes and effects (strobe, flash, blinder, blackout) are laid out like in an editing program. Timecode in and out over
+  Art-Net and MIDI.
+- **Cameras:** webcam, capture card or OBS Virtual Camera as a clip. Looks: silhouette, outline, dot matrix, ASCII, halftone,
+  thermal, duotone and masks that show the visuals only inside the person or cut the person out. **Person detection** runs
+  locally (MediaPipe), no green screen needed.
+- **Media and text:** logos and images with automatic background removal, videos with a loop locked to the beat, and text clips
+  with font, glow, outline and box.
+- **From LJ-Link:** tempo, beat phase, phrases and track changes, a *Now Playing* lower third and the DJ waveform as clips.
+- **Easy to start:** a start screen, a **demo show** that plays by itself, a gallery to browse and preview every visual and
+  effect, a lock mode for the show, project files (`.vjlink`) with their media, updates from GitHub, and **English and German**.
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/images/show.png" alt="SHOW tab with the running order and the timeline"><br><sub><b>SHOW.</b> Running order with GO and a timeline for scenes and effects.</sub></td>
+    <td width="50%"><img src="docs/images/gallery.png" alt="Gallery with all 150 visuals"><br><sub><b>Gallery.</b> Browse 150 visuals and 50 effects with a live preview.</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/images/mapping.png" alt="MIDI mapping mode"><br><sub><b>Mapping.</b> Click an element, move a fader on the controller.</sub></td>
+    <td><img src="docs/images/visuals-drop.png" alt="Scene Drop with lasers"><br><sub><b>Scene “Drop”</b> from the demo: tunnel, triangles, lasers and a strobe grid.</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/images/output.png" alt="Output tab"><br><sub><b>Outputs.</b> Screens, canvas, projection mapping and test patterns.</sub></td>
+    <td><img src="docs/images/report.png" alt="Report a problem"><br><sub><b>Report a problem</b> with diagnostic data you can check before sending.</sub></td>
+  </tr>
+</table>
+
+## Install
+
+Download the installer for your computer from the [latest release](https://github.com/skyplayser/VJ-LINK/releases/latest).
+
+| System | File |
 |---|---|
-| <img src="images/app-show-chorus.png" alt="Show-Ansicht, Szene Chorus"> | <img src="images/app-catalog.png" alt="Katalog der Visuals"> |
-| Show-Ansicht mit vier Ebenen, Farbslots und Szenen | Katalog mit 35 geplanten Visuals |
+| macOS, Apple Silicon (M1 and newer) | `VJ-Link-macos-arm64.dmg` |
+| macOS, Intel | `VJ-Link-macos-intel.dmg` |
+| Windows 10 / 11, 64 bit | `VJ-Link-windows.exe` |
 
-### Generatoren, die schon laufen
+The installers are not signed yet, so both systems warn once on the first start:
 
-<p align="center"><img src="images/generators.png" alt="Balken-Spektrum, Kreis-Equalizer, Oszilloskop, Pulsierende Ringe, Tunnel, Synthwave-Raster, Sternenfeld, Plasma" width="900"></p>
+- **macOS** (“VJ-Link” Not Opened): drag the app to *Applications* and start it once, click *Done*. Open *System Settings →
+  Privacy & Security*, scroll down, click **Open Anyway** next to VJ-Link and confirm with your password, then *Open*. Allow the
+  camera, the microphone and the local network when asked and you need them. Terminal alternative:
+  `xattr -dr com.apple.quarantine "/Applications/VJ-Link.app"`.
+- **Windows** (“Windows protected your PC”): click **More info**, then **Run anyway**. When the firewall asks, tick *Private
+  networks* and allow access, otherwise Art-Net, sACN, OSC and LJ-Link cannot reach VJ-Link.
 
-## So könnte es einmal aussehen
+VJ-Link needs a graphics card with WebGL 2, which almost every computer from the last ten years has.
 
-Die folgenden Bilder sind **Entwürfe**. Sie zeigen die Richtung, nicht den fertigen Stand. Einzelne Dinge werden sich noch ändern.
+## Quick start
 
-### Effekte bauen ohne Programmieren
+1. Start VJ-Link and click **Open demo** on the start screen. The ten scenes play by themselves.
+2. Open **OUTPUT**, pick the projector or LED wall and open it as an output.
+3. Under **CONNECT** check that your desk arrives: set the Art-Net or sACN universe and the start address. Save the channel list
+   as CSV and patch VJ-Link like a fixture.
+4. Or click **MAPPING → MIDI**, click a fader on the screen and move one on your controller.
+5. Running LJ-Link on the same network? VJ-Link finds it by itself and follows the DJ’s tempo.
 
-Effekte liegen als einfacher Stapel übereinander. Jeder Regler lässt sich per Ziehen mit dem Beat, dem Bass oder einem Pult-Kanal bewegen.
+The program starts in the language of your system; the start screen switches between English and German. The
+[wiki](https://skyplayser.github.io/VJ-LINK/wiki.html) walks through every screen.
 
-<p align="center"><img src="images/sketch-editor.png" alt="Entwurf des Effekt-Editors" width="900"></p>
+## Light desk
 
-### Mehrere Ausgänge und einfaches Mapping
+VJ-Link takes Art-Net or sACN on one universe. The fixed profile *Standard* has 91 channels: master, strobe, scene, transition,
+tempo factor, effect intensity, auto, blackout, the five color slots, and per layer opacity, clip, color source, speed, three
+effects, blend mode and drive; channels 71–91 drive the pictures of the projection mapping. Only channels that change take
+effect, so the mouse, MIDI and the desk can work side by side.
 
-Jeder Bildschirm, Beamer oder LED-Prozessor wird ein Ausgang, in beliebiger Auflösung. Das Mapping geht in drei Stufen: Ausschnitt, Eckpunkte, Raster mit Masken.
+| Desk | How | State |
+|---|---|---|
+| grandMA2, grandMA3, onPC | Art-Net or sACN, patch the CSV channel list as a fixture | built, not yet tried on a real desk |
+| Daslight, other DMX software | Art-Net or sACN | built, not yet tried |
+| Any desk or controller with MIDI | MIDI mapping (notes and CCs) | tested in the app |
+| Any program with OSC | port 8000, `/vjlink/…`, every control as `/vjlink/ctl/<id>` | tested in the app |
+| Timecode | Art-Net and MIDI timecode, in and out, 24/25/29.97 DF/30 fps | built, not yet tried with a desk |
 
-<p align="center"><img src="images/sketch-output.png" alt="Entwurf der Ausgabe-Ansicht" width="900"></p>
+## Compatibility
 
-### Das Lichtpult steuert wie ein Gerät
+| Part | State |
+|---|---|
+| macOS, Apple Silicon | tested |
+| macOS, Intel | built, not tested |
+| Windows 10 / 11 | built, not tested |
+| [LJ-Link](https://github.com/skyplayser/LJ-Link) 1.7.7 | tested: found automatically, tempo, Now Playing |
+| Akai LPD8 mk2 | recognized as MIDI input |
+| Akai APC mini mk2, APC mini, Korg nanoKONTROL2 | templates from the manuals, not tested on the devices |
+| Webcam (UVC), OBS Virtual Camera | tested, person detection tested with one person |
+| Ableton Link | through [Carabiner](https://github.com/Deep-Symmetry/carabiner) on port 17000, not yet tried |
+| Projector in haze (laser looks) | not yet tried |
 
-Fünf Farbslots (A–E) erscheinen im Pult als kleine RGB-Geräte. Ändert der LJ am Pult die Farbe, färben sich die Visuals mit. Szenen, Ebenen, Effekte und Blackout liegen auf DMX-Kanälen. Das passende Geräteprofil soll VJ-Link selbst erzeugen.
+Please tell us what you tested: **Help → Report a problem**, or on [Discord](https://discord.gg/N6DMca4Bjk).
 
-<p align="center"><img src="images/sketch-connect.png" alt="Entwurf der Ansicht Verbinden" width="900"></p>
+## Roadmap
 
-### Direkt mit LJ-Link verbunden
+| Target | State |
+|---|---|
+| Visuals, effects, layers, scenes, SHOW, timeline | done (alpha) |
+| Art-Net, sACN, MIDI, OSC, keyboard mapping | done, needs tests on real desks |
+| Projection mapping, canvas, window output | done (alpha) |
+| Person detection for camera looks | done (alpha) |
+| Native Syphon and Spout, NDI | planned (until then: window output and screen capture) |
+| Desk profiles as GDTF and grandMA2 XML | planned |
+| Remote control in the browser | planned |
+| Tempo detection from audio | planned |
+| Signed installers | planned |
 
-Läuft LJ-Link, bekommt VJ-Link alles, was die Decks wissen: Tempo, Phrasen (Intro, Chorus, Outro), Cues, Loops und Track-Wechsel. Daraus entstehen einfache Regeln, etwa „Wenn der Chorus beginnt, dann Szene Drop“. VJ-Link läuft auch ohne LJ-Link vollständig, dann springen die Regeln auf Ersatzwerte um.
+## Good to know
 
-<p align="center"><img src="images/sketch-ljlink.png" alt="Entwurf der LJ-Link-Regeln" width="900"></p>
+- **Ableton Link** needs Carabiner as a separate program (the Link SDK is GPL, so VJ-Link does not contain it).
+- **Videos:** MP4 with H.264 and WebM play everywhere. Videos are copied into VJ-Link’s library and saved next to the project file
+  in a folder “*name* Medien”.
+- **Camera looks** with person detection work best with one or a few people in the picture. Small people far away on a big stage
+  are found less reliably.
+- **Projection mapping** needs one output per projector. A window output can stand in for one, for example to capture it in OBS.
+- **Updates** need the internet. Without it everything works as before, the check just says it could not reach GitHub.
 
-### Die Show-Ansicht
+## Problems?
 
-<p align="center"><img src="images/sketch-show.png" alt="Entwurf der Show-Ansicht" width="900"></p>
+Use **Report a problem** in the program (Help menu, settings or the start screen): describe what happens and leave *Include
+diagnostic data* ticked. The diagnostic data holds the version, system, graphics card, connected devices, the state of the
+connections and the last error messages – no file names, no texts, no titles, no passwords – and you see it before sending. Send
+it by email (your mail program opens a mail to fehlermelden@nextphilm.de) or as a GitHub issue.
 
-## Funktionen
+## Try also: LJ-Link
 
-**Schon im Entwicklungsstand vorhanden**
+<a href="https://github.com/skyplayser/LJ-Link"><img src="https://raw.githubusercontent.com/skyplayser/LJ-Link/main/docs/images/logo.png" width="56" align="left" alt="LJ-Link logo"></a>
 
-- Vier Ebenen mit Deckkraft, Mischmodus und Farbquelle
-- Acht Generatoren, Master-Helligkeit, Strobe, Blackout
-- Takt aus LJ-Link, OSC oder Tap, mit sauberem Rückfall, wenn eine Quelle ausfällt
-- DMX-Eingang über Art-Net und sACN, OSC-Eingang
-- Ein Vollbild-Ausgang pro angeschlossenem Bildschirm, mit Testbild
-- Eingang von LJ-Link mit Regeln „Wenn … dann …“, Privatsphäre-Modus wird beachtet
+**[LJ-Link](https://github.com/skyplayser/LJ-Link)** shows the lighting jockey what the DJ plays: every deck, waveform, cue and
+the BPM from Pioneer and Denon gear, and sends the tempo to grandMA, Daslight and more. Together with VJ-Link the visuals follow
+the DJ’s beat, change scene on the phrase and show what is playing. Free for macOS and Windows.
 
-**Geplant**
+<br clear="left">
 
-- Effekt-Editor mit Modulation per Ziehen
-- Freie Auflösung pro Ausgang und einfaches Mapping
-- Videos und Bilder als Clips, Text für DJ-Namen und Tracktitel
-- Szenen mit Überblendung im Takt, Auto-VJ
-- Geräteprofile für Lichtpulte, Fernbedienung per Tablet im Browser
-- MIDI, Audio-Eingang, Ableton Link
-- Weitere Visuals: Kaleidoskop, Feedback, Glitch, Feuer, Blitz, Laser-Fächer, Spiegelkugel und viele mehr (insgesamt 35)
+## Credits and notices
 
-## Für welche Pulte?
+Person detection uses [MediaPipe](https://github.com/google-ai-edge/mediapipe) (Apache-2.0). Built with Electron. Ableton Link
+works through [Carabiner](https://github.com/Deep-Symmetry/carabiner) by Deep Symmetry, which runs as its own program.
 
-Gedacht ist alles, was Art-Net oder sACN ausgibt, darunter grandMA2/3, Daslight, ChamSys, Avolites, Onyx und QLC+. Wie gut das mit den einzelnen Pulten und Versionen klappt, wird erst im Test geklärt. Bisher gibt es keine Aussage, dass ein bestimmtes Pult freigegeben ist.
+VJ-Link is not an official product of MA Lighting, Daslight, Akai, Korg, Ableton, OBS or Google. All product names belong to
+their owners and are used only to describe compatibility.
 
-## Wann kommt es?
+## License
 
-Einen Termin gibt es nicht. Sobald es eine erste Version zum Ausprobieren gibt, steht sie hier unter **Releases**. Wer informiert werden möchte, klickt oben rechts auf **Watch → Custom → Releases**.
+© 2026 Philipp Spruck / NEXTPHILM. All rights reserved. VJ-Link is free to use. The source code is not public during the
+alpha; this repository holds the releases, the website and the documentation.
 
-## Plattformen
+<br>
 
-Geplant sind macOS und Windows, wie bei LJ-Link.
-
-## Hinweise
-
-- Lizenz und Preis stehen noch nicht fest.
-- Alle genannten Produkt- und Firmennamen (z. B. grandMA, Daslight, Pioneer DJ, rekordbox) gehören ihren Inhabern. VJ-Link ist ein unabhängiges Projekt und steht in keiner Verbindung zu diesen Firmen.
-
----
-
-<sub>**English:** VJ-Link is an upcoming, simple VJ / visuals app for lighting jockeys, controlled by the lighting desk (DMX over Art-Net or sACN, OSC) and fed directly by [LJ-Link](https://github.com/skyplayser/LJ-Link). Work in progress, no release yet. Images marked as "Entwurf" are design sketches, not the finished product.</sub>
+<p align="center">
+  <sub>Idea SKYPLAYSER/NEXTPHILM<br>
+  Prompted with ❤️ made by Claude</sub>
+</p>
