@@ -60,6 +60,13 @@ def _():
                "**Tempo holen.** Läuft LJ-Link im selben Netz? Dann findet VJ-Link es von selbst. Sonst im Takt auf **TAP** klicken oder das BPM eintippen."),
               ("**Take control.** Under **CONNECT** set the Art-Net or sACN universe of your desk, or click **MAPPING → MIDI** and assign your controller.",
                "**Steuern.** Unter **VERBINDEN** das Art-Net- oder sACN-Universe deines Pults einstellen oder **MAPPING → MIDI** anklicken und den Controller zuweisen.")),
+        H2("The steps in pictures", "Die Schritte in Bildern"),
+        IMG("outputs-canvas.png", "Output tab with three screens opened as outputs", "Tab Ausgabe mit drei als Ausgang geöffneten Bildschirmen",
+            ("Step 3: under OUTPUT every screen opens with one click; several screens can form one canvas.", "Schritt 3: Unter AUSGABE öffnet jeder Bildschirm mit einem Klick; mehrere Bildschirme bilden auf Wunsch eine Leinwand.")),
+        IMG("connect.png", "CONNECT tab with Art-Net, sACN, OSC and LJ-Link", "Tab VERBINDEN mit Art-Net, sACN, OSC und LJ-Link",
+            ("Step 4 and 5: CONNECT shows whether LJ-Link and the desk arrive.", "Schritt 4 und 5: VERBINDEN zeigt, ob LJ-Link und das Pult ankommen.")),
+        IMG("mapping.png", "MIDI mapping mode", "MIDI-Mapping-Modus",
+            ("Step 5: MAPPING → MIDI, click an element, move a fader on the controller.", "Schritt 5: MAPPING → MIDI, ein Element anklicken, einen Fader am Controller bewegen.")),
         IMG("start.png", "Start screen of VJ-Link", "Startbildschirm von VJ-Link",
             ("The start screen: continue, a new project, open a file or the demo. On the right the language, updates and recent projects.", "Der Startbildschirm: weiterarbeiten, neues Projekt, Datei öffnen oder die Demo. Rechts Sprache, Updates und zuletzt geöffnete Projekte.")),
         H2("Next steps", "Wie es weitergeht"),
@@ -112,6 +119,21 @@ def _():
 @page("wiki-interface.html", "The interface", "Die Oberfläche")
 def _():
     body = SEC(
+        H2("Overview in pictures", "Überblick in Bildern"),
+        GUIDE("visuals-guide.png", "The VJ-Link main window with numbered areas", "Das VJ-Link-Hauptfenster mit nummerierten Bereichen", [
+            ("**Tabs**: VISUALS, SHOW, GALLERY, OUTPUT and CONNECT.", "**Tabs**: VISUALS, SHOW, GALERIE, AUSGABE und VERBINDEN."),
+            ("**MAPPING**: put keyboard, MIDI, DMX or OSC on any control, and modulation.", "**MAPPING**: Tastatur, MIDI, DMX oder OSC auf jedes Element legen, dazu Modulation."),
+            ("**Tempo**: click the BPM to type it, choose the tempo source next to it, **TAP** in time.", "**Tempo**: BPM anklicken und eintippen, daneben die Tempo-Quelle wählen, **TAP** im Takt."),
+            ("**Status** of DMX, OSC, LJ-Link, Ableton Link and MIDI, the frame rate, the lock, the settings and **BLACKOUT**.", "**Status** von DMX, OSC, LJ-Link, Ableton Link und MIDI, die Bildrate, das Schloss, die Einstellungen und **BLACKOUT**."),
+            ("**Output preview**: exactly what goes to the screens.", "**Ausgangs-Vorschau**: genau das, was an die Bildschirme geht."),
+            ("**Layer**: name, opacity, color source, blend mode and drive. A click on the name opens the layer's panels.", "**Ebene**: Name, Deckkraft, Farbquelle, Mischmodus und Antrieb. Ein Klick auf den Namen öffnet die Panels der Ebene."),
+            ("**Clip grid**: click a clip to start it; **+ Clips** opens the library.", "**Clip-Raster**: einen Clip anklicken startet ihn; **+ Clips** öffnet die Bibliothek."),
+            ("**Color slots A–E**: the colors of the show, also from the desk.", "**Farbslots A–E**: die Farben der Show, auch vom Pult."),
+            ("**Scenes**: save the picture, recall it, the pencil edits transition and order, **Auto** plays them.", "**Szenen**: Bild speichern, abrufen, der Stift bearbeitet Übergang und Abfolge, **Auto** spielt sie ab."),
+            ("**Layer faders** in the fader bar.", "**Ebenen-Fader** in der Fader-Leiste."),
+            ("**Strobe**: speed and intensity, Strobe, Flash, White, W-Flash, Blinder and beat sync.", "**Strobe**: Speed und Intensität, Strobe, Flash, White, W-Flash, Blinder und Takt."),
+            ("**Scene buttons** with transition time, Next and Auto.", "**Szenen-Tasten** mit Blende, Weiter und Auto."),
+        ]),
         H2("Five tabs", "Fünf Tabs"),
         TABLE([("Tab", "Tab"), ("What it is for", "Wofür")], [
             [("**VISUALS**", "**VISUALS**"), ("The clip grid: one row per layer, the output preview, color slots, scenes and the panels of the selected layer.", "Das Clip-Raster: eine Zeile pro Ebene, die Vorschau des Ausgangs, Farbslots, Szenen und die Panels der gewählten Ebene.")],

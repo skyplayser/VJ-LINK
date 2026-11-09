@@ -15,7 +15,13 @@ def _():
               ("Click an element, then press the key, move the fader or pad, move the DMX channel or send the OSC message.", "Ein Element anklicken, dann die Taste drücken, den Fader oder das Pad bewegen, den DMX-Kanal bewegen oder die OSC-Nachricht senden."),
               ("Green means mapped. Clicking it shows its mappings, to remove one or to map a second input.", "Grün heißt zugewiesen. Ein Klick zeigt die Zuweisungen, zum Entfernen oder für einen zweiten Eingang."),
               ("**Done** or Esc ends the mode. The mappings are saved with the project.", "**Fertig** oder Esc beendet den Modus. Die Zuweisungen werden mit dem Projekt gespeichert.")),
-        IMG("mapping.png", "MIDI mapping mode", "MIDI-Mapping-Modus", ("In mapping mode every assignable element lights up.", "Im Mapping-Modus leuchtet jedes zuweisbare Element.")),
+        GUIDE("mapping-guide.png", "MIDI mapping mode with numbered areas", "MIDI-Mapping-Modus mit nummerierten Bereichen", [
+            ("**MAPPING** opens the menu: keyboard, MIDI, DMX / Art-Net, OSC, modulation.", "**MAPPING** öffnet das Menü: Tastatur, MIDI, DMX / Art-Net, OSC, Modulation."),
+            ("Every assignable element lights up in purple. Click one, then move the input.", "Jedes zuweisbare Element leuchtet lila. Eines anklicken, dann den Eingang bewegen."),
+            ("Switch between keyboard, MIDI, DMX and OSC; below the list of all mappings of that kind.", "Zwischen Tastatur, MIDI, DMX und OSC wechseln; darunter die Liste aller Zuweisungen dieser Art."),
+            ("**Controller template**: a ready layout for APC mini or nanoKONTROL2.", "**Controller-Vorlage**: eine fertige Belegung für APC mini oder nanoKONTROL2."),
+            ("**Export** and **Import** the mappings as a file.", "Zuweisungen als Datei **exportieren** und **importieren**."),
+        ]),
         H2("MIDI controllers", "MIDI-Controller"),
         P("Controllers are found when you plug them in. Pads and buttons get LED feedback. **Controller template** loads a ready layout:", "Controller werden beim Anstecken gefunden. Pads und Tasten bekommen LED-Rückmeldung. **Controller-Vorlage** lädt eine fertige Belegung:"),
         TABLE([("Controller", "Controller"), ("Layout", "Belegung"), ("Status", "Stand")], [
@@ -66,6 +72,8 @@ def _():
     body = SEC(
         P("**MAPPING → Modulation** (⇧⌘L): click a fader and it swings around its position by itself, the visuals change without anybody touching anything. Modulated faders have a turquoise frame.",
           "**MAPPING → Modulation** (⇧⌘L): Einen Regler anklicken, und er schwingt von selbst um seine Position, die Visuals verändern sich, ohne dass jemand etwas anfasst. Modulierte Regler sind türkis umrandet."),
+        IMG("modulation.png", "Modulation mode with the list of modulations", "Modulations-Modus mit der Liste der Modulationen",
+            ("Modulation mode: click a fader, choose the source, beats and strength. The demo comes with five modulations.", "Modulations-Modus: einen Regler anklicken, Quelle, Beats und Stärke wählen. Die Demo bringt fünf Modulationen mit.")),
         TABLE([("Source", "Quelle"), ("Movement", "Bewegung")], [
             [("Sine, triangle, saw, square, random", "Sinus, Dreieck, Sägezahn, Rechteck, Zufall"), ("an LFO in time, ¼ to 32 beats per round", "ein LFO im Takt, ¼ bis 32 Beats pro Durchlauf")],
             [("Bass, mids, highs", "Bass, Mitten, Höhen"), ("follows the audio input or LJ-Link", "folgt dem Audio-Eingang oder LJ-Link")],

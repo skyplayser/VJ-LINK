@@ -16,6 +16,8 @@ def _():
         UL(("**+ Clips** at the end of a row opens the library: tap a visual, a camera, a video or a graphic to add it to the row, tap again to remove it.", "**+ Clips** am Ende einer Zeile öffnet die Bibliothek: Ein Visual, eine Kamera, ein Video oder eine Grafik antippen nimmt es in die Zeile auf, nochmal antippen nimmt es heraus."),
            ("Click a clip to start it, click it again to stop it. The running clip has a green frame.", "Einen Clip anklicken startet ihn, nochmal klicken stoppt ihn. Der laufende Clip hat einen grünen Rahmen."),
            ("**+ Layer** adds a layer, the × next to its name removes it. Layer names can be changed in the layer panel.", "**+ Ebene** fügt eine Ebene hinzu, das × neben dem Namen entfernt sie. Den Namen änderst du im Ebenen-Panel.")),
+        IMG("library.png", "The library of a layer", "Die Bibliothek einer Ebene",
+            ("The library: tap visuals, cameras, videos and graphics to put them into the row of this layer.", "Die Bibliothek: Visuals, Kameras, Videos und Grafiken antippen, um sie in die Zeile dieser Ebene zu legen.")),
         H2("Per layer", "Je Ebene"),
         TABLE([("Setting", "Einstellung"), ("What it does", "Was sie macht")], [
             [("Opacity", "Deckkraft"), ("the fader next to the name and in the fader bar", "der Fader neben dem Namen und in der Fader-Leiste")],
@@ -99,6 +101,8 @@ def _():
         H2("Text clips", "Text-Clips"),
         P("**+ Text** designs a full-screen text frame: font, size, bold, italic, capitals, alignment, line and letter spacing, color, glow, outline and box. It becomes a clip like a graphic; the pencil on the clip edits it again.",
           "**+ Text** gestaltet einen bildschirmfüllenden Text-Rahmen: Schrift, Größe, Fett, Kursiv, Großbuchstaben, Ausrichtung, Zeilen- und Zeichenabstand, Farbe, Leuchten, Kontur und Kasten. Er wird ein Clip wie eine Grafik; der Stift am Clip bearbeitet ihn wieder."),
+        IMG("text-editor.png", "Text clip editor", "Editor für Text-Clips",
+            ("The text editor with live preview of the full-screen frame.", "Der Text-Editor mit Live-Vorschau des bildschirmfüllenden Rahmens.")),
         H2("From LJ-Link", "Aus LJ-Link"),
         P("Library → LJ-Link (DJ): **Now Playing** is a lower third with cover, title and artist of the master deck, shown 8, 15 or 30 s after a track change or always; **DJ waveform** is the scrolling waveform like on the player. In LJ-Link's privacy mode Now Playing stays empty.",
           "Bibliothek → LJ-Link (DJ): **Now Playing** ist eine Bauchbinde mit Cover, Titel und Artist des Master-Decks, 8, 15 oder 30 s nach einem Trackwechsel oder immer; **DJ-Waveform** ist die scrollende Wellenform wie am Player. Im Privatsphäre-Modus von LJ-Link bleibt Now Playing leer."),

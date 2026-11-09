@@ -174,6 +174,11 @@ def IMG(src, en, de, cap=None):
     return out + "</figure>"
 
 
+def GUIDE(src, en, de, items, cap=None):
+    """Bilderanleitung: Bild mit nummerierten Markierungen und die passende nummerierte Legende."""
+    return IMG(src, en, de, cap) + '<ol class="dguide">' + "".join(LI(*i) for i in items) + "</ol>"
+
+
 def CARDS(*cards):
     """cards: (icon, href, title_en, title_de, text_en, text_de)"""
     out = '<div class="dcards">'
@@ -454,6 +459,9 @@ CSS = """
 .dcard b { color: var(--text); font-size: 16.5px; }
 .dcard .ico { margin-bottom: 6px; }
 .dfig, .ddiag { margin: 20px 0; }
+.dguide { padding-left: 30px !important; margin-top: -4px; }
+.dguide li { margin: 6px 0; padding-left: 4px; }
+.dguide li::marker { color: var(--accent); font-weight: 800; }
 .dfig img { width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line); display: block; }
 .ddiag svg { width: 100%; height: auto; display: block; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
 .dfig figcaption, .ddiag figcaption { font-size: 14.5px; margin-top: 8px; }

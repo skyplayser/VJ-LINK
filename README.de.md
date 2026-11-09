@@ -87,6 +87,20 @@ Fehlermeldung, wenn du eine schickst.
   </tr>
 </table>
 
+## Mehrere Bildschirme und Projektionsmapping – kinderleicht
+
+Kein Pixel-Rechnen, keine Konfigurationsdateien. Unter **AUSGABE** öffnest du jeden Beamer und jede LED-Wand mit einem Klick,
+wählst **Leinwand** und ziehst die Bildschirme dorthin, wo sie hängen: Visuals und Videos laufen nahtlos über alle. Beim
+**Projektionsmapping** legst du Leinwände auf das Beamerbild und ziehst ihre Ecken auf die Kanten von Wand, Kiste oder Säule –
+live auf dem Beamer. Runde Flächen biegst du mit einem Raster 3×3 oder 5×5, Masken schwärzen Türen und Personen.
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/images/de/outputs-canvas.png" alt="Drei Bildschirme als eine Leinwand"><br><sub><b>Leinwand.</b> Bildschirme an ihren Platz ziehen, die Kanten rasten ein.</sub></td>
+    <td width="50%"><img src="docs/images/de/outputs-mapping.png" alt="Projektionsmapping-Editor"><br><sub><b>Projektionsmapping.</b> Eine Kiste, eine Säule mit Raster-Verzerrung und eine Tür-Maske.</sub></td>
+  </tr>
+</table>
+
 ## Installieren
 
 Lade den Installer für deinen Rechner aus der [neuesten Version](https://github.com/skyplayser/VJ-LINK/releases/latest).

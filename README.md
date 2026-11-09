@@ -84,6 +84,20 @@ It runs locally. There is no account, no cloud and no telemetry. The only connec
   </tr>
 </table>
 
+## Several screens and projection mapping – child's play
+
+No pixel maths and no config files. Under **OUTPUT** you open each projector or LED wall with one click, choose **Canvas** and
+drag the screens to where they hang: visuals and videos run seamlessly across all of them. For **projection mapping** you lay
+canvases onto the projector picture and drag their corners onto the edges of a wall, a box or a column – live on the projector.
+Round surfaces bend with a 3×3 or 5×5 grid, masks black out doors and people.
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/images/outputs-canvas.png" alt="Three screens as one canvas"><br><sub><b>Canvas.</b> Drag the screens into place, the edges snap.</sub></td>
+    <td width="50%"><img src="docs/images/outputs-mapping.png" alt="Projection mapping editor"><br><sub><b>Projection mapping.</b> A box, a column with grid warp and a door mask.</sub></td>
+  </tr>
+</table>
+
 ## Install
 
 Download the installer for your computer from the [latest release](https://github.com/skyplayser/VJ-LINK/releases/latest).

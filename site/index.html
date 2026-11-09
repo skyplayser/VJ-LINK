@@ -39,6 +39,7 @@
     <button class="menu-btn" id="menu" aria-label="Menu" aria-expanded="false">&#9776;</button>
     <nav id="nav">
       <a href="#features" data-de="Funktionen">Features</a>
+      <a href="#screens-mapping" data-de="Mapping">Mapping</a>
       <a href="#download">Download</a>
       <a href="wiki.html">Wiki</a>
       <a href="wiki-help.html" data-de="Hilfe">Help</a>
@@ -86,7 +87,7 @@
       <div class="card"><h3><span class="ico" style="color:var(--green)">♩</span><span data-de="Im Takt der Musik">In time with the music</span></h3><p data-de="Tempo aus LJ-Link, Ableton Link, OSC, MIDI-Clock, Audio-Eingang oder Tap. Jede Ebene wählt ihren Antrieb: Audio, Takt oder statisch.">Tempo from LJ-Link, Ableton Link, OSC, MIDI clock, the audio input or tap. Each layer picks its drive: audio, beat or static.</p></div>
       <div class="card"><h3><span class="ico">⧉</span><span data-de="Szenen mit Übergang">Scenes with transitions</span></h3><p data-de="Schnitt, Beats oder Sekunden, Überblenden oder über Schwarz. Auto geht nach Takten, Sekunden oder beim Phrasenwechsel aus LJ-Link weiter.">Cut, beats or seconds, fade or through black. Auto moves on after bars, seconds or on a phrase change from LJ-Link.</p></div>
       <div class="card"><h3><span class="ico">▶</span><span data-de="SHOW mit Timeline">SHOW with a timeline</span></h3><p data-de="Ablauf aus Videos, Bildern, Kamera, Schwarz, Szenen und Timecode mit WEITER auf der Leertaste. Szenen und Strobe, Blinder oder Blackout liegen auf einer Timeline wie im Schnittprogramm.">A running order of videos, images, camera, black, scenes and timecode with GO on the space bar. Scenes and strobe, blinder or blackout sit on a timeline like in an editing program.</p></div>
-      <div class="card"><h3><span class="ico">▣</span><span data-de="Ausgänge und Mapping">Outputs and mapping</span></h3><p data-de="Ein Fenster pro Bildschirm in jeder Auflösung, eine Leinwand über alle, Testbilder und Projektionsmapping mit Eckpunkten, Raster-Verzerrung und Masken. Fenster-Ausgang für OBS, NDI und Syphon.">One window per screen in any resolution, one canvas across all, test patterns and projection mapping with corner pin, grid warp and masks. Window output for OBS, NDI and Syphon.</p></div>
+      <div class="card"><h3><span class="ico">▣</span><span data-de="Ausgänge und Mapping – kinderleicht">Outputs and mapping – child's play</span></h3><p data-de="Bildschirme per Ziehen zu einer Leinwand anordnen, Leinwände per Ecken-Ziehen auf Wände, Kisten und Säulen mappen, Raster-Verzerrung, Masken und Testbilder. Fenster-Ausgang für OBS, NDI und Syphon.">Arrange screens into one canvas by dragging, map canvases onto walls, boxes and columns by dragging their corners, grid warp, masks and test patterns. Window output for OBS, NDI and Syphon.</p></div>
       <div class="card"><h3><span class="ico">◉</span><span data-de="Kamera mit Personen-Erkennung">Camera with person detection</span></h3><p data-de="Webcam, Capture-Karte oder OBS als Clip: Silhouette, Umriss, Dot-Matrix, ASCII, Wärmebild und Masken, die Visuals nur in der Person zeigen. Läuft lokal, ohne Greenscreen.">Webcam, capture card or OBS as a clip: silhouette, outline, dot matrix, ASCII, thermal and masks that show the visuals only inside the person. Runs locally, no green screen.</p></div>
       <div class="card"><h3><span class="ico">✎</span><span data-de="Logos, Videos, Text">Logos, videos, text</span></h3><p data-de="Logos mit automatischem Freistellen, Videos mit Loop im Takt, Text-Clips mit Schrift, Leuchten und Kasten. Alles mit Effekten und Farbe der Ebene.">Logos with automatic background removal, videos with a loop in time, text clips with font, glow and box. All with the layer's effects and color.</p></div>
       <div class="card"><h3><span class="ico">∿</span><span data-de="Modulation">Modulation</span></h3><p data-de="Jeder Regler kann von selbst schwingen: LFO im Takt (Sinus, Dreieck, Säge, Rechteck, Zufall) oder Bass, Mitten, Höhen aus dem Audio.">Every fader can move by itself: an LFO in time (sine, triangle, saw, square, random) or bass, mids and highs from the audio.</p></div>
@@ -117,6 +118,36 @@
       <figure><img src="images/mapping.png" alt="MIDI mapping: every element that can be mapped lights up" data-de-alt="MIDI-Mapping: Jedes zuweisbare Element leuchtet" width="1920" height="1080" loading="lazy" decoding="async"><figcaption data-de="Mapping: anklicken, Fader bewegen, fertig.">Mapping: click, move a fader, done.</figcaption></figure>
       <figure><img src="images/output.png" alt="Output tab with screens, canvas, projection mapping and test patterns" data-de-alt="Tab Ausgabe mit Bildschirmen, Leinwand, Projektionsmapping und Testbildern" width="1920" height="1080" loading="lazy" decoding="async"><figcaption data-de="Ausgänge, Leinwand und Projektionsmapping.">Outputs, canvas and projection mapping.</figcaption></figure>
       <figure><img src="images/start.png" alt="Start screen with new project, open project, demo and language" data-de-alt="Startbildschirm mit neuem Projekt, Projekt laden, Demo und Sprache" width="1920" height="1080" loading="lazy" decoding="async"><figcaption data-de="Start: neues Projekt, Datei oder Demo.">Start: new project, a file or the demo.</figcaption></figure>
+    </div>
+  </section>
+
+  <section id="screens-mapping">
+    <p class="eyebrow" data-de="Bildschirme und Mapping">Screens and mapping</p>
+    <h2 data-de="Mehrere Bildschirme und Projektionsmapping – kinderleicht">Several screens and projection mapping – child's play</h2>
+    <p class="lead" data-de="Kein Pixel-Rechnen, keine Konfigurationsdateien: Bildschirme ziehst du einfach an ihren Platz, Leinwände passt du an, indem du ihre Ecken auf die Kanten von Wand, Kiste oder Säule ziehst. Was du siehst, landet genau so auf den Beamern.">No pixel maths, no config files: drag the screens to where they are, and fit canvases by dragging their corners onto the edges of the wall, box or column. What you see is exactly what lands on the projectors.</p>
+    <div class="split">
+      <div>
+        <h3 data-de="Mehrere Bildschirme als eine Leinwand">Several screens as one canvas</h3>
+        <ol class="howto">
+          <li data-de="Unter AUSGABE jeden Beamer, jede LED-Wand mit einem Klick als Ausgang öffnen.">Under OUTPUT open every projector and LED wall as an output with one click.</li>
+          <li data-de="„Leinwand“ wählen und die Bildschirme so hinziehen, wie sie hängen – nebeneinander, untereinander oder frei. Die Kanten rasten ein.">Choose “Canvas” and drag the screens to where they hang – side by side, stacked or anywhere. The edges snap.</li>
+          <li data-de="Fertig: Visuals und Videos laufen nahtlos über alle. Das Testbild „Raster über alle“ zeigt, ob alles sitzt.">Done: visuals and videos run seamlessly across all. The test pattern “Grid across all” shows whether everything lines up.</li>
+        </ol>
+      </div>
+      <img src="images/outputs-canvas.png" alt="Three screens arranged as one canvas in VJ-Link" data-de-alt="Drei Bildschirme als eine Leinwand in VJ-Link angeordnet" width="1920" height="1080" loading="lazy" decoding="async">
+    </div>
+    <div class="split" style="margin-top:28px">
+      <img src="images/outputs-mapping.png" alt="Projection mapping editor with a box, a column and a door mask" data-de-alt="Projektionsmapping-Editor mit Kiste, Säule und Tür-Maske" width="1920" height="1080" loading="lazy" decoding="async">
+      <div>
+        <h3 data-de="Projektionsmapping per Ziehen">Projection mapping by dragging</h3>
+        <ol class="howto">
+          <li data-de="„+ Leinwand“ legt eine Fläche auf das Beamerbild.">“+ Canvas” lays a surface onto the projector picture.</li>
+          <li data-de="Ecken auf die Kanten von Wand, Kiste oder Bühnenbild ziehen – live auf dem Beamer sichtbar.">Drag the corners onto the edges of the wall, box or set – live on the projector.</li>
+          <li data-de="Runde Flächen? „Raster 3×3“ biegt sie weich. Tür oder Person im Weg? „+ Maske“ schwärzt sie.">Round surfaces? “Grid 3×3” bends them smoothly. A door or person in the way? “+ Mask” blacks it out.</li>
+          <li data-de="Jede Leinwand zeigt das ganze Bild, einen Ausschnitt oder ein eigenes Bild mit eigenen Ebenen.">Each canvas shows the whole picture, a part or its own picture with its own layers.</li>
+        </ol>
+        <p style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap"><a class="btn" href="wiki-outputs.html" data-de="Bildschirme Schritt für Schritt">Screens step by step</a> <a class="btn" href="wiki-mapping-projection.html" data-de="Mapping Schritt für Schritt">Mapping step by step</a></p>
+      </div>
     </div>
   </section>
 

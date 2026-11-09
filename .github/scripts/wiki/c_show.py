@@ -8,6 +8,8 @@ def _():
     body = SEC(
         P("A scene is a snapshot of the layers: which clip runs where, with which colors, effects and opacity. **+ Save scene** stores the current picture; the pencil renames, overwrites, sorts or deletes it.",
           "Eine Szene ist eine Momentaufnahme der Ebenen: welcher Clip wo läuft, mit welchen Farben, Effekten und welcher Deckkraft. **+ Szene speichern** legt das aktuelle Bild ab; der Stift benennt um, überschreibt, sortiert oder löscht."),
+        IMG("scene-edit.png", "Editing a scene", "Eine Szene bearbeiten",
+            ("The pencil next to a scene opens name, transition, style and what comes afterwards.", "Der Stift neben einer Szene öffnet Name, Übergang, Art und was danach kommt.")),
         H2("Transition", "Übergang"),
         TABLE([("Setting", "Einstellung"), ("Choices", "Möglichkeiten")], [
             [("Transition", "Übergang"), ("like the fader Fade, cut, a number of beats or seconds", "wie Regler Blende, Schnitt, eine Zahl von Beats oder Sekunden")],
@@ -33,8 +35,16 @@ def _():
     body = SEC(
         P("The **SHOW** tab is a running order of cues, like in a theatre: **GO** (space bar) starts the next one, **Back** goes one back, **Stop all** ends everything.",
           "Der Tab **SHOW** ist ein Ablauf aus Cues wie im Theater: **WEITER** (Leertaste) startet den nächsten, **Zurück** geht einen zurück, **Alles stoppen** beendet alles."),
-        IMG("show.png", "SHOW tab with cues and timeline", "SHOW-Tab mit Cues und Timeline",
-            ("A timeline cue from the demo: scene blocks on the upper track, strobe, W-flash, blinder and blackout below.", "Ein Timeline-Cue aus der Demo: Szenen-Blöcke auf der oberen Spur, Strobe, W-Flash, Blinder und Blackout darunter.")),
+        GUIDE("show-guide.png", "SHOW tab with numbered areas", "SHOW-Tab mit nummerierten Bereichen", [
+            ("**Running order**: the cues; a click opens the details, a double click sets the next one.", "**Ablauf**: die Cues; ein Klick öffnet die Details, ein Doppelklick setzt den nächsten."),
+            ("**Add cues**: video / image, camera, black, VJ scene, timecode.", "**Cues hinzufügen**: Video / Bild, Kamera, Schwarz, VJ-Szene, Timecode."),
+            ("**Timeline** of the selected cue with play, record and the length.", "**Timeline** des gewählten Cues mit Abspielen, Aufnehmen und der Länge."),
+            ("**Scene palette**: drag scenes onto the scene track or tap them.", "**Szenen-Palette**: Szenen auf die Szenen-Spur ziehen oder antippen."),
+            ("**Effect palette**: strobe, flash, white, W-flash, blinder, blackout onto the effect track.", "**Effekt-Palette**: Strobe, Flash, White, W-Flash, Blinder, Blackout auf die Effekt-Spur."),
+            ("**Output preview**.", "**Ausgangs-Vorschau**."),
+            ("**GO** starts the next cue (space bar), below Back and Stop all.", "**WEITER** startet den nächsten Cue (Leertaste), darunter Zurück und Alles stoppen."),
+            ("**Cue details**: start, wait, duration, end, fades, size.", "**Cue-Details**: Start, Wartezeit, Dauer, Ende, Blenden, Größe."),
+        ]),
         H2("Cues", "Cues"),
         TABLE([("Cue", "Cue"), ("What it does", "Was er macht")], [
             [("Video / image", "Video / Bild"), ("plays a file over or instead of the visuals; drag files into the list", "spielt eine Datei über oder statt der Visuals; Dateien einfach in die Liste ziehen")],
@@ -43,6 +53,8 @@ def _():
             [("VJ scene", "VJ-Szene"), ("recalls a scene", "ruft eine Szene ab")],
             [("Timecode", "Timecode"), ("starts, stops or locates VJ-Link's timecode clock", "startet, stoppt oder springt mit der Timecode-Uhr von VJ-Link")],
         ]),
+        IMG("show-cue.png", "Details of an image cue", "Details eines Bild-Cues",
+            ("A click on a cue opens its settings on the right.", "Ein Klick auf einen Cue öffnet rechts seine Einstellungen.")),
         P("Per cue: start by hand, after or with the previous one, by timecode, plus a wait time; trim; repeat off, x times, until GO or forever, also only a part; at the end hold, fade or go on; fade-in, volume, size, visuals off or over.",
           "Je Cue: Start von Hand, nach oder mit dem vorigen, per Timecode, dazu eine Wartezeit; kürzen; wiederholen aus, x-mal, bis WEITER oder endlos, auch nur ein Bereich; am Ende stehen bleiben, ausblenden oder weiter; Einblenden, Lautstärke, Größe, Visuals aus oder darüber."),
         H2("Timeline", "Timeline"),
@@ -64,6 +76,8 @@ def _():
     body = SEC(
         P("**Settings → Timecode**. Receive and send can be switched on separately, also both at once, over **Art-Net** and **MIDI timecode**, with 24, 25, 29.97 DF and 30 fps.",
           "**Einstellungen → Timecode**. Empfangen und Senden lassen sich getrennt einschalten, auch beides gleichzeitig, über **Art-Net** und **MIDI-Timecode**, mit 24, 25, 29,97 DF und 30 fps."),
+        IMG("settings-timecode.png", "Timecode settings", "Timecode-Einstellungen",
+            ("Settings → Timecode: switch receive and send on separately.", "Einstellungen → Timecode: Empfangen und Senden getrennt einschalten.")),
         H2("Receive", "Empfangen"),
         P("A desk or program sets the time. Cues with the start Timecode follow it, videos follow it (seek and pause), with an offset. If the signal drops out, VJ-Link runs on for 2 s or stops at once.",
           "Ein Pult oder Programm gibt die Zeit vor. Cues mit Start Timecode folgen ihm, Videos folgen (spulen und anhalten), mit Versatz. Fällt das Signal aus, läuft VJ-Link 2 s weiter oder hält sofort an."),

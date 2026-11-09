@@ -8,7 +8,14 @@ def _():
     body = SEC(
         P("Every connected screen, projector or LED processor can be an output. **OUTPUT** lists them with their resolution; **Open as output** puts a full-screen window on it. All outputs share one clock, so they stay in sync.",
           "Jeder angeschlossene Bildschirm, Beamer oder LED-Prozessor kann ein Ausgang sein. **AUSGABE** listet sie mit Auflösung; **Als Ausgang öffnen** legt ein Vollbild-Fenster darauf. Alle Ausgänge teilen eine Uhr und bleiben synchron."),
-        IMG("output.png", "Output tab", "Tab Ausgabe", ("OUTPUT: screens, arrangement and test patterns.", "AUSGABE: Bildschirme, Anordnung und Testbilder.")),
+        GUIDE("outputs-canvas-guide.png", "Output tab with three screens on one canvas", "Tab Ausgabe mit drei Bildschirmen auf einer Leinwand", [
+            ("**Screens**: every connected screen, projector and LED wall.", "**Bildschirme**: jeder angeschlossene Bildschirm, Beamer und jede LED-Wand."),
+            ("**Open as output** / **Close**: one click per screen.", "**Als Ausgang öffnen** / **Schließen**: ein Klick pro Bildschirm."),
+            ("**Arrangement**: same picture on all, canvas, or projection mapping.", "**Anordnung**: überall dasselbe Bild, Leinwand oder Projektionsmapping."),
+            ("**Canvas**: drag the screens to where they hang; the edges snap.", "**Leinwand**: die Bildschirme dorthin ziehen, wo sie hängen; die Kanten rasten ein."),
+            ("**Side by side** / **Stacked** arrange them at once; a click on a screen shows exact values.", "**Nebeneinander** / **Untereinander** ordnen sie auf einmal an; ein Klick auf einen Bildschirm zeigt genaue Werte."),
+            ("**Test patterns** on all outputs, to step through.", "**Testbilder** auf allen Ausgängen, zum Durchschalten."),
+        ]),
         H2("Arrangement", "Anordnung"),
         TABLE([("Mode", "Modus"), ("What happens", "Was passiert")], [
             [("**Same picture on all**", "**Überall dasselbe Bild**"), ("every output shows the whole picture in its own resolution", "jeder Ausgang zeigt das ganze Bild in seiner eigenen Auflösung")],
@@ -22,6 +29,8 @@ def _():
         H2("Test patterns", "Testbilder"),
         P("Nine test patterns to step through: color bars, grid, grid across all, numbers, grey scale, white, red, green and blue, each with the resolution, name and position of every output. Also on a key or desk channel: test pattern, next, previous.",
           "Neun Testbilder zum Durchschalten: Farbbalken, Raster, Raster über alle, Nummern, Graustufen, Weiß, Rot, Grün und Blau, jeweils mit Auflösung, Name und Lage jedes Ausgangs. Auch auf Taste oder Pult-Kanal: Testbild, Nächstes, Voriges."),
+        IMG("outputs-testpattern.png", "Test pattern Numbers on all outputs", "Testbild Nummern auf allen Ausgängen",
+            ("The test pattern “Numbers” shows on every output its number, name and position.", "Das Testbild „Nummern“ zeigt auf jedem Ausgang Nummer, Name und Lage.")),
         ADM("tip", ("With only one screen an output covers the interface. Esc or Close in the main window ends it.", "Mit nur einem Bildschirm verdeckt ein Ausgang die Oberfläche. Esc oder Schließen im Hauptfenster beendet ihn.")),
     )
     return (("Outputs: screens, LED walls, canvas and window output", "Ausgänge: Bildschirme, LED-Wände, Leinwand und Fenster-Ausgang"),
@@ -36,6 +45,18 @@ def _():
     body = SEC(
         P("Choose **Projection mapping** under OUTPUT → Arrangement. On the picture of each projector you lay **canvases**: shapes that follow walls, boxes and columns. Outside the canvases the projector stays black.",
           "Unter AUSGABE → Anordnung **Projektionsmapping** wählen. Auf das Bild jedes Beamers legst du **Leinwände**: Formen, die Wänden, Kisten und Säulen folgen. Außerhalb der Leinwände bleibt der Beamer schwarz."),
+        GUIDE("outputs-mapping-guide.png", "Projection mapping editor with numbered tools", "Projektionsmapping-Editor mit nummerierten Werkzeugen", [
+            ("Arrangement **Projection mapping**.", "Anordnung **Projektionsmapping**."),
+            ("A **corner**: drag it onto the edge of the object. The front of the box is selected (pink).", "Eine **Ecke**: auf die Kante des Objekts ziehen. Die Vorderseite der Kiste ist gewählt (pink)."),
+            ("A canvas with a **3×3 grid** bends around the column.", "Eine Leinwand mit **Raster 3×3** biegt sich um die Säule."),
+            ("A **mask** blacks out the door.", "Eine **Maske** schwärzt die Tür."),
+            ("**+ Canvas** adds a surface.", "**+ Leinwand** fügt eine Fläche hinzu."),
+            ("**+ Mask** adds a black-out area.", "**+ Maske** fügt einen geschwärzten Bereich hinzu."),
+            ("**Alignment grid** on all canvases, distorted, to match edges exactly.", "**Raster zum Ausrichten** auf allen Leinwänden, verzerrt, damit die Kanten genau passen."),
+            ("**Snap** on or off.", "**Einrasten** an oder aus."),
+            ("**Stage photo** as a guide behind the canvases.", "**Bühnenfoto** als Hilfe hinter den Leinwänden."),
+            ("Name of the canvas, which **picture** it shows and the **shape** (4 corners or grid).", "Name der Leinwand, welches **Bild** sie zeigt und die **Form** (4 Ecken oder Raster)."),
+        ]),
         STEPS(("**+ Canvas** adds one. Drag a corner to fit it to a wall, a box or a trapezoid, drag the middle to move it. Arrow keys move by 1 px (with ⇧ 10 px).", "**+ Leinwand** fügt eine hinzu. Eine Ecke ziehen passt sie an Wand, Kiste oder Trapez an, die Mitte ziehen verschiebt sie. Pfeiltasten verschieben um 1 px (mit ⇧ 10 px)."),
               ("**Grid for alignment** lays the grid test pattern distorted onto the canvases, so the edges can be matched exactly.", "**Raster zum Ausrichten** legt das Raster-Testbild verzerrt auf die Leinwände, damit die Kanten genau passen."),
               ("**Shape**: 4 corners, or a 3×3 or 5×5 grid for round and curved surfaces; every point can be dragged and the surface bends smoothly.", "**Form**: 4 Ecken oder ein Raster 3×3 bzw. 5×5 für runde und gewölbte Flächen; jeder Punkt lässt sich ziehen, die Fläche biegt sich weich."),
