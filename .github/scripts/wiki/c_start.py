@@ -13,7 +13,7 @@ def _():
           "VJ-Link spielt Live-Visuals auf Bildschirmen, Beamern und LED-Wänden. Das Lichtpult führt: Es ruft Szenen ab und setzt Farben, Helligkeit, Strobe und Blackout. Das Tempo kommt aus der Musik, am besten aus [LJ-Link](wiki-ljlink.html), sodass alles im Takt läuft, ohne dass jemand tappen muss."),
         UL(("**Local:** no account, no cloud, no telemetry. Only the update check and a problem report you send yourself use the internet.",
             "**Lokal:** kein Konto, keine Cloud, keine Telemetrie. Nur die Update-Prüfung und eine Fehlermeldung, die du selbst schickst, nutzen das Internet."),
-           ("**Free** for macOS and Windows.", "**Kostenlos** für macOS und Windows."),
+           ("**Free and open source** for macOS and Windows, under the Eclipse Public License 2.0 like LJ-Link: [source code](https://github.com/skyplayser/VJ-LInk-dev).", "**Kostenlos und Open Source** für macOS und Windows, unter der Eclipse Public License 2.0 wie LJ-Link: [Quellcode](https://github.com/skyplayser/VJ-LInk-dev)."),
            ("**English and German**, chosen from the system language and switchable on the start screen.", "**Deutsch und Englisch**, aus der Systemsprache gewählt und im Startbildschirm umschaltbar.")),
         IMG("visuals.png", "VJ-Link main view with layers, clip grid, color slots and scenes", "Hauptansicht von VJ-Link mit Ebenen, Clip-Raster, Farbslots und Szenen",
             ("The VISUALS tab with the demo show: eight layers, each with its row of clips.", "Der Tab VISUALS mit der Demo-Show: acht Ebenen, jede mit ihrer Zeile Clips.")),

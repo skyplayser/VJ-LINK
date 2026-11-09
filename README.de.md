@@ -15,12 +15,14 @@
   <a href="#schnellstart">Schnellstart</a> &nbsp;·&nbsp;
   <a href="README.md">English</a> &nbsp;·&nbsp;
   <a href="https://skyplayser.github.io/VJ-LINK/de/wiki.html">Wiki</a> &nbsp;·&nbsp;
-  <a href="https://discord.gg/N6DMca4Bjk">Discord</a>
+  <a href="https://discord.gg/N6DMca4Bjk">Discord</a> &nbsp;·&nbsp;
+  <a href="https://github.com/skyplayser/VJ-LInk-dev">Quellcode</a>
 </p>
 
 <p align="center">
   <img alt="Stand: Alpha 0.0.1" src="https://img.shields.io/badge/Stand-Alpha%200.0.1-FF5C93">
   <img alt="macOS und Windows, kostenlos" src="https://img.shields.io/badge/macOS%20%7C%20Windows-kostenlos-3DDC84">
+  <img alt="Lizenz: EPL-2.0" src="https://img.shields.io/badge/Lizenz-EPL--2.0-60a5fa">
 </p>
 
 ![VJ-Link mit acht Ebenen, Clip-Raster, Farbslots und Szenen](docs/images/de/visuals.png)
@@ -220,8 +222,10 @@ ihren Inhabern und dienen nur der Beschreibung der Kompatibilität.
 
 ## Lizenz
 
-© 2026 Philipp Spruck / NEXTPHILM. Alle Rechte vorbehalten. VJ-Link ist kostenlos nutzbar. Der Quellcode ist während der Alpha
-nicht öffentlich; dieses Repository enthält die Veröffentlichungen, die Website und die Dokumentation.
+© 2026 Philipp Spruck / NEXTPHILM. VJ-Link steht unter der [Eclipse Public License 2.0](LICENSE) und wird ohne jede
+Gewährleistung bereitgestellt. Der Quellcode liegt unter [skyplayser/VJ-LInk-dev](https://github.com/skyplayser/VJ-LInk-dev); dieses Repository enthält die
+Veröffentlichungen, die Website und die Dokumentation. Die Lizenzen der verwendeten Bausteine stehen in
+[THIRD_PARTY.md](https://github.com/skyplayser/VJ-LInk-dev/blob/grundgeruest/THIRD_PARTY.md).
 
 <br>
 
