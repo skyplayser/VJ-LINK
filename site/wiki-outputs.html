@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-de="Ausgänge: Bildschirme, LED-Wände, Leinwand und Fenster-Ausgang | VJ-Link Wiki">Outputs: screens, LED walls, canvas and window output | VJ-Link Wiki</title>
+<meta name="description" content="VJ-Link outputs: any number of screens and projectors in any resolution, the same picture or one canvas across all, window output for OBS, NDI and Syphon, and test patterns." data-de-content="VJ-Link-Ausgänge: beliebig viele Bildschirme und Beamer in jeder Auflösung, überall dasselbe Bild oder eine Leinwand über alle, Fenster-Ausgang für OBS, NDI und Syphon und Testbilder.">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+<meta name="author" content="SKYPLAYSER / NEXTPHILM">
+<link rel="canonical" href="https://skyplayser.github.io/VJ-LINK/wiki-outputs.html" data-de-href="https://skyplayser.github.io/VJ-LINK/de/wiki-outputs.html">
+<link rel="alternate" hreflang="en" href="https://skyplayser.github.io/VJ-LINK/wiki-outputs.html">
+<link rel="alternate" hreflang="de" href="https://skyplayser.github.io/VJ-LINK/de/wiki-outputs.html">
+<link rel="alternate" hreflang="x-default" href="https://skyplayser.github.io/VJ-LINK/wiki-outputs.html">
+<link rel="icon" href="images/logo.png" type="image/png">
+<link rel="apple-touch-icon" href="images/logo.png">
+<meta name="theme-color" content="#07090c">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="VJ-Link">
+<meta property="og:locale" content="en_US" data-de-content="de_DE">
+<meta property="og:locale:alternate" content="de_DE" data-de-content="en_US">
+<meta property="og:title" content="VJ-Link Wiki – Outputs: screens, LED walls, canvas and window output" data-de-content="VJ-Link Wiki – Ausgänge: Bildschirme, LED-Wände, Leinwand und Fenster-Ausgang">
+<meta property="og:description" content="VJ-Link outputs: any number of screens and projectors in any resolution, the same picture or one canvas across all, window output for OBS, NDI and Syphon, and test patterns." data-de-content="VJ-Link-Ausgänge: beliebig viele Bildschirme und Beamer in jeder Auflösung, überall dasselbe Bild oder eine Leinwand über alle, Fenster-Ausgang für OBS, NDI und Syphon und Testbilder.">
+<meta property="og:image" content="https://skyplayser.github.io/VJ-LINK/images/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://skyplayser.github.io/VJ-LINK/wiki-outputs.html" data-de-content="https://skyplayser.github.io/VJ-LINK/de/wiki-outputs.html">
+<meta name="twitter:card" content="summary_large_image">
+<!-- structured-data -->
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="docs-page">
+<header class="top">
+  <div class="wrap dwrap">
+    <a href="./" class="brand" style="display:flex;align-items:center;gap:10px"><img src="images/logo.png" alt="" width="32" height="32"><span>VJ-Link</span><span class="brand-sub">Wiki</span></a>
+    <button class="menu-btn" id="menu" aria-label="Menu" aria-expanded="false">&#9776;</button>
+    <nav id="nav">
+      <a href="./#features" data-de="Funktionen">Features</a>
+      <a href="./#download">Download</a>
+      <a href="wiki.html">Wiki</a>
+      <a href="wiki-help.html" data-de="Hilfe">Help</a>
+      <a href="https://discord.gg/N6DMca4Bjk" rel="noopener">Discord</a>
+      <a href="https://github.com/skyplayser/VJ-LINK">GitHub</a>
+      <a class="lang" id="lang" href="de/wiki-outputs.html" hreflang="de" lang="de" title="Deutsch" data-de-href="../wiki-outputs.html" data-de-hreflang="en" data-de-lang="en" data-de-title="English" data-de="EN" style="text-decoration:none">DE</a>
+    </nav>
+  </div>
+</header>
+<nav class="dtabs" aria-label="Wiki sections" data-de-aria-label="Wiki-Bereiche"><div class="dwrap"><a class="dtab" href="wiki.html" data-de="Start">Start</a><a class="dtab" href="wiki-layers.html" data-de="Visuals">Visuals</a><a class="dtab" href="wiki-desk.html" data-de="Steuerung">Control</a><a class="dtab on" href="wiki-outputs.html" data-de="Ausgänge">Outputs</a><a class="dtab" href="wiki-scenes.html" data-de="Show">Show</a><a class="dtab" href="wiki-help.html" data-de="Hilfe">Help</a></div></nav>
+<div class="docs dwrap">
+  <button class="dside-btn" id="dside-btn" aria-controls="dside" aria-expanded="false"><span aria-hidden="true">&#9776;</span> <span data-de="Inhalt des Wikis">Wiki contents</span></button>
+  <aside class="dside" id="dside"><nav aria-label="Wiki pages" data-de-aria-label="Wiki-Seiten"><p class="dgroup">Start</p><a class="dlink" href="wiki.html" data-de="Übersicht">Overview</a><a class="dlink" href="wiki-quickstart.html" data-de="Schnellstart">Quick start</a><a class="dlink" href="wiki-install.html" data-de="Installieren und aktualisieren">Install and update</a><a class="dlink" href="wiki-interface.html" data-de="Die Oberfläche">The interface</a><a class="dlink" href="wiki-use-cases.html" data-de="Anwendungsfälle">Use cases</a><p class="dgroup">Visuals</p><a class="dlink" href="wiki-layers.html" data-de="Ebenen und Clips">Layers and clips</a><a class="dlink" href="wiki-visuals.html" data-de="Die 150 Visuals">The 150 visuals</a><a class="dlink" href="wiki-effects.html" data-de="Effekte">Effects</a><a class="dlink" href="wiki-media.html" data-de="Logos, Videos und Text">Logos, videos and text</a><a class="dlink" href="wiki-camera.html" data-de="Kameras und Personen-Erkennung">Cameras and person detection</a><p class="dgroup" data-de="Steuerung">Control</p><a class="dlink" href="wiki-desk.html" data-de="Lichtpult">Light desk</a><a class="dlink" href="wiki-mapping.html" data-de="Mapping: Tastatur, MIDI, DMX, OSC">Mapping: keyboard, MIDI, DMX, OSC</a><a class="dlink" href="wiki-tempo.html" data-de="Tempo und Takt">Tempo and beat</a><a class="dlink" href="wiki-ljlink.html" data-de="VJ-Link und LJ-Link">VJ-Link and LJ-Link</a><a class="dlink" href="wiki-modulation.html" data-de="Modulation">Modulation</a><p class="dgroup" data-de="Ausgänge">Outputs</p><a class="dlink on" href="wiki-outputs.html" aria-current="page" data-de="Bildschirme und Leinwand">Screens and canvas</a><div class="dsub"><a href="#arrangement" data-de="Anordnung">Arrangement</a><a href="#window-output" data-de="Fenster-Ausgang">Window output</a><a href="#test-patterns" data-de="Testbilder">Test patterns</a></div><a class="dlink" href="wiki-mapping-projection.html" data-de="Projektionsmapping">Projection mapping</a><p class="dgroup">Show</p><a class="dlink" href="wiki-scenes.html" data-de="Szenen">Scenes</a><a class="dlink" href="wiki-show.html" data-de="SHOW und Timeline">SHOW and timeline</a><a class="dlink" href="wiki-timecode.html" data-de="Timecode">Timecode</a><a class="dlink" href="wiki-projects.html" data-de="Projekte">Projects</a><p class="dgroup" data-de="Hilfe">Help</p><a class="dlink" href="wiki-help.html" data-de="Fehlersuche">Troubleshooting</a><a class="dlink" href="wiki-reference.html" data-de="Referenz">Reference</a><a class="dlink" href="wiki-glossary.html" data-de="Glossar">Glossary</a></nav></aside>
+  <main class="dbody article wiki">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="wiki.html">Wiki</a> › <span data-de="Ausgänge">Outputs</span> › <span data-de="Bildschirme und Leinwand">Screens and canvas</span></nav>
+    <h1><span class="kicker" data-de="Ausgänge">Outputs</span><span data-de="Bildschirme und Leinwand">Screens and canvas</span></h1>
+    <p class="tag" data-de="Beamer, LED-Wände und Abgreifen.">Projectors, LED walls and capture.</p>
+    <p><span data-de="Jeder angeschlossene Bildschirm, Beamer oder LED-Prozessor kann ein Ausgang sein. ">Every connected screen, projector or LED processor can be an output. </span><b data-de="AUSGABE">OUTPUT</b><span data-de=" listet sie mit Auflösung; "> lists them with their resolution; </span><b data-de="Als Ausgang öffnen">Open as output</b><span data-de=" legt ein Vollbild-Fenster darauf. Alle Ausgänge teilen eine Uhr und bleiben synchron."> puts a full-screen window on it. All outputs share one clock, so they stay in sync.</span></p><figure class="dfig"><img class="pic" src="images/output.png" alt="Output tab" data-de-alt="Tab Ausgabe" loading="lazy"><figcaption data-de="AUSGABE: Bildschirme, Anordnung und Testbilder.">OUTPUT: screens, arrangement and test patterns.</figcaption></figure><h2 id="arrangement" data-de="Anordnung">Arrangement</h2><div class="table"><table><thead><tr><th data-de="Modus">Mode</th><th data-de="Was passiert">What happens</th></tr></thead><tbody><tr><td><b data-de="Überall dasselbe Bild">Same picture on all</b></td><td><span data-de="jeder Ausgang zeigt das ganze Bild in seiner eigenen Auflösung">every output shows the whole picture in its own resolution</span></td></tr><tr><td><b data-de="Leinwand">Canvas</b></td><td><span data-de="Bildschirme frei anordnen (ziehen, einrasten, Werte eintippen, nebeneinander oder untereinander); jeder Ausgang zeigt seinen Teil, Visuals und Videos laufen nahtlos über alle">arrange the screens freely (drag, snap, type values, side by side or stacked); each output shows its part, visuals and videos run seamlessly across all</span></td></tr><tr><td><b data-de="Projektionsmapping">Projection mapping</b></td><td><span data-de="Leinwände mit Eckpunkten, Raster-Verzerrung und Masken auf dem Bild jedes Beamers, siehe ">canvases with corner pin, grid warp and masks on the picture of each projector, see </span><a href="wiki-mapping-projection.html" data-de="Projektionsmapping">projection mapping</a></td></tr></tbody></table></div><h2 id="window-output" data-de="Fenster-Ausgang">Window output</h2><p data-de="Statt Vollbild kann ein Ausgang ein normales Fenster mit fester Bildgröße sein (720p bis 4K, auch hochkant). Greif es in OBS, mit NDI-Werkzeugen oder Syphon Recorder ab. Es funktioniert auch wie ein Beamer in Leinwand und Projektionsmapping.">Instead of full screen, an output can be a normal window with a fixed picture size (720p up to 4K, also portrait). Capture it in OBS, with NDI tools or Syphon Recorder. It also works as a projector in canvas and projection mapping.</p><div class="adm note"><p class="adm-t"><span class="adm-i" aria-hidden="true">✎</span><span data-de="Hinweis">Note</span></p><p data-de="Natives Syphon, Spout und NDI sind geplant. Bis dahin ist der Fenster-Ausgang der Weg, das Bild in andere Programme zu bringen.">Native Syphon, Spout and NDI are planned. Until then the window output is the way to get the picture into other programs.</p></div><h2 id="test-patterns" data-de="Testbilder">Test patterns</h2><p data-de="Neun Testbilder zum Durchschalten: Farbbalken, Raster, Raster über alle, Nummern, Graustufen, Weiß, Rot, Grün und Blau, jeweils mit Auflösung, Name und Lage jedes Ausgangs. Auch auf Taste oder Pult-Kanal: Testbild, Nächstes, Voriges.">Nine test patterns to step through: color bars, grid, grid across all, numbers, grey scale, white, red, green and blue, each with the resolution, name and position of every output. Also on a key or desk channel: test pattern, next, previous.</p><div class="adm tip"><p class="adm-t"><span class="adm-i" aria-hidden="true">✓</span><span data-de="Tipp">Tip</span></p><p data-de="Mit nur einem Bildschirm verdeckt ein Ausgang die Oberfläche. Esc oder Schließen im Hauptfenster beendet ihn.">With only one screen an output covers the interface. Esc or Close in the main window ends it.</p></div>
+    <div class="adm community"><p class="adm-t"><span class="adm-i" aria-hidden="true">💬</span><span data-de="Fehlt etwas oder stimmt etwas nicht?">Something missing or wrong?</span></p><p><span data-de="Frag auf unserem ">Ask in our </span><a href="https://discord.gg/N6DMca4Bjk" rel="noopener">Discord</a><span data-de=" oder "> or </span><a href="wiki-help.html#report" data-de="melde ein Problem">report a problem</a><span data-de=". Am meisten helfen Berichte von echten Geräten, auch wenn etwas nicht klappt.">. Reports from real gear help most, also when something does not work.</span></p></div>
+    <nav class="dpn"><a class="prev" href="wiki-modulation.html"><small data-de="Zurück">Previous</small><span>← Modulation</span></a><a class="next" href="wiki-mapping-projection.html"><small data-de="Weiter">Next</small><span data-de="Projektionsmapping →">Projection mapping →</span></a></nav>
+  </main>
+</div>
+<footer>
+  <div class="wrap">
+    <p data-de="VJ-Link ist kostenlos und wird ohne Gewährleistung bereitgestellt. Die Personen-Erkennung nutzt MediaPipe (Apache-2.0). VJ-Link ist kein offizielles Produkt von MA Lighting, Daslight, Akai, Korg, Ableton, OBS oder Google. Alle Produktnamen gehören ihren Inhabern und dienen nur der Beschreibung der Kompatibilität.">VJ-Link is free and provided without warranty. Person detection uses MediaPipe (Apache-2.0). VJ-Link is not an official product of MA Lighting, Daslight, Akai, Korg, Ableton, OBS or Google. All product names belong to their owners and are used only to describe compatibility.</p>
+    <p><a href="https://github.com/skyplayser/VJ-LINK">GitHub</a> · <a href="https://github.com/skyplayser/VJ-LINK/releases" data-de="Versionen">Releases</a> · <a href="wiki.html">Wiki</a> · <a href="wiki-help.html" data-de="Hilfe">Help</a> · <a href="https://discord.gg/N6DMca4Bjk" rel="noopener">Discord</a> · <a href="https://github.com/skyplayser/VJ-LINK/issues">Issues</a> · <a href="https://skyplayser.github.io/LJ-Link/" data-de-href="https://skyplayser.github.io/LJ-Link/de/" data-de="Probier auch: LJ-Link">Try also: LJ-Link</a> · <a href="impressum.html">Impressum</a> · <a href="datenschutz.html" data-de="Datenschutz">Privacy</a></p>
+    <p class="credit">Idea SKYPLAYSER/NEXTPHILM<br>Prompted with ❤️ made by Claude</p>
+  </div>
+</footer>
+
+<div class="viewer" id="viewer" role="dialog" aria-label="Picture"><img alt=""></div>
+
+<script>
+  (function () {
+    var b = document.getElementById("dside-btn"), s = document.getElementById("dside");
+    if (b && s) b.addEventListener("click", function () { var o = s.classList.toggle("open"); b.setAttribute("aria-expanded", o); });
+    // Keep the current page visible in the side navigation and the current section in the tabs.
+    var on = document.querySelector(".dlink.on"), side = document.getElementById("dside");
+    if (on && side && side.scrollHeight > side.clientHeight) side.scrollTop = on.offsetTop - side.clientHeight / 3;
+    var tab = document.querySelector(".dtab.on");
+    if (tab) tab.parentNode.scrollLeft = tab.offsetLeft - 16;
+    if (location.hash) { var d = document.querySelector(location.hash); if (d && d.tagName === "DETAILS") d.open = true; }
+  })();
+</script>
+<script>
+  (function () {
+    // Language: English at /, German at /de/ (built from data-de). A saved choice wins, otherwise a German
+    // browser goes from / to /de/ on the first visit. The button is a plain link, so search engines see both.
+    var langBtn = document.getElementById("lang");
+    var lang = document.documentElement.lang === "de" ? "de" : "en";
+    var saved = null;
+    try { saved = localStorage.getItem("vj-lang"); } catch (e) { /* private mode */ }
+    var want = saved || ((navigator.language || "en").toLowerCase().indexOf("de") === 0 ? "de" : "en");
+    if (langBtn && want !== lang && (saved || lang === "en")) { location.replace(langBtn.href + location.hash); return; }
+    if (langBtn) langBtn.addEventListener("click", function () {
+      try { localStorage.setItem("vj-lang", lang === "de" ? "en" : "de"); } catch (e) { /* private mode */ }
+    });
+
+    // The download that fits this computer is highlighted and used by the big button.
+    var ua = navigator.userAgent, os = /Windows/.test(ua) ? "win" : /Mac/.test(ua) ? "mac-arm" : null;
+    var card = os && document.querySelector('.dl .card[data-os="' + os + '"]');
+    if (card) {
+      card.classList.add("suggested");
+      var hero = document.getElementById("hero-download");
+      if (hero && os === "win") hero.href = card.querySelector("a").href;
+    }
+
+    // The newest version, from GitHub (only on pages that show it).
+    var heroV = document.getElementById("hero-version"), dlV = document.getElementById("dl-version");
+    if (heroV || dlV) fetch("https://api.github.com/repos/skyplayser/VJ-LINK/releases/latest")
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        if (!j || !j.tag_name) return;
+        var v = j.tag_name.replace(/^v/, ""), de = lang === "de";
+        if (heroV) heroV.textContent = "Version " + v + " · ";
+        if (dlV) dlV.textContent = de ? "Aktuelle Version: " + v + "." : "Current version: " + v + ".";
+      })
+      .catch(function () { /* offline: no version line */ });
+
+    // Phone menu.
+    var menu = document.getElementById("menu"), nav = document.getElementById("nav");
+    if (menu && nav) {
+      menu.onclick = function () { var open = nav.classList.toggle("open"); menu.setAttribute("aria-expanded", open); };
+      nav.addEventListener("click", function (e) { if (e.target.tagName === "A") nav.classList.remove("open"); });
+    }
+
+    // Pictures open large.
+    var viewer = document.getElementById("viewer");
+    if (viewer) {
+      document.querySelectorAll(".gallery img, .split img, .dfig img").forEach(function (img) {
+        img.addEventListener("click", function () { viewer.querySelector("img").src = img.src; viewer.classList.add("open"); });
+      });
+      viewer.onclick = function () { viewer.classList.remove("open"); };
+      document.addEventListener("keydown", function (e) { if (e.key === "Escape") viewer.classList.remove("open"); });
+    }
+  })();
+</script>
+</body>
+</html>

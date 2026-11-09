@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-de="Ebenen, Clips und Farbslots | VJ-Link Wiki">Layers, clips and color slots | VJ-Link Wiki</title>
+<meta name="description" content="VJ-Link layers: clip rows, blend modes, color sources, drive (audio, beat, static), position, color slots from the desk and laser layers for a projector in haze." data-de-content="VJ-Link-Ebenen: Clip-Zeilen, Mischmodi, Farbquellen, Antrieb (Audio, Takt, statisch), Lage, Farbslots vom Pult und Laser-Ebenen für den Beamer im Nebel.">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+<meta name="author" content="SKYPLAYSER / NEXTPHILM">
+<link rel="canonical" href="https://skyplayser.github.io/VJ-LINK/wiki-layers.html" data-de-href="https://skyplayser.github.io/VJ-LINK/de/wiki-layers.html">
+<link rel="alternate" hreflang="en" href="https://skyplayser.github.io/VJ-LINK/wiki-layers.html">
+<link rel="alternate" hreflang="de" href="https://skyplayser.github.io/VJ-LINK/de/wiki-layers.html">
+<link rel="alternate" hreflang="x-default" href="https://skyplayser.github.io/VJ-LINK/wiki-layers.html">
+<link rel="icon" href="images/logo.png" type="image/png">
+<link rel="apple-touch-icon" href="images/logo.png">
+<meta name="theme-color" content="#07090c">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="VJ-Link">
+<meta property="og:locale" content="en_US" data-de-content="de_DE">
+<meta property="og:locale:alternate" content="de_DE" data-de-content="en_US">
+<meta property="og:title" content="VJ-Link Wiki – Layers, clips and color slots" data-de-content="VJ-Link Wiki – Ebenen, Clips und Farbslots">
+<meta property="og:description" content="VJ-Link layers: clip rows, blend modes, color sources, drive (audio, beat, static), position, color slots from the desk and laser layers for a projector in haze." data-de-content="VJ-Link-Ebenen: Clip-Zeilen, Mischmodi, Farbquellen, Antrieb (Audio, Takt, statisch), Lage, Farbslots vom Pult und Laser-Ebenen für den Beamer im Nebel.">
+<meta property="og:image" content="https://skyplayser.github.io/VJ-LINK/images/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://skyplayser.github.io/VJ-LINK/wiki-layers.html" data-de-content="https://skyplayser.github.io/VJ-LINK/de/wiki-layers.html">
+<meta name="twitter:card" content="summary_large_image">
+<!-- structured-data -->
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="docs-page">
+<header class="top">
+  <div class="wrap dwrap">
+    <a href="./" class="brand" style="display:flex;align-items:center;gap:10px"><img src="images/logo.png" alt="" width="32" height="32"><span>VJ-Link</span><span class="brand-sub">Wiki</span></a>
+    <button class="menu-btn" id="menu" aria-label="Menu" aria-expanded="false">&#9776;</button>
+    <nav id="nav">
+      <a href="./#features" data-de="Funktionen">Features</a>
+      <a href="./#download">Download</a>
+      <a href="wiki.html">Wiki</a>
+      <a href="wiki-help.html" data-de="Hilfe">Help</a>
+      <a href="https://discord.gg/N6DMca4Bjk" rel="noopener">Discord</a>
+      <a href="https://github.com/skyplayser/VJ-LINK">GitHub</a>
+      <a class="lang" id="lang" href="de/wiki-layers.html" hreflang="de" lang="de" title="Deutsch" data-de-href="../wiki-layers.html" data-de-hreflang="en" data-de-lang="en" data-de-title="English" data-de="EN" style="text-decoration:none">DE</a>
+    </nav>
+  </div>
+</header>
+<nav class="dtabs" aria-label="Wiki sections" data-de-aria-label="Wiki-Bereiche"><div class="dwrap"><a class="dtab" href="wiki.html" data-de="Start">Start</a><a class="dtab on" href="wiki-layers.html" data-de="Visuals">Visuals</a><a class="dtab" href="wiki-desk.html" data-de="Steuerung">Control</a><a class="dtab" href="wiki-outputs.html" data-de="Ausgänge">Outputs</a><a class="dtab" href="wiki-scenes.html" data-de="Show">Show</a><a class="dtab" href="wiki-help.html" data-de="Hilfe">Help</a></div></nav>
+<div class="docs dwrap">
+  <button class="dside-btn" id="dside-btn" aria-controls="dside" aria-expanded="false"><span aria-hidden="true">&#9776;</span> <span data-de="Inhalt des Wikis">Wiki contents</span></button>
+  <aside class="dside" id="dside"><nav aria-label="Wiki pages" data-de-aria-label="Wiki-Seiten"><p class="dgroup">Start</p><a class="dlink" href="wiki.html" data-de="Übersicht">Overview</a><a class="dlink" href="wiki-quickstart.html" data-de="Schnellstart">Quick start</a><a class="dlink" href="wiki-install.html" data-de="Installieren und aktualisieren">Install and update</a><a class="dlink" href="wiki-interface.html" data-de="Die Oberfläche">The interface</a><a class="dlink" href="wiki-use-cases.html" data-de="Anwendungsfälle">Use cases</a><p class="dgroup">Visuals</p><a class="dlink on" href="wiki-layers.html" aria-current="page" data-de="Ebenen und Clips">Layers and clips</a><div class="dsub"><a href="#layers" data-de="Ebenen">Layers</a><a href="#per-layer" data-de="Je Ebene">Per layer</a><a href="#color-slots" data-de="Farbslots">Color slots</a><a href="#laser-layers" data-de="Laser-Ebenen">Laser layers</a></div><a class="dlink" href="wiki-visuals.html" data-de="Die 150 Visuals">The 150 visuals</a><a class="dlink" href="wiki-effects.html" data-de="Effekte">Effects</a><a class="dlink" href="wiki-media.html" data-de="Logos, Videos und Text">Logos, videos and text</a><a class="dlink" href="wiki-camera.html" data-de="Kameras und Personen-Erkennung">Cameras and person detection</a><p class="dgroup" data-de="Steuerung">Control</p><a class="dlink" href="wiki-desk.html" data-de="Lichtpult">Light desk</a><a class="dlink" href="wiki-mapping.html" data-de="Mapping: Tastatur, MIDI, DMX, OSC">Mapping: keyboard, MIDI, DMX, OSC</a><a class="dlink" href="wiki-tempo.html" data-de="Tempo und Takt">Tempo and beat</a><a class="dlink" href="wiki-ljlink.html" data-de="VJ-Link und LJ-Link">VJ-Link and LJ-Link</a><a class="dlink" href="wiki-modulation.html" data-de="Modulation">Modulation</a><p class="dgroup" data-de="Ausgänge">Outputs</p><a class="dlink" href="wiki-outputs.html" data-de="Bildschirme und Leinwand">Screens and canvas</a><a class="dlink" href="wiki-mapping-projection.html" data-de="Projektionsmapping">Projection mapping</a><p class="dgroup">Show</p><a class="dlink" href="wiki-scenes.html" data-de="Szenen">Scenes</a><a class="dlink" href="wiki-show.html" data-de="SHOW und Timeline">SHOW and timeline</a><a class="dlink" href="wiki-timecode.html" data-de="Timecode">Timecode</a><a class="dlink" href="wiki-projects.html" data-de="Projekte">Projects</a><p class="dgroup" data-de="Hilfe">Help</p><a class="dlink" href="wiki-help.html" data-de="Fehlersuche">Troubleshooting</a><a class="dlink" href="wiki-reference.html" data-de="Referenz">Reference</a><a class="dlink" href="wiki-glossary.html" data-de="Glossar">Glossary</a></nav></aside>
+  <main class="dbody article wiki">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="wiki.html">Wiki</a> › <span>Visuals</span> › <span data-de="Ebenen und Clips">Layers and clips</span></nav>
+    <h1><span class="kicker" data-de="Visuals">Visuals</span><span data-de="Ebenen und Clips">Layers and clips</span></h1>
+    <p class="tag" data-de="Wie das Bild aus bis zu acht Ebenen entsteht.">How the picture is built from up to eight layers.</p>
+    <h2 id="layers" data-de="Ebenen">Layers</h2><p data-de="Ein Projekt hat eine bis acht Ebenen. Die unterste ist die Basis, die darüber liegen obendrauf. Jede Ebene spielt einen Clip aus ihrer Zeile im Clip-Raster.">A project has one to eight layers. The bottom layer is the base, the ones above lie on top of it. Each layer plays one clip at a time from its row in the clip grid.</p><ul><li><b>+ Clips</b><span data-de=" am Ende einer Zeile öffnet die Bibliothek: Ein Visual, eine Kamera, ein Video oder eine Grafik antippen nimmt es in die Zeile auf, nochmal antippen nimmt es heraus."> at the end of a row opens the library: tap a visual, a camera, a video or a graphic to add it to the row, tap again to remove it.</span></li><li data-de="Einen Clip anklicken startet ihn, nochmal klicken stoppt ihn. Der laufende Clip hat einen grünen Rahmen.">Click a clip to start it, click it again to stop it. The running clip has a green frame.</li><li><b data-de="+ Ebene">+ Layer</b><span data-de=" fügt eine Ebene hinzu, das × neben dem Namen entfernt sie. Den Namen änderst du im Ebenen-Panel."> adds a layer, the × next to its name removes it. Layer names can be changed in the layer panel.</span></li></ul><h2 id="per-layer" data-de="Je Ebene">Per layer</h2><div class="table"><table><thead><tr><th data-de="Einstellung">Setting</th><th data-de="Was sie macht">What it does</th></tr></thead><tbody><tr><td><span data-de="Deckkraft">Opacity</span></td><td><span data-de="der Fader neben dem Namen und in der Fader-Leiste">the fader next to the name and in the fader bar</span></td></tr><tr><td><span data-de="Mischmodus">Blend mode</span></td><td><span data-de="Normal, Addieren, Bildschirm oder Multiplizieren. Addieren und Bildschirm machen dunkle Stellen durchsichtig.">Normal, Add, Screen or Multiply. Add and Screen make dark parts transparent.</span></td></tr><tr><td><span data-de="Farbquelle">Color source</span></td><td><span data-de="Original, ein Farbslot, mehrere Slots, ein Verlauf oder ein Regenbogen">Original, one color slot, several slots, a gradient or a rainbow</span></td></tr><tr><td><span data-de="Antrieb">Drive</span></td><td><b>Auto</b><span data-de=": Audio, wenn der Audio-Eingang auf diese Ebene wirkt, sonst Takt. ">: audio when the audio input works on this layer, otherwise the beat. </span><b data-de="Takt">Beat</b><span data-de=": nur das BPM. ">: only the BPM. </span><b>Audio</b><span data-de=": nur das Audio. ">: only the audio. </span><b data-de="Statisch">Static</b><span data-de=": kein Pulsieren.">: no pulsing.</span></td></tr><tr><td><span data-de="Lage">Position</span></td><td><span data-de="X, Y, Größe und Drehung jedes Visuals; das Visual füllt weiter den ganzen Bildschirm">X, Y, size and rotation of every visual; the visual still fills the whole screen</span></td></tr><tr><td><span data-de="Effekte">Effects</span></td><td><span data-de="ein Stapel von bis zu sechs Effekten, siehe ">a stack of up to six effects, see </span><a href="wiki-effects.html" data-de="Effekte">effects</a></td></tr></tbody></table></div><h2 id="color-slots" data-de="Farbslots">Color slots</h2><p data-de="Rechts stehen fünf Farbslots A–E. Sie sind die Farben der Show: Das Pult setzt sie über DMX (Dimmer und RGB je Slot), MIDI oder OSC, und jede Ebene, die einen Slot nutzt, wechselt mit. Bei mehreren Slots bekommt bei Laser-Looks jeder Strahl eine eigene Farbe, alle acht Beats rücken sie weiter.">Five color slots A–E sit on the right. They are the colors of the show: the desk sets them over DMX (dimmer and RGB per slot), MIDI or OSC, and every layer that uses a slot changes with them. With several slots, laser looks give each beam its own color and move them on every eight beats.</p><h2 id="laser-layers" data-de="Laser-Ebenen">Laser layers</h2><p><span data-de="Die Laser-Looks sind für einen Beamer im Nebel gemacht: Ein Punkt im Bild wird ein Strahl, eine Linie eine Lichtfläche, ein Kreis ein Kegel. Sie liegen von sich aus im oberen Drittel. ">The laser looks are made for a projector in haze: a point in the picture becomes a beam, a line a sheet of light, a circle a cone. They lie in the upper third by themselves. </span><b data-de="Stärke">Strength</b><span data-de=" macht Linien dicker, damit sie mehr Licht tragen. Mit "> makes lines thicker so they carry more light. With </span><b data-de="XY-Override">XY override</b><span data-de=" stoppt die Eigenbewegung, und X/Y setzen die Lage direkt, etwa aus Moving-Head-Kanälen des Pults."> their own movement stops and X/Y set the position directly, for example from moving-head channels of the desk.</span></p><div class="adm alpha"><p class="adm-t"><span class="adm-i" aria-hidden="true">α</span><span data-de="Alpha: ungetestet">Alpha: untested</span></p><p data-de="Die Laser-Looks wurden noch nicht mit einem Beamer in echtem Nebel ausprobiert.">The laser looks have not been tried with a projector in real haze yet.</p></div>
+    <div class="adm community"><p class="adm-t"><span class="adm-i" aria-hidden="true">💬</span><span data-de="Fehlt etwas oder stimmt etwas nicht?">Something missing or wrong?</span></p><p><span data-de="Frag auf unserem ">Ask in our </span><a href="https://discord.gg/N6DMca4Bjk" rel="noopener">Discord</a><span data-de=" oder "> or </span><a href="wiki-help.html#report" data-de="melde ein Problem">report a problem</a><span data-de=". Am meisten helfen Berichte von echten Geräten, auch wenn etwas nicht klappt.">. Reports from real gear help most, also when something does not work.</span></p></div>
+    <nav class="dpn"><a class="prev" href="wiki-use-cases.html"><small data-de="Zurück">Previous</small><span data-de="← Anwendungsfälle">← Use cases</span></a><a class="next" href="wiki-visuals.html"><small data-de="Weiter">Next</small><span data-de="Die 150 Visuals →">The 150 visuals →</span></a></nav>
+  </main>
+</div>
+<footer>
+  <div class="wrap">
+    <p data-de="VJ-Link ist kostenlos und wird ohne Gewährleistung bereitgestellt. Die Personen-Erkennung nutzt MediaPipe (Apache-2.0). VJ-Link ist kein offizielles Produkt von MA Lighting, Daslight, Akai, Korg, Ableton, OBS oder Google. Alle Produktnamen gehören ihren Inhabern und dienen nur der Beschreibung der Kompatibilität.">VJ-Link is free and provided without warranty. Person detection uses MediaPipe (Apache-2.0). VJ-Link is not an official product of MA Lighting, Daslight, Akai, Korg, Ableton, OBS or Google. All product names belong to their owners and are used only to describe compatibility.</p>
+    <p><a href="https://github.com/skyplayser/VJ-LINK">GitHub</a> · <a href="https://github.com/skyplayser/VJ-LINK/releases" data-de="Versionen">Releases</a> · <a href="wiki.html">Wiki</a> · <a href="wiki-help.html" data-de="Hilfe">Help</a> · <a href="https://discord.gg/N6DMca4Bjk" rel="noopener">Discord</a> · <a href="https://github.com/skyplayser/VJ-LINK/issues">Issues</a> · <a href="https://skyplayser.github.io/LJ-Link/" data-de-href="https://skyplayser.github.io/LJ-Link/de/" data-de="Probier auch: LJ-Link">Try also: LJ-Link</a> · <a href="impressum.html">Impressum</a> · <a href="datenschutz.html" data-de="Datenschutz">Privacy</a></p>
+    <p class="credit">Idea SKYPLAYSER/NEXTPHILM<br>Prompted with ❤️ made by Claude</p>
+  </div>
+</footer>
+
+<div class="viewer" id="viewer" role="dialog" aria-label="Picture"><img alt=""></div>
+
+<script>
+  (function () {
+    var b = document.getElementById("dside-btn"), s = document.getElementById("dside");
+    if (b && s) b.addEventListener("click", function () { var o = s.classList.toggle("open"); b.setAttribute("aria-expanded", o); });
+    // Keep the current page visible in the side navigation and the current section in the tabs.
+    var on = document.querySelector(".dlink.on"), side = document.getElementById("dside");
+    if (on && side && side.scrollHeight > side.clientHeight) side.scrollTop = on.offsetTop - side.clientHeight / 3;
+    var tab = document.querySelector(".dtab.on");
+    if (tab) tab.parentNode.scrollLeft = tab.offsetLeft - 16;
+    if (location.hash) { var d = document.querySelector(location.hash); if (d && d.tagName === "DETAILS") d.open = true; }
+  })();
+</script>
+<script>
+  (function () {
+    // Language: English at /, German at /de/ (built from data-de). A saved choice wins, otherwise a German
+    // browser goes from / to /de/ on the first visit. The button is a plain link, so search engines see both.
+    var langBtn = document.getElementById("lang");
+    var lang = document.documentElement.lang === "de" ? "de" : "en";
+    var saved = null;
+    try { saved = localStorage.getItem("vj-lang"); } catch (e) { /* private mode */ }
+    var want = saved || ((navigator.language || "en").toLowerCase().indexOf("de") === 0 ? "de" : "en");
+    if (langBtn && want !== lang && (saved || lang === "en")) { location.replace(langBtn.href + location.hash); return; }
+    if (langBtn) langBtn.addEventListener("click", function () {
+      try { localStorage.setItem("vj-lang", lang === "de" ? "en" : "de"); } catch (e) { /* private mode */ }
+    });
+
+    // The download that fits this computer is highlighted and used by the big button.
+    var ua = navigator.userAgent, os = /Windows/.test(ua) ? "win" : /Mac/.test(ua) ? "mac-arm" : null;
+    var card = os && document.querySelector('.dl .card[data-os="' + os + '"]');
+    if (card) {
+      card.classList.add("suggested");
+      var hero = document.getElementById("hero-download");
+      if (hero && os === "win") hero.href = card.querySelector("a").href;
+    }
+
+    // The newest version, from GitHub (only on pages that show it).
+    var heroV = document.getElementById("hero-version"), dlV = document.getElementById("dl-version");
+    if (heroV || dlV) fetch("https://api.github.com/repos/skyplayser/VJ-LINK/releases/latest")
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        if (!j || !j.tag_name) return;
+        var v = j.tag_name.replace(/^v/, ""), de = lang === "de";
+        if (heroV) heroV.textContent = "Version " + v + " · ";
+        if (dlV) dlV.textContent = de ? "Aktuelle Version: " + v + "." : "Current version: " + v + ".";
+      })
+      .catch(function () { /* offline: no version line */ });
+
+    // Phone menu.
+    var menu = document.getElementById("menu"), nav = document.getElementById("nav");
+    if (menu && nav) {
+      menu.onclick = function () { var open = nav.classList.toggle("open"); menu.setAttribute("aria-expanded", open); };
+      nav.addEventListener("click", function (e) { if (e.target.tagName === "A") nav.classList.remove("open"); });
+    }
+
+    // Pictures open large.
+    var viewer = document.getElementById("viewer");
+    if (viewer) {
+      document.querySelectorAll(".gallery img, .split img, .dfig img").forEach(function (img) {
+        img.addEventListener("click", function () { viewer.querySelector("img").src = img.src; viewer.classList.add("open"); });
+      });
+      viewer.onclick = function () { viewer.classList.remove("open"); };
+      document.addEventListener("keydown", function (e) { if (e.key === "Escape") viewer.classList.remove("open"); });
+    }
+  })();
+</script>
+</body>
+</html>

@@ -124,8 +124,9 @@ Das Programm startet in der Sprache deines Systems; im Startbildschirm schaltest
 ## Lichtpult
 
 VJ-Link nimmt Art-Net oder sACN auf einem Universe an. Das feste Profil *Standard* hat 91 Kanäle: Master, Strobe, Szene, Blende,
-Tempo-Faktor, Effekt-Intensität, Auto, Blackout, die fünf Farbslots und je Ebene Deckkraft, Clip, Farbquelle, Geschwindigkeit,
-drei Effekte, Mischmodus und Antrieb; die Kanäle 71–91 steuern die Bilder des Projektionsmappings. Es wirken nur Kanäle, die
+Tempo-Faktor, Effekt-Intensität, Auto und Blackout; die fünf Farbslots mit Dimmer und RGB; für die Ebenen 1–4 Deckkraft,
+Clip-Bank, Clip, Farbquelle, Geschwindigkeit, drei Effekte, Strobe und Mischmodus; Strobe-Intensität und -Modus; und auf den
+Kanälen 71–91 die Bilder des Projektionsmappings. Alles andere (Ebenen 5–8, jeder weitere Regler) lässt sich frei zuweisen. Es wirken nur Kanäle, die
 sich ändern – Maus, MIDI und Pult arbeiten also nebeneinander.
 
 | Pult | Weg | Stand |

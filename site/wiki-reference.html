@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-de="Referenz: OSC-Adressen, Element-IDs, Tasten und Ports | VJ-Link Wiki">Reference: OSC addresses, control ids, keys and ports | VJ-Link Wiki</title>
+<meta name="description" content="VJ-Link reference: all OSC addresses, control ids for /vjlink/ctl, keyboard shortcuts and network ports for Art-Net, sACN, OSC, LJ-Link and Carabiner." data-de-content="VJ-Link-Referenz: alle OSC-Adressen, Element-IDs für /vjlink/ctl, Tastenkürzel und Netzwerk-Ports für Art-Net, sACN, OSC, LJ-Link und Carabiner.">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+<meta name="author" content="SKYPLAYSER / NEXTPHILM">
+<link rel="canonical" href="https://skyplayser.github.io/VJ-LINK/wiki-reference.html" data-de-href="https://skyplayser.github.io/VJ-LINK/de/wiki-reference.html">
+<link rel="alternate" hreflang="en" href="https://skyplayser.github.io/VJ-LINK/wiki-reference.html">
+<link rel="alternate" hreflang="de" href="https://skyplayser.github.io/VJ-LINK/de/wiki-reference.html">
+<link rel="alternate" hreflang="x-default" href="https://skyplayser.github.io/VJ-LINK/wiki-reference.html">
+<link rel="icon" href="images/logo.png" type="image/png">
+<link rel="apple-touch-icon" href="images/logo.png">
+<meta name="theme-color" content="#07090c">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="VJ-Link">
+<meta property="og:locale" content="en_US" data-de-content="de_DE">
+<meta property="og:locale:alternate" content="de_DE" data-de-content="en_US">
+<meta property="og:title" content="VJ-Link Wiki – Reference: OSC addresses, control ids, keys and ports" data-de-content="VJ-Link Wiki – Referenz: OSC-Adressen, Element-IDs, Tasten und Ports">
+<meta property="og:description" content="VJ-Link reference: all OSC addresses, control ids for /vjlink/ctl, keyboard shortcuts and network ports for Art-Net, sACN, OSC, LJ-Link and Carabiner." data-de-content="VJ-Link-Referenz: alle OSC-Adressen, Element-IDs für /vjlink/ctl, Tastenkürzel und Netzwerk-Ports für Art-Net, sACN, OSC, LJ-Link und Carabiner.">
+<meta property="og:image" content="https://skyplayser.github.io/VJ-LINK/images/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://skyplayser.github.io/VJ-LINK/wiki-reference.html" data-de-content="https://skyplayser.github.io/VJ-LINK/de/wiki-reference.html">
+<meta name="twitter:card" content="summary_large_image">
+<!-- structured-data -->
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="docs-page">
+<header class="top">
+  <div class="wrap dwrap">
+    <a href="./" class="brand" style="display:flex;align-items:center;gap:10px"><img src="images/logo.png" alt="" width="32" height="32"><span>VJ-Link</span><span class="brand-sub">Wiki</span></a>
+    <button class="menu-btn" id="menu" aria-label="Menu" aria-expanded="false">&#9776;</button>
+    <nav id="nav">
+      <a href="./#features" data-de="Funktionen">Features</a>
+      <a href="./#download">Download</a>
+      <a href="wiki.html">Wiki</a>
+      <a href="wiki-help.html" data-de="Hilfe">Help</a>
+      <a href="https://discord.gg/N6DMca4Bjk" rel="noopener">Discord</a>
+      <a href="https://github.com/skyplayser/VJ-LINK">GitHub</a>
+      <a class="lang" id="lang" href="de/wiki-reference.html" hreflang="de" lang="de" title="Deutsch" data-de-href="../wiki-reference.html" data-de-hreflang="en" data-de-lang="en" data-de-title="English" data-de="EN" style="text-decoration:none">DE</a>
+    </nav>
+  </div>
+</header>
+<nav class="dtabs" aria-label="Wiki sections" data-de-aria-label="Wiki-Bereiche"><div class="dwrap"><a class="dtab" href="wiki.html" data-de="Start">Start</a><a class="dtab" href="wiki-layers.html" data-de="Visuals">Visuals</a><a class="dtab" href="wiki-desk.html" data-de="Steuerung">Control</a><a class="dtab" href="wiki-outputs.html" data-de="Ausgänge">Outputs</a><a class="dtab" href="wiki-scenes.html" data-de="Show">Show</a><a class="dtab on" href="wiki-help.html" data-de="Hilfe">Help</a></div></nav>
+<div class="docs dwrap">
+  <button class="dside-btn" id="dside-btn" aria-controls="dside" aria-expanded="false"><span aria-hidden="true">&#9776;</span> <span data-de="Inhalt des Wikis">Wiki contents</span></button>
+  <aside class="dside" id="dside"><nav aria-label="Wiki pages" data-de-aria-label="Wiki-Seiten"><p class="dgroup">Start</p><a class="dlink" href="wiki.html" data-de="Übersicht">Overview</a><a class="dlink" href="wiki-quickstart.html" data-de="Schnellstart">Quick start</a><a class="dlink" href="wiki-install.html" data-de="Installieren und aktualisieren">Install and update</a><a class="dlink" href="wiki-interface.html" data-de="Die Oberfläche">The interface</a><a class="dlink" href="wiki-use-cases.html" data-de="Anwendungsfälle">Use cases</a><p class="dgroup">Visuals</p><a class="dlink" href="wiki-layers.html" data-de="Ebenen und Clips">Layers and clips</a><a class="dlink" href="wiki-visuals.html" data-de="Die 150 Visuals">The 150 visuals</a><a class="dlink" href="wiki-effects.html" data-de="Effekte">Effects</a><a class="dlink" href="wiki-media.html" data-de="Logos, Videos und Text">Logos, videos and text</a><a class="dlink" href="wiki-camera.html" data-de="Kameras und Personen-Erkennung">Cameras and person detection</a><p class="dgroup" data-de="Steuerung">Control</p><a class="dlink" href="wiki-desk.html" data-de="Lichtpult">Light desk</a><a class="dlink" href="wiki-mapping.html" data-de="Mapping: Tastatur, MIDI, DMX, OSC">Mapping: keyboard, MIDI, DMX, OSC</a><a class="dlink" href="wiki-tempo.html" data-de="Tempo und Takt">Tempo and beat</a><a class="dlink" href="wiki-ljlink.html" data-de="VJ-Link und LJ-Link">VJ-Link and LJ-Link</a><a class="dlink" href="wiki-modulation.html" data-de="Modulation">Modulation</a><p class="dgroup" data-de="Ausgänge">Outputs</p><a class="dlink" href="wiki-outputs.html" data-de="Bildschirme und Leinwand">Screens and canvas</a><a class="dlink" href="wiki-mapping-projection.html" data-de="Projektionsmapping">Projection mapping</a><p class="dgroup">Show</p><a class="dlink" href="wiki-scenes.html" data-de="Szenen">Scenes</a><a class="dlink" href="wiki-show.html" data-de="SHOW und Timeline">SHOW and timeline</a><a class="dlink" href="wiki-timecode.html" data-de="Timecode">Timecode</a><a class="dlink" href="wiki-projects.html" data-de="Projekte">Projects</a><p class="dgroup" data-de="Hilfe">Help</p><a class="dlink" href="wiki-help.html" data-de="Fehlersuche">Troubleshooting</a><a class="dlink on" href="wiki-reference.html" aria-current="page" data-de="Referenz">Reference</a><div class="dsub"><a href="#osc" data-de="OSC">OSC</a><a href="#keyboard" data-de="Tastatur">Keyboard</a><a href="#network-ports" data-de="Netzwerk-Ports">Network ports</a></div><a class="dlink" href="wiki-glossary.html" data-de="Glossar">Glossary</a></nav></aside>
+  <main class="dbody article wiki">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="wiki.html">Wiki</a> › <span data-de="Hilfe">Help</span> › <span data-de="Referenz">Reference</span></nav>
+    <h1><span class="kicker" data-de="Hilfe">Help</span><span data-de="Referenz">Reference</span></h1>
+    <p class="tag" data-de="Alles zum Nachschlagen.">Everything to look up.</p>
+    <h2 id="osc">OSC</h2><p><span data-de="UDP-Port ">UDP port </span><b>8000</b><span data-de=". Werte 0–1, 0–127 oder 0–255.">. Values 0–1, 0–127 or 0–255.</span></p><div class="table"><table><thead><tr><th data-de="Adresse">Address</th><th>Argument</th><th data-de="Macht">Does</th></tr></thead><tbody><tr><td><code>/vjlink/ctl/&lt;id&gt;</code></td><td><span data-de="Wert">value</span></td><td><span data-de="setzt jedes Element, IDs siehe unten">sets any control, see the ids below</span></td></tr><tr><td><code>/vjlink/scene/go</code></td><td><span data-de="Nummer ab 1">number from 1</span></td><td><span data-de="ruft eine Szene ab">recalls a scene</span></td></tr><tr><td><code>/vjlink/scene/next</code>, <code>/vjlink/scene/prev</code></td><td>–</td><td><span data-de="nächste oder vorige Szene">next or previous scene</span></td></tr><tr><td><code>/vjlink/master/dimmer</code></td><td>0–1</td><td><span data-de="Master">master</span></td></tr><tr><td><code>/vjlink/blackout</code></td><td>0 / 1</td><td><span data-de="Blackout">blackout</span></td></tr><tr><td><code>/vjlink/bpm</code></td><td>BPM</td><td><span data-de="setzt das Tempo (zum Beispiel 128)">sets the tempo (for example 128)</span></td></tr><tr><td><code>/vjlink/tap</code></td><td>–</td><td><span data-de="Tap-Tempo">tap tempo</span></td></tr><tr><td><code>/vjlink/layer/&lt;n&gt;/opacity</code></td><td>0–1</td><td><span data-de="Deckkraft der Ebene n">opacity of layer n</span></td></tr><tr><td><code>/vjlink/layer/&lt;n&gt;/clip</code></td><td><span data-de="Nummer">number</span></td><td><span data-de="startet das Visual mit dieser Nummer auf Ebene n">starts the visual with this number on layer n</span></td></tr><tr><td><code>/vjlink/slot/&lt;a–e&gt;/rgb</code></td><td>r g b</td><td><span data-de="setzt einen Farbslot">sets a color slot</span></td></tr></tbody></table></div><h3 id="control-ids" data-de="Element-IDs">Control ids</h3><div class="table"><table><thead><tr><th data-de="ID">Id</th><th data-de="Element">Control</th></tr></thead><tbody><tr><td><code>master</code>, <code>blackout</code>, <code>fx.master</code></td><td><span data-de="Master, Blackout, Effekt-Master">master, blackout, effect master</span></td></tr><tr><td><code>strobe.on</code>, <code>strobe.flash</code>, <code>strobe.white</code>, <code>strobe.whiteFlash</code>, <code>blinder</code>, <code>strobe.sync</code>, <code>strobe.speed</code>, <code>strobe.intensity</code></td><td><span data-de="Strobe-Tasten und -Fader">strobe buttons and faders</span></td></tr><tr><td><code>tempo.tap</code>, <code>tempo.bpm</code>, <code>tempo.factor</code>, <code>transition.beats</code></td><td><span data-de="Tempo und Blende">tempo and transition</span></td></tr><tr><td><code>layer.&lt;n&gt;.opacity</code>, <code>.color</code>, <code>.blend</code>, <code>.drive</code>, <code>.clear</code>, <code>.fx.1</code>–<code>.fx.3</code>, <code>.laser.x</code>, <code>.laser.y</code>, <code>.laser.size</code>, <code>.laser.rot</code>, <code>.laser.thick</code>, <code>.laser.xy</code></td><td><span data-de="je Ebene 1–8">per layer 1–8</span></td></tr><tr><td><code>slot.&lt;A–E&gt;.hue</code>, <code>slot.&lt;A–E&gt;.r</code>, <code>.g</code>, <code>.b</code></td><td><span data-de="Farbslots">color slots</span></td></tr><tr><td><code>scene.&lt;1–32&gt;</code>, <code>scene.next</code>, <code>scene.prev</code>, <code>scene.auto</code></td><td><span data-de="Szenen">scenes</span></td></tr><tr><td><code>show.go</code>, <code>show.back</code>, <code>show.stop</code>, <code>tc.start</code>, <code>tc.stop</code>, <code>tc.zero</code></td><td><span data-de="SHOW und Timecode">SHOW and timecode</span></td></tr><tr><td><code>test.toggle</code>, <code>test.next</code>, <code>test.prev</code></td><td><span data-de="Testbilder">test patterns</span></td></tr><tr><td><code>bild.&lt;1–5&gt;.hell</code>, <code>bild.&lt;n&gt;.e&lt;k&gt;</code>, <code>bild.&lt;n&gt;.bearbeiten</code></td><td><span data-de="Bilder des Projektionsmappings">pictures of the projection mapping</span></td></tr><tr><td><code>clip.&lt;layer&gt;.&lt;clip id&gt;</code></td><td><span data-de="einen Clip auf einer Ebene starten">start a clip on a layer</span></td></tr></tbody></table></div><h2 id="keyboard" data-de="Tastatur">Keyboard</h2><div class="table"><table><thead><tr><th data-de="Taste">Key</th><th data-de="Macht">Does</th></tr></thead><tbody><tr><td><span data-de="Leertaste">Space</span></td><td><span data-de="WEITER in der SHOW">GO in SHOW</span></td></tr><tr><td>1–9</td><td><span data-de="Szene abrufen">recall scene</span></td></tr><tr><td>← →</td><td><span data-de="vorige / nächste Szene">previous / next scene</span></td></tr><tr><td>⇧⌘K, ⇧⌘M, ⇧⌘D, ⇧⌘O</td><td><span data-de="Mapping für Tastatur, MIDI, DMX, OSC">mapping for keyboard, MIDI, DMX, OSC</span></td></tr><tr><td>⇧⌘L</td><td><span data-de="Modulation">modulation</span></td></tr><tr><td>⌘N, ⌘O, ⌘S, ⇧⌘S</td><td><span data-de="neu, öffnen, speichern, speichern unter">new, open, save, save as</span></td></tr><tr><td>Esc</td><td><span data-de="schließt Panels, beendet Mapping und einen Ausgang auf einem einzelnen Bildschirm">closes panels, ends mapping and an output on a single screen</span></td></tr></tbody></table></div><h2 id="network-ports" data-de="Netzwerk-Ports">Network ports</h2><div class="table"><table><thead><tr><th>Port</th><th data-de="Zweck">Use</th></tr></thead><tbody><tr><td>UDP 6454</td><td><span data-de="Art-Net rein, Art-Net-Timecode rein und raus">Art-Net in, Art-Net timecode in and out</span></td></tr><tr><td>UDP 5568</td><td><span data-de="sACN rein (Multicast)">sACN in (multicast)</span></td></tr><tr><td>UDP 8000</td><td><span data-de="OSC rein">OSC in</span></td></tr><tr><td>TCP 8080</td><td><span data-de="LJ-Link (VJ-Link verbindet sich dorthin)">LJ-Link (VJ-Link connects to it)</span></td></tr><tr><td>TCP 17000</td><td><span data-de="Carabiner für Ableton Link (lokal)">Carabiner for Ableton Link (local)</span></td></tr><tr><td>TCP 9099</td><td><span data-de="WebSocket rein für eigene Anbindungen">WebSocket in for own integrations</span></td></tr></tbody></table></div>
+    <div class="adm community"><p class="adm-t"><span class="adm-i" aria-hidden="true">💬</span><span data-de="Fehlt etwas oder stimmt etwas nicht?">Something missing or wrong?</span></p><p><span data-de="Frag auf unserem ">Ask in our </span><a href="https://discord.gg/N6DMca4Bjk" rel="noopener">Discord</a><span data-de=" oder "> or </span><a href="wiki-help.html#report" data-de="melde ein Problem">report a problem</a><span data-de=". Am meisten helfen Berichte von echten Geräten, auch wenn etwas nicht klappt.">. Reports from real gear help most, also when something does not work.</span></p></div>
+    <nav class="dpn"><a class="prev" href="wiki-help.html"><small data-de="Zurück">Previous</small><span data-de="← Fehlersuche">← Troubleshooting</span></a><a class="next" href="wiki-glossary.html"><small data-de="Weiter">Next</small><span data-de="Glossar →">Glossary →</span></a></nav>
+  </main>
+</div>
+<footer>
+  <div class="wrap">
+    <p data-de="VJ-Link ist kostenlos und wird ohne Gewährleistung bereitgestellt. Die Personen-Erkennung nutzt MediaPipe (Apache-2.0). VJ-Link ist kein offizielles Produkt von MA Lighting, Daslight, Akai, Korg, Ableton, OBS oder Google. Alle Produktnamen gehören ihren Inhabern und dienen nur der Beschreibung der Kompatibilität.">VJ-Link is free and provided without warranty. Person detection uses MediaPipe (Apache-2.0). VJ-Link is not an official product of MA Lighting, Daslight, Akai, Korg, Ableton, OBS or Google. All product names belong to their owners and are used only to describe compatibility.</p>
+    <p><a href="https://github.com/skyplayser/VJ-LINK">GitHub</a> · <a href="https://github.com/skyplayser/VJ-LINK/releases" data-de="Versionen">Releases</a> · <a href="wiki.html">Wiki</a> · <a href="wiki-help.html" data-de="Hilfe">Help</a> · <a href="https://discord.gg/N6DMca4Bjk" rel="noopener">Discord</a> · <a href="https://github.com/skyplayser/VJ-LINK/issues">Issues</a> · <a href="https://skyplayser.github.io/LJ-Link/" data-de-href="https://skyplayser.github.io/LJ-Link/de/" data-de="Probier auch: LJ-Link">Try also: LJ-Link</a> · <a href="impressum.html">Impressum</a> · <a href="datenschutz.html" data-de="Datenschutz">Privacy</a></p>
+    <p class="credit">Idea SKYPLAYSER/NEXTPHILM<br>Prompted with ❤️ made by Claude</p>
+  </div>
+</footer>
+
+<div class="viewer" id="viewer" role="dialog" aria-label="Picture"><img alt=""></div>
+
+<script>
+  (function () {
+    var b = document.getElementById("dside-btn"), s = document.getElementById("dside");
+    if (b && s) b.addEventListener("click", function () { var o = s.classList.toggle("open"); b.setAttribute("aria-expanded", o); });
+    // Keep the current page visible in the side navigation and the current section in the tabs.
+    var on = document.querySelector(".dlink.on"), side = document.getElementById("dside");
+    if (on && side && side.scrollHeight > side.clientHeight) side.scrollTop = on.offsetTop - side.clientHeight / 3;
+    var tab = document.querySelector(".dtab.on");
+    if (tab) tab.parentNode.scrollLeft = tab.offsetLeft - 16;
+    if (location.hash) { var d = document.querySelector(location.hash); if (d && d.tagName === "DETAILS") d.open = true; }
+  })();
+</script>
+<script>
+  (function () {
+    // Language: English at /, German at /de/ (built from data-de). A saved choice wins, otherwise a German
+    // browser goes from / to /de/ on the first visit. The button is a plain link, so search engines see both.
+    var langBtn = document.getElementById("lang");
+    var lang = document.documentElement.lang === "de" ? "de" : "en";
+    var saved = null;
+    try { saved = localStorage.getItem("vj-lang"); } catch (e) { /* private mode */ }
+    var want = saved || ((navigator.language || "en").toLowerCase().indexOf("de") === 0 ? "de" : "en");
+    if (langBtn && want !== lang && (saved || lang === "en")) { location.replace(langBtn.href + location.hash); return; }
+    if (langBtn) langBtn.addEventListener("click", function () {
+      try { localStorage.setItem("vj-lang", lang === "de" ? "en" : "de"); } catch (e) { /* private mode */ }
+    });
+
+    // The download that fits this computer is highlighted and used by the big button.
+    var ua = navigator.userAgent, os = /Windows/.test(ua) ? "win" : /Mac/.test(ua) ? "mac-arm" : null;
+    var card = os && document.querySelector('.dl .card[data-os="' + os + '"]');
+    if (card) {
+      card.classList.add("suggested");
+      var hero = document.getElementById("hero-download");
+      if (hero && os === "win") hero.href = card.querySelector("a").href;
+    }
+
+    // The newest version, from GitHub (only on pages that show it).
+    var heroV = document.getElementById("hero-version"), dlV = document.getElementById("dl-version");
+    if (heroV || dlV) fetch("https://api.github.com/repos/skyplayser/VJ-LINK/releases/latest")
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        if (!j || !j.tag_name) return;
+        var v = j.tag_name.replace(/^v/, ""), de = lang === "de";
+        if (heroV) heroV.textContent = "Version " + v + " · ";
+        if (dlV) dlV.textContent = de ? "Aktuelle Version: " + v + "." : "Current version: " + v + ".";
+      })
+      .catch(function () { /* offline: no version line */ });
+
+    // Phone menu.
+    var menu = document.getElementById("menu"), nav = document.getElementById("nav");
+    if (menu && nav) {
+      menu.onclick = function () { var open = nav.classList.toggle("open"); menu.setAttribute("aria-expanded", open); };
+      nav.addEventListener("click", function (e) { if (e.target.tagName === "A") nav.classList.remove("open"); });
+    }
+
+    // Pictures open large.
+    var viewer = document.getElementById("viewer");
+    if (viewer) {
+      document.querySelectorAll(".gallery img, .split img, .dfig img").forEach(function (img) {
+        img.addEventListener("click", function () { viewer.querySelector("img").src = img.src; viewer.classList.add("open"); });
+      });
+      viewer.onclick = function () { viewer.classList.remove("open"); };
+      document.addEventListener("keydown", function (e) { if (e.key === "Escape") viewer.classList.remove("open"); });
+    }
+  })();
+</script>
+</body>
+</html>

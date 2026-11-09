@@ -120,8 +120,9 @@ The program starts in the language of your system; the start screen switches bet
 ## Light desk
 
 VJ-Link takes Art-Net or sACN on one universe. The fixed profile *Standard* has 91 channels: master, strobe, scene, transition,
-tempo factor, effect intensity, auto, blackout, the five color slots, and per layer opacity, clip, color source, speed, three
-effects, blend mode and drive; channels 71–91 drive the pictures of the projection mapping. Only channels that change take
+tempo factor, effect intensity, auto and blackout; the five color slots with dimmer and RGB; for layers 1–4 opacity, clip bank,
+clip, color source, speed, three effects, strobe and blend mode; strobe intensity and mode; and on channels 71–91 the pictures of
+the projection mapping. Everything else (layers 5–8, every other control) can be mapped freely. Only channels that change take
 effect, so the mouse, MIDI and the desk can work side by side.
 
 | Desk | How | State |

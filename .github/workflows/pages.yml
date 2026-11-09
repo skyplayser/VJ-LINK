@@ -1,0 +1,51 @@
+name: Website
+
+# Publishes the folder site/ with GitHub Pages. To switch it on: enable Pages once (Settings > Pages > Source:
+# GitHub Actions) and add the repository variable PAGES_ENABLED = true (Settings > Secrets and variables > Actions).
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - "docs/images/**"
+      - ".github/workflows/pages.yml"
+      - ".github/scripts/build_site.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    if: ${{ vars.PAGES_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Screenshots with WebP versions, the German page de/, structured data and the sitemap.
+      - name: Build the site
+        run: |
+          pip install pillow
+          python .github/scripts/build_site.py site docs/images
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

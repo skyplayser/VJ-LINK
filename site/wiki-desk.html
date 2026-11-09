@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-de="Lichtpult anbinden: grandMA, Daslight, Art-Net und sACN | VJ-Link Wiki">Connect a light desk: grandMA, Daslight, Art-Net and sACN | VJ-Link Wiki</title>
+<meta name="description" content="Control VJ-Link from grandMA2, grandMA3, Daslight or any desk over Art-Net or sACN: set the universe and start address, patch the 91-channel profile, full channel list." data-de-content="VJ-Link von grandMA2, grandMA3, Daslight oder jedem Pult über Art-Net oder sACN steuern: Universe und Startadresse einstellen, das 91-Kanal-Profil patchen, vollständige Kanalliste.">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+<meta name="author" content="SKYPLAYSER / NEXTPHILM">
+<link rel="canonical" href="https://skyplayser.github.io/VJ-LINK/wiki-desk.html" data-de-href="https://skyplayser.github.io/VJ-LINK/de/wiki-desk.html">
+<link rel="alternate" hreflang="en" href="https://skyplayser.github.io/VJ-LINK/wiki-desk.html">
+<link rel="alternate" hreflang="de" href="https://skyplayser.github.io/VJ-LINK/de/wiki-desk.html">
+<link rel="alternate" hreflang="x-default" href="https://skyplayser.github.io/VJ-LINK/wiki-desk.html">
+<link rel="icon" href="images/logo.png" type="image/png">
+<link rel="apple-touch-icon" href="images/logo.png">
+<meta name="theme-color" content="#07090c">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="VJ-Link">
+<meta property="og:locale" content="en_US" data-de-content="de_DE">
+<meta property="og:locale:alternate" content="de_DE" data-de-content="en_US">
+<meta property="og:title" content="VJ-Link Wiki – Connect a light desk: grandMA, Daslight, Art-Net and sACN" data-de-content="VJ-Link Wiki – Lichtpult anbinden: grandMA, Daslight, Art-Net und sACN">
+<meta property="og:description" content="Control VJ-Link from grandMA2, grandMA3, Daslight or any desk over Art-Net or sACN: set the universe and start address, patch the 91-channel profile, full channel list." data-de-content="VJ-Link von grandMA2, grandMA3, Daslight oder jedem Pult über Art-Net oder sACN steuern: Universe und Startadresse einstellen, das 91-Kanal-Profil patchen, vollständige Kanalliste.">
+<meta property="og:image" content="https://skyplayser.github.io/VJ-LINK/images/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://skyplayser.github.io/VJ-LINK/wiki-desk.html" data-de-content="https://skyplayser.github.io/VJ-LINK/de/wiki-desk.html">
+<meta name="twitter:card" content="summary_large_image">
+<!-- structured-data -->
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="docs-page">
+<header class="top">
+  <div class="wrap dwrap">
+    <a href="./" class="brand" style="display:flex;align-items:center;gap:10px"><img src="images/logo.png" alt="" width="32" height="32"><span>VJ-Link</span><span class="brand-sub">Wiki</span></a>
+    <button class="menu-btn" id="menu" aria-label="Menu" aria-expanded="false">&#9776;</button>
+    <nav id="nav">
+      <a href="./#features" data-de="Funktionen">Features</a>
+      <a href="./#download">Download</a>
+      <a href="wiki.html">Wiki</a>
+      <a href="wiki-help.html" data-de="Hilfe">Help</a>
+      <a href="https://discord.gg/N6DMca4Bjk" rel="noopener">Discord</a>
+      <a href="https://github.com/skyplayser/VJ-LINK">GitHub</a>
+      <a class="lang" id="lang" href="de/wiki-desk.html" hreflang="de" lang="de" title="Deutsch" data-de-href="../wiki-desk.html" data-de-hreflang="en" data-de-lang="en" data-de-title="English" data-de="EN" style="text-decoration:none">DE</a>
+    </nav>
+  </div>
+</header>
+<nav class="dtabs" aria-label="Wiki sections" data-de-aria-label="Wiki-Bereiche"><div class="dwrap"><a class="dtab" href="wiki.html" data-de="Start">Start</a><a class="dtab" href="wiki-layers.html" data-de="Visuals">Visuals</a><a class="dtab on" href="wiki-desk.html" data-de="Steuerung">Control</a><a class="dtab" href="wiki-outputs.html" data-de="Ausgänge">Outputs</a><a class="dtab" href="wiki-scenes.html" data-de="Show">Show</a><a class="dtab" href="wiki-help.html" data-de="Hilfe">Help</a></div></nav>
+<div class="docs dwrap">
+  <button class="dside-btn" id="dside-btn" aria-controls="dside" aria-expanded="false"><span aria-hidden="true">&#9776;</span> <span data-de="Inhalt des Wikis">Wiki contents</span></button>
+  <aside class="dside" id="dside"><nav aria-label="Wiki pages" data-de-aria-label="Wiki-Seiten"><p class="dgroup">Start</p><a class="dlink" href="wiki.html" data-de="Übersicht">Overview</a><a class="dlink" href="wiki-quickstart.html" data-de="Schnellstart">Quick start</a><a class="dlink" href="wiki-install.html" data-de="Installieren und aktualisieren">Install and update</a><a class="dlink" href="wiki-interface.html" data-de="Die Oberfläche">The interface</a><a class="dlink" href="wiki-use-cases.html" data-de="Anwendungsfälle">Use cases</a><p class="dgroup">Visuals</p><a class="dlink" href="wiki-layers.html" data-de="Ebenen und Clips">Layers and clips</a><a class="dlink" href="wiki-visuals.html" data-de="Die 150 Visuals">The 150 visuals</a><a class="dlink" href="wiki-effects.html" data-de="Effekte">Effects</a><a class="dlink" href="wiki-media.html" data-de="Logos, Videos und Text">Logos, videos and text</a><a class="dlink" href="wiki-camera.html" data-de="Kameras und Personen-Erkennung">Cameras and person detection</a><p class="dgroup" data-de="Steuerung">Control</p><a class="dlink on" href="wiki-desk.html" aria-current="page" data-de="Lichtpult">Light desk</a><div class="dsub"><a href="#set-up" data-de="Einrichten">Set up</a><a href="#channel-list" data-de="Kanalliste">Channel list</a><a href="#more-than-the-profile" data-de="Mehr als das Profil">More than the profile</a></div><a class="dlink" href="wiki-mapping.html" data-de="Mapping: Tastatur, MIDI, DMX, OSC">Mapping: keyboard, MIDI, DMX, OSC</a><a class="dlink" href="wiki-tempo.html" data-de="Tempo und Takt">Tempo and beat</a><a class="dlink" href="wiki-ljlink.html" data-de="VJ-Link und LJ-Link">VJ-Link and LJ-Link</a><a class="dlink" href="wiki-modulation.html" data-de="Modulation">Modulation</a><p class="dgroup" data-de="Ausgänge">Outputs</p><a class="dlink" href="wiki-outputs.html" data-de="Bildschirme und Leinwand">Screens and canvas</a><a class="dlink" href="wiki-mapping-projection.html" data-de="Projektionsmapping">Projection mapping</a><p class="dgroup">Show</p><a class="dlink" href="wiki-scenes.html" data-de="Szenen">Scenes</a><a class="dlink" href="wiki-show.html" data-de="SHOW und Timeline">SHOW and timeline</a><a class="dlink" href="wiki-timecode.html" data-de="Timecode">Timecode</a><a class="dlink" href="wiki-projects.html" data-de="Projekte">Projects</a><p class="dgroup" data-de="Hilfe">Help</p><a class="dlink" href="wiki-help.html" data-de="Fehlersuche">Troubleshooting</a><a class="dlink" href="wiki-reference.html" data-de="Referenz">Reference</a><a class="dlink" href="wiki-glossary.html" data-de="Glossar">Glossary</a></nav></aside>
+  <main class="dbody article wiki">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="wiki.html">Wiki</a> › <span data-de="Steuerung">Control</span> › <span data-de="Lichtpult">Light desk</span></nav>
+    <h1><span class="kicker" data-de="Steuerung">Control</span><span data-de="Lichtpult">Light desk</span></h1>
+    <p class="tag" data-de="VJ-Link wie ein Gerät patchen.">Patch VJ-Link like a fixture.</p>
+    <p><span data-de="VJ-Link hört auf ein Universe ">VJ-Link listens to one universe of </span><b>Art-Net</b><span data-de=" oder "> or </span><b>sACN</b><span data-de=" und verhält sich wie ein Gerät mit 91 Kanälen. Es wirken nur Kanäle, die sich ändern – Maus, MIDI und Pult arbeiten also nebeneinander: Ein Fader, der sich am Pult nicht bewegt, überschreibt nicht, was du von Hand eingestellt hast."> and behaves like a fixture with 91 channels. Only channels that change take effect, so the mouse, MIDI and the desk can work side by side: a fader that does not move on the desk does not overwrite what you set by hand.</span></p><div class="adm beta"><p class="adm-t"><span class="adm-i" aria-hidden="true">β</span><span>Beta</span></p><p data-de="Das Profil ist gebaut und mit Art-Net- und sACN-Sendern getestet, aber noch nicht an einem echten grandMA oder Daslight bestätigt. Sag uns bitte, wie es bei dir läuft.">The profile is built and tested with Art-Net and sACN senders, but not yet confirmed on a real grandMA or Daslight. Please tell us how it works for you.</p></div><h2 id="set-up" data-de="Einrichten">Set up</h2><ol class="dsteps"><li><p data-de="Pult und VJ-Link-Rechner im selben Netz. Unter Windows VJ-Link für private Netzwerke zulassen.">Desk and VJ-Link computer in the same network. On Windows allow VJ-Link for private networks.</p></li><li><p><b data-de="VERBINDEN">CONNECT</b><span data-de=" → "> → set the </span><b data-de="Art-Net-Universe">Art-Net universe</b><span data-de=" (0 ist das erste) oder "> (0 is the first) or the </span><b data-de="sACN-Universe">sACN universe</b><span data-de=" (1 ist das erste) und die "> (1 is the first) and the </span><b data-de="Startadresse">start address</b><span data-de=" einstellen.">.</span></p></li><li><p><b data-de="Kanalliste speichern (CSV)">Save the channel list (CSV)</b><span data-de=" und VJ-Link am Pult als Gerät mit 91 Kanälen anlegen oder 91 Dimmerkanäle patchen."> and create VJ-Link on the desk as a fixture with 91 channels, or patch 91 dimmer channels.</span></p></li><li><p data-de="Einen Fader am Pult bewegen: Die Live-Werte unter VERBINDEN zeigen ihn, die DMX-Anzeige oben wird grün.">Move a fader on the desk: the live values under CONNECT show it, the DMX pill at the top turns green.</p></li></ol><figure class="dfig"><img class="pic" src="images/connect.png" alt="CONNECT tab with live DMX values" data-de-alt="Tab VERBINDEN mit DMX-Live-Werten" loading="lazy"><figcaption data-de="VERBINDEN: Art-Net, sACN, OSC und LJ-Link mit Live-Werten.">CONNECT: Art-Net, sACN, OSC and LJ-Link with live values.</figcaption></figure><h2 id="channel-list" data-de="Kanalliste">Channel list</h2><p data-de="Adressen relativ zur Startadresse (Kanal 1 = Startadresse).">Addresses relative to the start address (channel 1 = start address).</p><div class="table"><table><thead><tr><th data-de="Kanal">Channel</th><th data-de="Funktion">Function</th></tr></thead><tbody><tr><td>1</td><td><span data-de="Master-Dimmer">Master dimmer</span></td></tr><tr><td>2</td><td><span data-de="Strobe Geschwindigkeit (0-7 aus)">Strobe speed (0-7 off)</span></td></tr><tr><td>3</td><td><span data-de="Szene">Scene</span></td></tr><tr><td>4</td><td><span data-de="Übergang">Transition</span></td></tr><tr><td>5</td><td><span data-de="Tempo-Faktor">Tempo factor</span></td></tr><tr><td>6</td><td><span data-de="Effekt-Intensität (gesamt)">Overall effect intensity</span></td></tr><tr><td>7</td><td>Auto-VJ</td></tr><tr><td>8</td><td>Blackout (250-255)</td></tr><tr><td>9</td><td>Slot A Dimmer</td></tr><tr><td>10</td><td><span data-de="Slot A Rot">Slot A Red</span></td></tr><tr><td>11</td><td><span data-de="Slot A Grün">Slot A Green</span></td></tr><tr><td>12</td><td><span data-de="Slot A Blau">Slot A Blue</span></td></tr><tr><td>13</td><td>Slot B Dimmer</td></tr><tr><td>14</td><td><span data-de="Slot B Rot">Slot B Red</span></td></tr><tr><td>15</td><td><span data-de="Slot B Grün">Slot B Green</span></td></tr><tr><td>16</td><td><span data-de="Slot B Blau">Slot B Blue</span></td></tr><tr><td>17</td><td>Slot C Dimmer</td></tr><tr><td>18</td><td><span data-de="Slot C Rot">Slot C Red</span></td></tr><tr><td>19</td><td><span data-de="Slot C Grün">Slot C Green</span></td></tr><tr><td>20</td><td><span data-de="Slot C Blau">Slot C Blue</span></td></tr><tr><td>21</td><td>Slot D Dimmer</td></tr><tr><td>22</td><td><span data-de="Slot D Rot">Slot D Red</span></td></tr><tr><td>23</td><td><span data-de="Slot D Grün">Slot D Green</span></td></tr><tr><td>24</td><td><span data-de="Slot D Blau">Slot D Blue</span></td></tr><tr><td>25</td><td>Slot E Dimmer</td></tr><tr><td>26</td><td><span data-de="Slot E Rot">Slot E Red</span></td></tr><tr><td>27</td><td><span data-de="Slot E Grün">Slot E Green</span></td></tr><tr><td>28</td><td><span data-de="Slot E Blau">Slot E Blue</span></td></tr><tr><td>29</td><td><span data-de="Ebene 1 Deckkraft">Layer 1 Opacity</span></td></tr><tr><td>30</td><td><span data-de="Ebene 1 Clip-Bank">Layer 1 Clip bank</span></td></tr><tr><td>31</td><td><span data-de="Ebene 1 Clip">Layer 1 Clip</span></td></tr><tr><td>32</td><td><span data-de="Ebene 1 Farbquelle">Layer 1 Color source</span></td></tr><tr><td>33</td><td><span data-de="Ebene 1 Geschwindigkeit">Layer 1 Speed</span></td></tr><tr><td>34</td><td><span data-de="Ebene 1 Effekt 1">Layer 1 Effect 1</span></td></tr><tr><td>35</td><td><span data-de="Ebene 1 Effekt 2">Layer 1 Effect 2</span></td></tr><tr><td>36</td><td><span data-de="Ebene 1 Effekt 3">Layer 1 Effect 3</span></td></tr><tr><td>37</td><td><span data-de="Ebene 1 Strobe">Layer 1 Strobe</span></td></tr><tr><td>38</td><td><span data-de="Ebene 1 Mischmodus">Layer 1 Blend mode</span></td></tr><tr><td>39</td><td><span data-de="Ebene 2 Deckkraft">Layer 2 Opacity</span></td></tr><tr><td>40</td><td><span data-de="Ebene 2 Clip-Bank">Layer 2 Clip bank</span></td></tr><tr><td>41</td><td><span data-de="Ebene 2 Clip">Layer 2 Clip</span></td></tr><tr><td>42</td><td><span data-de="Ebene 2 Farbquelle">Layer 2 Color source</span></td></tr><tr><td>43</td><td><span data-de="Ebene 2 Geschwindigkeit">Layer 2 Speed</span></td></tr><tr><td>44</td><td><span data-de="Ebene 2 Effekt 1">Layer 2 Effect 1</span></td></tr><tr><td>45</td><td><span data-de="Ebene 2 Effekt 2">Layer 2 Effect 2</span></td></tr><tr><td>46</td><td><span data-de="Ebene 2 Effekt 3">Layer 2 Effect 3</span></td></tr><tr><td>47</td><td><span data-de="Ebene 2 Strobe">Layer 2 Strobe</span></td></tr><tr><td>48</td><td><span data-de="Ebene 2 Mischmodus">Layer 2 Blend mode</span></td></tr><tr><td>49</td><td><span data-de="Ebene 3 Deckkraft">Layer 3 Opacity</span></td></tr><tr><td>50</td><td><span data-de="Ebene 3 Clip-Bank">Layer 3 Clip bank</span></td></tr><tr><td>51</td><td><span data-de="Ebene 3 Clip">Layer 3 Clip</span></td></tr><tr><td>52</td><td><span data-de="Ebene 3 Farbquelle">Layer 3 Color source</span></td></tr><tr><td>53</td><td><span data-de="Ebene 3 Geschwindigkeit">Layer 3 Speed</span></td></tr><tr><td>54</td><td><span data-de="Ebene 3 Effekt 1">Layer 3 Effect 1</span></td></tr><tr><td>55</td><td><span data-de="Ebene 3 Effekt 2">Layer 3 Effect 2</span></td></tr><tr><td>56</td><td><span data-de="Ebene 3 Effekt 3">Layer 3 Effect 3</span></td></tr><tr><td>57</td><td><span data-de="Ebene 3 Strobe">Layer 3 Strobe</span></td></tr><tr><td>58</td><td><span data-de="Ebene 3 Mischmodus">Layer 3 Blend mode</span></td></tr><tr><td>59</td><td><span data-de="Ebene 4 Deckkraft">Layer 4 Opacity</span></td></tr><tr><td>60</td><td><span data-de="Ebene 4 Clip-Bank">Layer 4 Clip bank</span></td></tr><tr><td>61</td><td><span data-de="Ebene 4 Clip">Layer 4 Clip</span></td></tr><tr><td>62</td><td><span data-de="Ebene 4 Farbquelle">Layer 4 Color source</span></td></tr><tr><td>63</td><td><span data-de="Ebene 4 Geschwindigkeit">Layer 4 Speed</span></td></tr><tr><td>64</td><td><span data-de="Ebene 4 Effekt 1">Layer 4 Effect 1</span></td></tr><tr><td>65</td><td><span data-de="Ebene 4 Effekt 2">Layer 4 Effect 2</span></td></tr><tr><td>66</td><td><span data-de="Ebene 4 Effekt 3">Layer 4 Effect 3</span></td></tr><tr><td>67</td><td><span data-de="Ebene 4 Strobe">Layer 4 Strobe</span></td></tr><tr><td>68</td><td><span data-de="Ebene 4 Mischmodus">Layer 4 Blend mode</span></td></tr><tr><td>69</td><td><span data-de="Strobe Intensität">Strobe intensity</span></td></tr><tr><td>70</td><td><span data-de="Strobe Modus (0-127 Takt, 128-255 Hz)">Strobe mode (0-127 beat, 128-255 Hz)</span></td></tr><tr><td>71</td><td><span data-de="Bild 1 Helligkeit (Projektionsmapping)">Image 1 brightness (projection mapping)</span></td></tr><tr><td>72</td><td><span data-de="Bild 2 Helligkeit (Projektionsmapping)">Image 2 brightness (projection mapping)</span></td></tr><tr><td>73</td><td><span data-de="Bild 3 Helligkeit (Projektionsmapping)">Image 3 brightness (projection mapping)</span></td></tr><tr><td>74</td><td><span data-de="Bild 4 Helligkeit (Projektionsmapping)">Image 4 brightness (projection mapping)</span></td></tr><tr><td>75</td><td><span data-de="Bild 5 Helligkeit (Projektionsmapping)">Image 5 brightness (projection mapping)</span></td></tr><tr><td>76</td><td><span data-de="Bild 2 Ebene 1 Deckkraft">Image 2 layer 1 opacity</span></td></tr><tr><td>77</td><td><span data-de="Bild 2 Ebene 2 Deckkraft">Image 2 layer 2 opacity</span></td></tr><tr><td>78</td><td><span data-de="Bild 2 Ebene 3 Deckkraft">Image 2 layer 3 opacity</span></td></tr><tr><td>79</td><td><span data-de="Bild 2 Ebene 4 Deckkraft">Image 2 layer 4 opacity</span></td></tr><tr><td>80</td><td><span data-de="Bild 3 Ebene 1 Deckkraft">Image 3 layer 1 opacity</span></td></tr><tr><td>81</td><td><span data-de="Bild 3 Ebene 2 Deckkraft">Image 3 layer 2 opacity</span></td></tr><tr><td>82</td><td><span data-de="Bild 3 Ebene 3 Deckkraft">Image 3 layer 3 opacity</span></td></tr><tr><td>83</td><td><span data-de="Bild 3 Ebene 4 Deckkraft">Image 3 layer 4 opacity</span></td></tr><tr><td>84</td><td><span data-de="Bild 4 Ebene 1 Deckkraft">Image 4 layer 1 opacity</span></td></tr><tr><td>85</td><td><span data-de="Bild 4 Ebene 2 Deckkraft">Image 4 layer 2 opacity</span></td></tr><tr><td>86</td><td><span data-de="Bild 4 Ebene 3 Deckkraft">Image 4 layer 3 opacity</span></td></tr><tr><td>87</td><td><span data-de="Bild 4 Ebene 4 Deckkraft">Image 4 layer 4 opacity</span></td></tr><tr><td>88</td><td><span data-de="Bild 5 Ebene 1 Deckkraft">Image 5 layer 1 opacity</span></td></tr><tr><td>89</td><td><span data-de="Bild 5 Ebene 2 Deckkraft">Image 5 layer 2 opacity</span></td></tr><tr><td>90</td><td><span data-de="Bild 5 Ebene 3 Deckkraft">Image 5 layer 3 opacity</span></td></tr><tr><td>91</td><td><span data-de="Bild 5 Ebene 4 Deckkraft">Image 5 layer 4 opacity</span></td></tr></tbody></table></div><h2 id="more-than-the-profile" data-de="Mehr als das Profil">More than the profile</h2><p><span data-de="Ebenen 5–8 und jedes weitere Element (Laser-Lage, Farbton der Slots, Szenen 1–32, Testbilder, Timecode …) legst du mit ">Layers 5–8 and every other control (laser position, slot hue, scenes 1–32, test patterns, timecode …) can be put on any DMX channel with </span><b>MAPPING → DMX / Art-Net</b><span data-de=" auf beliebige DMX-Kanäle: Element anklicken, Kanal am Pult bewegen.">: click the element, move the channel on the desk.</span></p>
+    <div class="adm community"><p class="adm-t"><span class="adm-i" aria-hidden="true">💬</span><span data-de="Fehlt etwas oder stimmt etwas nicht?">Something missing or wrong?</span></p><p><span data-de="Frag auf unserem ">Ask in our </span><a href="https://discord.gg/N6DMca4Bjk" rel="noopener">Discord</a><span data-de=" oder "> or </span><a href="wiki-help.html#report" data-de="melde ein Problem">report a problem</a><span data-de=". Am meisten helfen Berichte von echten Geräten, auch wenn etwas nicht klappt.">. Reports from real gear help most, also when something does not work.</span></p></div>
+    <nav class="dpn"><a class="prev" href="wiki-camera.html"><small data-de="Zurück">Previous</small><span data-de="← Kameras und Personen-Erkennung">← Cameras and person detection</span></a><a class="next" href="wiki-mapping.html"><small data-de="Weiter">Next</small><span data-de="Mapping: Tastatur, MIDI, DMX, OSC →">Mapping: keyboard, MIDI, DMX, OSC →</span></a></nav>
+  </main>
+</div>
+<footer>
+  <div class="wrap">
+    <p data-de="VJ-Link ist kostenlos und wird ohne Gewährleistung bereitgestellt. Die Personen-Erkennung nutzt MediaPipe (Apache-2.0). VJ-Link ist kein offizielles Produkt von MA Lighting, Daslight, Akai, Korg, Ableton, OBS oder Google. Alle Produktnamen gehören ihren Inhabern und dienen nur der Beschreibung der Kompatibilität.">VJ-Link is free and provided without warranty. Person detection uses MediaPipe (Apache-2.0). VJ-Link is not an official product of MA Lighting, Daslight, Akai, Korg, Ableton, OBS or Google. All product names belong to their owners and are used only to describe compatibility.</p>
+    <p><a href="https://github.com/skyplayser/VJ-LINK">GitHub</a> · <a href="https://github.com/skyplayser/VJ-LINK/releases" data-de="Versionen">Releases</a> · <a href="wiki.html">Wiki</a> · <a href="wiki-help.html" data-de="Hilfe">Help</a> · <a href="https://discord.gg/N6DMca4Bjk" rel="noopener">Discord</a> · <a href="https://github.com/skyplayser/VJ-LINK/issues">Issues</a> · <a href="https://skyplayser.github.io/LJ-Link/" data-de-href="https://skyplayser.github.io/LJ-Link/de/" data-de="Probier auch: LJ-Link">Try also: LJ-Link</a> · <a href="impressum.html">Impressum</a> · <a href="datenschutz.html" data-de="Datenschutz">Privacy</a></p>
+    <p class="credit">Idea SKYPLAYSER/NEXTPHILM<br>Prompted with ❤️ made by Claude</p>
+  </div>
+</footer>
+
+<div class="viewer" id="viewer" role="dialog" aria-label="Picture"><img alt=""></div>
+
+<script>
+  (function () {
+    var b = document.getElementById("dside-btn"), s = document.getElementById("dside");
+    if (b && s) b.addEventListener("click", function () { var o = s.classList.toggle("open"); b.setAttribute("aria-expanded", o); });
+    // Keep the current page visible in the side navigation and the current section in the tabs.
+    var on = document.querySelector(".dlink.on"), side = document.getElementById("dside");
+    if (on && side && side.scrollHeight > side.clientHeight) side.scrollTop = on.offsetTop - side.clientHeight / 3;
+    var tab = document.querySelector(".dtab.on");
+    if (tab) tab.parentNode.scrollLeft = tab.offsetLeft - 16;
+    if (location.hash) { var d = document.querySelector(location.hash); if (d && d.tagName === "DETAILS") d.open = true; }
+  })();
+</script>
+<script>
+  (function () {
+    // Language: English at /, German at /de/ (built from data-de). A saved choice wins, otherwise a German
+    // browser goes from / to /de/ on the first visit. The button is a plain link, so search engines see both.
+    var langBtn = document.getElementById("lang");
+    var lang = document.documentElement.lang === "de" ? "de" : "en";
+    var saved = null;
+    try { saved = localStorage.getItem("vj-lang"); } catch (e) { /* private mode */ }
+    var want = saved || ((navigator.language || "en").toLowerCase().indexOf("de") === 0 ? "de" : "en");
+    if (langBtn && want !== lang && (saved || lang === "en")) { location.replace(langBtn.href + location.hash); return; }
+    if (langBtn) langBtn.addEventListener("click", function () {
+      try { localStorage.setItem("vj-lang", lang === "de" ? "en" : "de"); } catch (e) { /* private mode */ }
+    });
+
+    // The download that fits this computer is highlighted and used by the big button.
+    var ua = navigator.userAgent, os = /Windows/.test(ua) ? "win" : /Mac/.test(ua) ? "mac-arm" : null;
+    var card = os && document.querySelector('.dl .card[data-os="' + os + '"]');
+    if (card) {
+      card.classList.add("suggested");
+      var hero = document.getElementById("hero-download");
+      if (hero && os === "win") hero.href = card.querySelector("a").href;
+    }
+
+    // The newest version, from GitHub (only on pages that show it).
+    var heroV = document.getElementById("hero-version"), dlV = document.getElementById("dl-version");
+    if (heroV || dlV) fetch("https://api.github.com/repos/skyplayser/VJ-LINK/releases/latest")
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        if (!j || !j.tag_name) return;
+        var v = j.tag_name.replace(/^v/, ""), de = lang === "de";
+        if (heroV) heroV.textContent = "Version " + v + " · ";
+        if (dlV) dlV.textContent = de ? "Aktuelle Version: " + v + "." : "Current version: " + v + ".";
+      })
+      .catch(function () { /* offline: no version line */ });
+
+    // Phone menu.
+    var menu = document.getElementById("menu"), nav = document.getElementById("nav");
+    if (menu && nav) {
+      menu.onclick = function () { var open = nav.classList.toggle("open"); menu.setAttribute("aria-expanded", open); };
+      nav.addEventListener("click", function (e) { if (e.target.tagName === "A") nav.classList.remove("open"); });
+    }
+
+    // Pictures open large.
+    var viewer = document.getElementById("viewer");
+    if (viewer) {
+      document.querySelectorAll(".gallery img, .split img, .dfig img").forEach(function (img) {
+        img.addEventListener("click", function () { viewer.querySelector("img").src = img.src; viewer.classList.add("open"); });
+      });
+      viewer.onclick = function () { viewer.classList.remove("open"); };
+      document.addEventListener("keydown", function (e) { if (e.key === "Escape") viewer.classList.remove("open"); });
+    }
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+from wikilib import *
+
+group("Outputs", "Ausgänge")
+
+
+@page("wiki-outputs.html", "Screens and canvas", "Bildschirme und Leinwand")
+def _():
+    body = SEC(
+        P("Every connected screen, projector or LED processor can be an output. **OUTPUT** lists them with their resolution; **Open as output** puts a full-screen window on it. All outputs share one clock, so they stay in sync.",
+          "Jeder angeschlossene Bildschirm, Beamer oder LED-Prozessor kann ein Ausgang sein. **AUSGABE** listet sie mit Auflösung; **Als Ausgang öffnen** legt ein Vollbild-Fenster darauf. Alle Ausgänge teilen eine Uhr und bleiben synchron."),
+        IMG("output.png", "Output tab", "Tab Ausgabe", ("OUTPUT: screens, arrangement and test patterns.", "AUSGABE: Bildschirme, Anordnung und Testbilder.")),
+        H2("Arrangement", "Anordnung"),
+        TABLE([("Mode", "Modus"), ("What happens", "Was passiert")], [
+            [("**Same picture on all**", "**Überall dasselbe Bild**"), ("every output shows the whole picture in its own resolution", "jeder Ausgang zeigt das ganze Bild in seiner eigenen Auflösung")],
+            [("**Canvas**", "**Leinwand**"), ("arrange the screens freely (drag, snap, type values, side by side or stacked); each output shows its part, visuals and videos run seamlessly across all", "Bildschirme frei anordnen (ziehen, einrasten, Werte eintippen, nebeneinander oder untereinander); jeder Ausgang zeigt seinen Teil, Visuals und Videos laufen nahtlos über alle")],
+            [("**Projection mapping**", "**Projektionsmapping**"), ("canvases with corner pin, grid warp and masks on the picture of each projector, see [projection mapping](wiki-mapping-projection.html)", "Leinwände mit Eckpunkten, Raster-Verzerrung und Masken auf dem Bild jedes Beamers, siehe [Projektionsmapping](wiki-mapping-projection.html)")],
+        ]),
+        H2("Window output", "Fenster-Ausgang"),
+        P("Instead of full screen, an output can be a normal window with a fixed picture size (720p up to 4K, also portrait). Capture it in OBS, with NDI tools or Syphon Recorder. It also works as a projector in canvas and projection mapping.",
+          "Statt Vollbild kann ein Ausgang ein normales Fenster mit fester Bildgröße sein (720p bis 4K, auch hochkant). Greif es in OBS, mit NDI-Werkzeugen oder Syphon Recorder ab. Es funktioniert auch wie ein Beamer in Leinwand und Projektionsmapping."),
+        ADM("note", ("Native Syphon, Spout and NDI are planned. Until then the window output is the way to get the picture into other programs.", "Natives Syphon, Spout und NDI sind geplant. Bis dahin ist der Fenster-Ausgang der Weg, das Bild in andere Programme zu bringen.")),
+        H2("Test patterns", "Testbilder"),
+        P("Nine test patterns to step through: color bars, grid, grid across all, numbers, grey scale, white, red, green and blue, each with the resolution, name and position of every output. Also on a key or desk channel: test pattern, next, previous.",
+          "Neun Testbilder zum Durchschalten: Farbbalken, Raster, Raster über alle, Nummern, Graustufen, Weiß, Rot, Grün und Blau, jeweils mit Auflösung, Name und Lage jedes Ausgangs. Auch auf Taste oder Pult-Kanal: Testbild, Nächstes, Voriges."),
+        ADM("tip", ("With only one screen an output covers the interface. Esc or Close in the main window ends it.", "Mit nur einem Bildschirm verdeckt ein Ausgang die Oberfläche. Esc oder Schließen im Hauptfenster beendet ihn.")),
+    )
+    return (("Outputs: screens, LED walls, canvas and window output", "Ausgänge: Bildschirme, LED-Wände, Leinwand und Fenster-Ausgang"),
+            ("VJ-Link outputs: any number of screens and projectors in any resolution, the same picture or one canvas across all, window output for OBS, NDI and Syphon, and test patterns.",
+             "VJ-Link-Ausgänge: beliebig viele Bildschirme und Beamer in jeder Auflösung, überall dasselbe Bild oder eine Leinwand über alle, Fenster-Ausgang für OBS, NDI und Syphon und Testbilder."),
+            ("Outputs", "Ausgänge"), ("Screens and canvas", "Bildschirme und Leinwand"),
+            ("Projectors, LED walls and capture.", "Beamer, LED-Wände und Abgreifen."), body)
+
+
+@page("wiki-mapping-projection.html", "Projection mapping", "Projektionsmapping")
+def _():
+    body = SEC(
+        P("Choose **Projection mapping** under OUTPUT → Arrangement. On the picture of each projector you lay **canvases**: shapes that follow walls, boxes and columns. Outside the canvases the projector stays black.",
+          "Unter AUSGABE → Anordnung **Projektionsmapping** wählen. Auf das Bild jedes Beamers legst du **Leinwände**: Formen, die Wänden, Kisten und Säulen folgen. Außerhalb der Leinwände bleibt der Beamer schwarz."),
+        STEPS(("**+ Canvas** adds one. Drag a corner to fit it to a wall, a box or a trapezoid, drag the middle to move it. Arrow keys move by 1 px (with ⇧ 10 px).", "**+ Leinwand** fügt eine hinzu. Eine Ecke ziehen passt sie an Wand, Kiste oder Trapez an, die Mitte ziehen verschiebt sie. Pfeiltasten verschieben um 1 px (mit ⇧ 10 px)."),
+              ("**Grid for alignment** lays the grid test pattern distorted onto the canvases, so the edges can be matched exactly.", "**Raster zum Ausrichten** legt das Raster-Testbild verzerrt auf die Leinwände, damit die Kanten genau passen."),
+              ("**Shape**: 4 corners, or a 3×3 or 5×5 grid for round and curved surfaces; every point can be dragged and the surface bends smoothly.", "**Form**: 4 Ecken oder ein Raster 3×3 bzw. 5×5 für runde und gewölbte Flächen; jeder Punkt lässt sich ziehen, die Fläche biegt sich weich."),
+              ("**+ Mask** draws a polygon (up to 32 points): black it out (door, window, person) or show only the inside, with a soft edge.", "**+ Maske** zeichnet ein Vieleck (bis 32 Punkte): innen schwärzen (Tür, Fenster, Person) oder nur innen zeigen, mit weicher Kante."),
+              ("**Stage photo …** puts a photo of the stage (best taken from the projector) behind the canvases as a guide. It never goes to the projector.", "**Bühnenfoto …** legt ein Foto der Bühne (am besten vom Beamer aus aufgenommen) als Hilfe hinter die Leinwände. Es geht nie an den Beamer.")),
+        ADM("tip", ("Corners snap to the edge and to other canvases. **Snap off**, or holding ⌥ while dragging, gives full precision.", "Ecken rasten am Rand und an anderen Leinwänden ein. **Einrasten aus** oder ⌥ beim Ziehen gibt volle Präzision.")),
+        H2("Pictures", "Bilder"),
+        P("Up to five **pictures**, each with its own layers, clip grid and effects. Each canvas chooses which picture it shows, whole or a part. Scenes save and recall all pictures with a fade. In VISUALS the pictures appear as live tiles; a click edits one.",
+          "Bis zu fünf **Bilder**, jedes mit eigenen Ebenen, Clip-Raster und Effekten. Jede Leinwand wählt, welches Bild sie zeigt, ganz oder als Ausschnitt. Szenen speichern und rufen alle Bilder mit Überblendung ab. In VISUALS erscheinen die Bilder als Live-Kacheln; ein Klick bearbeitet eines."),
+        P("Desk channels 71–75 set the brightness of the pictures, 76–91 the opacity of their layers 1–4. MIDI and OSC can do the same with fixed controls per picture.",
+          "Die Pult-Kanäle 71–75 setzen die Helligkeit der Bilder, 76–91 die Deckkraft ihrer Ebenen 1–4. MIDI und OSC können das mit festen Elementen je Bild genauso."),
+        ADM("alpha", ("Projection mapping has been tried on screens, not yet with projectors on a real set.", "Projektionsmapping wurde an Bildschirmen ausprobiert, noch nicht mit Beamern an einem echten Bühnenbild.")),
+    )
+    return (("Projection mapping with corner pin, grid warp and masks", "Projektionsmapping mit Eckpunkten, Raster-Verzerrung und Masken"),
+            ("Projection mapping in VJ-Link: canvases on boxes, columns and walls, 4-corner and grid warp, masks, a stage photo as a guide and up to five pictures with their own layers.",
+             "Projektionsmapping in VJ-Link: Leinwände auf Kisten, Säulen und Wänden, 4-Ecken- und Raster-Verzerrung, Masken, ein Bühnenfoto als Hilfe und bis zu fünf Bilder mit eigenen Ebenen."),
+            ("Outputs", "Ausgänge"), ("Projection mapping", "Projektionsmapping"),
+            ("Visuals on walls, boxes and columns.", "Visuals auf Wänden, Kisten und Säulen."), body)
