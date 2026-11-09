@@ -1,0 +1,28 @@
+@page("wiki-desk.html", "Light desk", "Lichtpult")
+def _():
+    body = SEC(
+        P("VJ-Link listens to one universe of **Art-Net** or **sACN** and behaves like a fixture with 91 channels. Only channels that change take effect, so the mouse, MIDI and the desk can work side by side: a fader that does not move on the desk does not overwrite what you set by hand.",
+          "VJ-Link hört auf ein Universe **Art-Net** oder **sACN** und verhält sich wie ein Gerät mit 91 Kanälen. Es wirken nur Kanäle, die sich ändern – Maus, MIDI und Pult arbeiten also nebeneinander: Ein Fader, der sich am Pult nicht bewegt, überschreibt nicht, was du von Hand eingestellt hast."),
+        ADM("beta", ("The profile is built and tested with Art-Net and sACN senders, but not yet confirmed on a real grandMA or Daslight. Please tell us how it works for you.",
+                     "Das Profil ist gebaut und mit Art-Net- und sACN-Sendern getestet, aber noch nicht an einem echten grandMA oder Daslight bestätigt. Sag uns bitte, wie es bei dir läuft.")),
+        H2("Set up", "Einrichten"),
+        STEPS(("Desk and VJ-Link computer in the same network. On Windows allow VJ-Link for private networks.", "Pult und VJ-Link-Rechner im selben Netz. Unter Windows VJ-Link für private Netzwerke zulassen."),
+              ("**CONNECT** → set the **Art-Net universe** (0 is the first) or the **sACN universe** (1 is the first) and the **start address**.", "**VERBINDEN** → **Art-Net-Universe** (0 ist das erste) oder **sACN-Universe** (1 ist das erste) und die **Startadresse** einstellen."),
+              ("**Save the channel list (CSV)** and create VJ-Link on the desk as a fixture with 91 channels, or patch 91 dimmer channels.", "**Kanalliste speichern (CSV)** und VJ-Link am Pult als Gerät mit 91 Kanälen anlegen oder 91 Dimmerkanäle patchen."),
+              ("Move a fader on the desk: the live values under CONNECT show it, the DMX pill at the top turns green.", "Einen Fader am Pult bewegen: Die Live-Werte unter VERBINDEN zeigen ihn, die DMX-Anzeige oben wird grün.")),
+        IMG("connect.png", "CONNECT tab with live DMX values", "Tab VERBINDEN mit DMX-Live-Werten",
+            ("CONNECT: Art-Net, sACN, OSC and LJ-Link with live values.", "VERBINDEN: Art-Net, sACN, OSC und LJ-Link mit Live-Werten.")),
+        H2("Channel list", "Kanalliste"),
+        P("Addresses relative to the start address (channel 1 = start address).", "Adressen relativ zur Startadresse (Kanal 1 = Startadresse)."),
+        TABLE([("Channel", "Kanal"), ("Function", "Funktion")], [[str(c["ch"]), (c["en"], c["de"])] for c in CH]),
+        H2("More than the profile", "Mehr als das Profil"),
+        P("Layers 5–8 and every other control (laser position, slot hue, scenes 1–32, test patterns, timecode …) can be put on any DMX channel with **MAPPING → DMX / Art-Net**: click the element, move the channel on the desk.",
+          "Ebenen 5–8 und jedes weitere Element (Laser-Lage, Farbton der Slots, Szenen 1–32, Testbilder, Timecode …) legst du mit **MAPPING → DMX / Art-Net** auf beliebige DMX-Kanäle: Element anklicken, Kanal am Pult bewegen."),
+    )
+    return (("Connect a light desk: grandMA, Daslight, Art-Net and sACN", "Lichtpult anbinden: grandMA, Daslight, Art-Net und sACN"),
+            ("Control VJ-Link from grandMA2, grandMA3, Daslight or any desk over Art-Net or sACN: set the universe and start address, patch the 91-channel profile, full channel list.",
+             "VJ-Link von grandMA2, grandMA3, Daslight oder jedem Pult über Art-Net oder sACN steuern: Universe und Startadresse einstellen, das 91-Kanal-Profil patchen, vollständige Kanalliste."),
+            ("Control", "Steuerung"), ("Light desk", "Lichtpult"),
+            ("Patch VJ-Link like a fixture.", "VJ-Link wie ein Gerät patchen."), body)
+
+

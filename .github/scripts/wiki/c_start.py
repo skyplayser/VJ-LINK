@@ -18,9 +18,12 @@ def _():
         IMG("visuals.png", "VJ-Link main view with layers, clip grid, color slots and scenes", "Hauptansicht von VJ-Link mit Ebenen, Clip-Raster, Farbslots und Szenen",
             ("The VISUALS tab with the demo show: eight layers, each with its row of clips.", "Der Tab VISUALS mit der Demo-Show: acht Ebenen, jede mit ihrer Zeile Clips.")),
         H2("How this wiki is organised", "So ist das Wiki aufgebaut"),
+        P("New here? [All features](wiki-features.html) lists everything VJ-Link can do.", "Neu hier? [Alle Funktionen](wiki-features.html) listet alles, was VJ-Link kann."),
         CARDS(("🚀", "wiki-quickstart.html", "Start", "Start", "Quick start, installation, the interface and use cases.", "Schnellstart, Installation, die Oberfläche und Anwendungsfälle."),
               ("🎨", "wiki-layers.html", "Visuals", "Visuals", "Layers, the 150 visuals, effects, logos, videos, text and cameras.", "Ebenen, die 150 Visuals, Effekte, Logos, Videos, Text und Kameras."),
-              ("🎛️", "wiki-desk.html", "Control", "Steuerung", "Light desk, mapping, tempo, LJ-Link and modulation.", "Lichtpult, Mapping, Tempo, LJ-Link und Modulation."),
+              ("🎛️", "wiki-mapping.html", "Control", "Steuerung", "Mapping for keyboard, MIDI, DMX and OSC, tempo and modulation.", "Mapping für Tastatur, MIDI, DMX und OSC, Tempo und Modulation."),
+              ("💡", "wiki-desks.html", "Light desks", "Lichtpulte", "Every common desk with diagram: grandMA, ChamSys, Avolites, Hog, ETC, Daslight and more.", "Jedes gängige Pult mit Schema: grandMA, ChamSys, Avolites, Hog, ETC, Daslight und mehr."),
+              ("🎧", "wiki-ljlink.html", "LJ-Link", "LJ-Link", "The combination with LJ-Link and setups with diagrams.", "Die Kombination mit LJ-Link und Aufbauten mit Schemas."),
               ("🖥️", "wiki-outputs.html", "Outputs", "Ausgänge", "Screens, canvas, window output, test patterns and projection mapping.", "Bildschirme, Leinwand, Fenster-Ausgang, Testbilder und Projektionsmapping."),
               ("🎬", "wiki-scenes.html", "Show", "Show", "Scenes, the SHOW running order with timeline, timecode and projects.", "Szenen, der SHOW-Ablauf mit Timeline, Timecode und Projekte."),
               ("🛟", "wiki-help.html", "Help", "Hilfe", "Troubleshooting, reporting a problem, reference and glossary.", "Fehlersuche, Fehler melden, Nachschlagen und Glossar.")),
@@ -172,3 +175,63 @@ def _():
              "VJ-Link-Anwendungsfälle: Club mit LED-Wand und grandMA, mobiler DJ mit einem Beamer, Events mit mehreren Bildschirmen, Projektionsmapping und Kamera-Looks."),
             ("Start", "Start"), ("Use cases", "Anwendungsfälle"),
             ("Typical setups and how VJ-Link fits in.", "Typische Aufbauten und wie VJ-Link hineinpasst."), body)
+
+
+@page("wiki-features.html", "All features", "Alle Funktionen")
+def _():
+    def area(en, de, rows):
+        return H2(en, de) + TABLE([("Feature", "Funktion"), ("What it does", "Was sie macht"), ("More", "Mehr")], rows)
+    body = SEC(
+        P("Every feature of VJ-Link 0.0.1 at a glance, with the page that explains it.", "Jede Funktion von VJ-Link 0.0.1 auf einen Blick, mit der Seite, die sie erklärt."),
+        area("Picture", "Bild", [
+            [("150 visuals", "150 Visuals"), ("generated live in any resolution, 15 categories, react to beat or audio", "live erzeugt in jeder Auflösung, 15 Kategorien, reagieren auf Beat oder Audio"), ("[Visuals](wiki-visuals.html)", "[Visuals](wiki-visuals.html)")],
+            [("50 effects", "50 Effekte"), ("stack of up to six per layer, strength per effect, effect master", "Stapel mit bis zu sechs je Ebene, Stärke je Effekt, Effekt-Master"), ("[Effects](wiki-effects.html)", "[Effekte](wiki-effects.html)")],
+            [("Layers", "Ebenen"), ("1–8 layers, opacity, blend modes, position, size, rotation", "1–8 Ebenen, Deckkraft, Mischmodi, Lage, Größe, Drehung"), ("[Layers](wiki-layers.html)", "[Ebenen](wiki-layers.html)")],
+            [("Color slots", "Farbslots"), ("five show colors A–E, one or several per layer, gradient, rainbow", "fünf Show-Farben A–E, eine oder mehrere je Ebene, Verlauf, Regenbogen"), ("[Layers](wiki-layers.html#color-slots)", "[Ebenen](wiki-layers.html#color-slots)")],
+            [("Drive", "Antrieb"), ("per layer: audio, beat or static", "je Ebene: Audio, Takt oder statisch"), ("[Layers](wiki-layers.html)", "[Ebenen](wiki-layers.html)")],
+            [("Laser looks", "Laser-Looks"), ("16 looks for a projector in haze, strength, XY override", "16 Looks für den Beamer im Nebel, Stärke, XY-Override"), ("[Layers](wiki-layers.html#laser-layers)", "[Ebenen](wiki-layers.html#laser-layers)")],
+            [("Strobe, blinder, blackout", "Strobe, Blinder, Blackout"), ("strobe in time or in Hz with intensity, flash, white, W-flash, blinder, blackout", "Strobe im Takt oder in Hz mit Intensität, Flash, White, W-Flash, Blinder, Blackout"), ("[Interface](wiki-interface.html#fader-bar)", "[Oberfläche](wiki-interface.html#fader-bar)")],
+        ]),
+        area("Media", "Medien", [
+            [("Logos and images", "Logos und Bilder"), ("automatic background removal, beat animations", "automatisches Freistellen, Animationen im Takt"), ("[Media](wiki-media.html)", "[Medien](wiki-media.html)")],
+            [("Videos", "Videos"), ("seamless loops, loop locked to 4–32 beats, sound", "nahtlose Loops, Loop auf 4–32 Beats, Ton"), ("[Media](wiki-media.html#videos)", "[Medien](wiki-media.html#videos)")],
+            [("Text clips", "Text-Clips"), ("font, glow, outline, box, editable later", "Schrift, Leuchten, Kontur, Kasten, später bearbeitbar"), ("[Media](wiki-media.html#text-clips)", "[Medien](wiki-media.html#text-clips)")],
+            [("Cameras", "Kameras"), ("webcam, capture card, OBS; ten looks; local person detection", "Webcam, Capture-Karte, OBS; zehn Looks; lokale Personen-Erkennung"), ("[Cameras](wiki-camera.html)", "[Kameras](wiki-camera.html)")],
+            [("Gallery", "Galerie"), ("browse visuals, effects and media with live preview", "Visuals, Effekte und Medien mit Live-Vorschau durchsehen"), ("[Visuals](wiki-visuals.html)", "[Visuals](wiki-visuals.html)")],
+        ]),
+        area("Control", "Steuerung", [
+            [("Art-Net and sACN", "Art-Net und sACN"), ("91-channel desk profile, CSV channel list", "91-Kanal-Pult-Profil, CSV-Kanalliste"), ("[Light desks](wiki-desks.html)", "[Lichtpulte](wiki-desks.html)")],
+            [("Mapping", "Mapping"), ("keyboard, MIDI, DMX and OSC on every control, LED feedback, templates, export", "Tastatur, MIDI, DMX und OSC auf jedes Element, LED-Rückmeldung, Vorlagen, Export"), ("[Mapping](wiki-mapping.html)", "[Mapping](wiki-mapping.html)")],
+            [("OSC", "OSC"), ("port 8000, every control as `/vjlink/ctl/<id>`", "Port 8000, jedes Element als `/vjlink/ctl/<id>`"), ("[Reference](wiki-reference.html#osc)", "[Referenz](wiki-reference.html#osc)")],
+            [("Tempo", "Tempo"), ("LJ-Link, Ableton Link, OSC, MIDI clock, audio, tap, typed BPM, tempo factor", "LJ-Link, Ableton Link, OSC, MIDI-Clock, Audio, Tap, eingetipptes BPM, Tempo-Faktor"), ("[Tempo](wiki-tempo.html)", "[Tempo](wiki-tempo.html)")],
+            [("Audio input", "Audio-Eingang"), ("microphone or line-in with level, for audio visuals or all", "Mikrofon oder Line-In mit Pegel, für Audio-Visuals oder alle"), ("[Tempo](wiki-tempo.html#audio-input)", "[Tempo](wiki-tempo.html#audio-input)")],
+            [("Modulation", "Modulation"), ("LFOs and audio bands on any fader", "LFOs und Audio-Bänder auf jedem Regler"), ("[Modulation](wiki-modulation.html)", "[Modulation](wiki-modulation.html)")],
+            [("LJ-Link", "LJ-Link"), ("tempo, beat phase, phrases, Now Playing, DJ waveform, found automatically", "Tempo, Beat-Phase, Phrasen, Now Playing, DJ-Waveform, automatisch gefunden"), ("[LJ-Link](wiki-ljlink.html)", "[LJ-Link](wiki-ljlink.html)")],
+        ]),
+        area("Outputs", "Ausgänge", [
+            [("Screens", "Bildschirme"), ("any number of outputs, own resolution, one clock", "beliebig viele Ausgänge, eigene Auflösung, eine Uhr"), ("[Outputs](wiki-outputs.html)", "[Ausgänge](wiki-outputs.html)")],
+            [("Canvas", "Leinwand"), ("one picture seamlessly across all screens", "ein Bild nahtlos über alle Bildschirme"), ("[Outputs](wiki-outputs.html#arrangement)", "[Ausgänge](wiki-outputs.html#arrangement)")],
+            [("Window output", "Fenster-Ausgang"), ("fixed-size window for OBS, NDI and Syphon tools", "Fenster mit fester Größe für OBS, NDI- und Syphon-Werkzeuge"), ("[Outputs](wiki-outputs.html#window-output)", "[Ausgänge](wiki-outputs.html#window-output)")],
+            [("Test patterns", "Testbilder"), ("nine patterns with resolution and position per output", "neun Testbilder mit Auflösung und Lage je Ausgang"), ("[Outputs](wiki-outputs.html#test-patterns)", "[Ausgänge](wiki-outputs.html#test-patterns)")],
+            [("Projection mapping", "Projektionsmapping"), ("canvases, corner pin, 3×3/5×5 grid, masks, stage photo, five pictures", "Leinwände, Eckpunkte, Raster 3×3/5×5, Masken, Bühnenfoto, fünf Bilder"), ("[Projection mapping](wiki-mapping-projection.html)", "[Projektionsmapping](wiki-mapping-projection.html)")],
+        ]),
+        area("Show", "Show", [
+            [("Scenes", "Szenen"), ("transitions in beats or seconds, fade or black, Auto after bars, seconds or phrases", "Übergänge in Beats oder Sekunden, Blende oder Schwarz, Auto nach Takten, Sekunden oder Phrasen"), ("[Scenes](wiki-scenes.html)", "[Szenen](wiki-scenes.html)")],
+            [("SHOW", "SHOW"), ("cues for video, image, camera, black, scene, timecode with GO", "Cues für Video, Bild, Kamera, Schwarz, Szene, Timecode mit WEITER"), ("[SHOW](wiki-show.html)", "[SHOW](wiki-show.html)")],
+            [("Timeline", "Timeline"), ("scene blocks and effect blocks like in an editing program, recording", "Szenen- und Effekt-Blöcke wie im Schnittprogramm, Aufnahme"), ("[SHOW](wiki-show.html#timeline)", "[SHOW](wiki-show.html#timeline)")],
+            [("Timecode", "Timecode"), ("Art-Net and MIDI timecode in and out", "Art-Net- und MIDI-Timecode rein und raus"), ("[Timecode](wiki-timecode.html)", "[Timecode](wiki-timecode.html)")],
+            [("Lock mode", "Sperrmodus"), ("operate yes, change no", "bedienen ja, ändern nein"), ("[Interface](wiki-interface.html#lock-mode)", "[Oberfläche](wiki-interface.html#lock-mode)")],
+        ]),
+        area("Program", "Programm", [
+            [("Projects", "Projekte"), ("auto-save, .vjlink files with media folder, recent files", "automatisches Sichern, .vjlink-Dateien mit Medienordner, zuletzt geöffnet"), ("[Projects](wiki-projects.html)", "[Projekte](wiki-projects.html)")],
+            [("Start screen and demo", "Startbildschirm und Demo"), ("new, open, demo show, language, updates", "neu, öffnen, Demo-Show, Sprache, Updates"), ("[Projects](wiki-projects.html#start-screen-and-demo)", "[Projekte](wiki-projects.html#start-screen-and-demo)")],
+            [("Updates", "Updates"), ("check, download and install from GitHub", "von GitHub prüfen, laden und installieren"), ("[Install](wiki-install.html#updates)", "[Installieren](wiki-install.html#updates)")],
+            [("Report a problem", "Fehler melden"), ("description plus diagnostic data by email or GitHub", "Beschreibung plus Diagnosedaten per E-Mail oder GitHub"), ("[Help](wiki-help.html#report)", "[Hilfe](wiki-help.html#report)")],
+            [("Languages", "Sprachen"), ("English and German, from the system, switchable", "Deutsch und Englisch, aus dem System, umschaltbar"), ("[Install](wiki-install.html)", "[Installieren](wiki-install.html)")],
+        ]),
+    )
+    return (("All features of VJ-Link", "Alle Funktionen von VJ-Link"),
+            ("Every feature of VJ-Link at a glance: visuals, effects, layers, color slots, media, cameras, desk control, mapping, tempo, outputs, projection mapping, scenes, SHOW, timecode and more.",
+             "Jede Funktion von VJ-Link auf einen Blick: Visuals, Effekte, Ebenen, Farbslots, Medien, Kameras, Pultsteuerung, Mapping, Tempo, Ausgänge, Projektionsmapping, Szenen, SHOW, Timecode und mehr."),
+            ("Start", "Start"), ("All features", "Alle Funktionen"),
+            ("Everything VJ-Link can do, with links.", "Alles, was VJ-Link kann, mit Links."), body)
