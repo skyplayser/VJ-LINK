@@ -31,9 +31,9 @@ def _():
         P("The diagnostic data holds the version, system, graphics card, connected devices, the state of the connections and the last error messages. No file names, no texts, no titles, no passwords. Too long for a mail link? It is saved as a file and copied to the clipboard.",
           "Die Diagnosedaten enthalten Version, System, Grafikkarte, angeschlossene Geräte, den Zustand der Verbindungen und die letzten Fehlermeldungen. Keine Dateinamen, keine Texte, keine Titel, keine Passwörter. Zu lang für einen Mail-Link? Dann werden sie als Datei gespeichert und in die Zwischenablage gelegt."),
     )
-    return (("Troubleshooting and reporting a problem", "Fehlersuche und Fehler melden"),
-            ("Solve common VJ-Link problems: black output, desk not arriving, no camera, LJ-Link not found, videos that do not play, and how to report a problem with diagnostic data.",
-             "Häufige VJ-Link-Probleme lösen: schwarzer Ausgang, Pult kommt nicht an, keine Kamera, LJ-Link nicht gefunden, Videos laufen nicht, und Fehler mit Diagnosedaten melden."),
+    return (("Troubleshooting: fix VJ-Link problems", "Fehlersuche: Probleme mit VJ-Link lösen"),
+            ("Fix common VJ-Link problems: black output, desk not arriving, no camera, LJ-Link not found, videos not playing – and how to report a problem.",
+             "Häufige VJ-Link-Probleme lösen: schwarzer Ausgang, Pult kommt nicht an, keine Kamera, LJ-Link nicht gefunden, Video läuft nicht – und Fehler melden."),
             ("Help", "Hilfe"), ("Troubleshooting", "Fehlersuche"),
             ("What to check first, and how to tell us.", "Was du zuerst prüfst und wie du es uns sagst."), body)
 
@@ -92,7 +92,7 @@ def _():
             ["TCP 9099", ("WebSocket in for own integrations", "WebSocket rein für eigene Anbindungen")],
         ]),
     )
-    return (("Reference: OSC addresses, control ids, keys and ports", "Referenz: OSC-Adressen, Element-IDs, Tasten und Ports"),
+    return (("Reference: OSC addresses, IDs, keys, ports", "Referenz: OSC-Adressen, IDs, Tasten, Ports"),
             ("VJ-Link reference: all OSC addresses, control ids for /vjlink/ctl, keyboard shortcuts and network ports for Art-Net, sACN, OSC, LJ-Link and Carabiner.",
              "VJ-Link-Referenz: alle OSC-Adressen, Element-IDs für /vjlink/ctl, Tastenkürzel und Netzwerk-Ports für Art-Net, sACN, OSC, LJ-Link und Carabiner."),
             ("Help", "Hilfe"), ("Reference", "Referenz"),
@@ -119,7 +119,7 @@ def _():
         ("Lightjockey (LJ)", "Lichtjockey (LJ)", "The person who runs light (and here video) live to the DJ's music.", "Die Person, die Licht (und hier Video) live zur Musik des DJs fährt."),
     ]
     body = SEC(TABLE([("Term", "Begriff"), ("Meaning", "Bedeutung")], [[(f"**{a}**", f"**{b}**"), (c, d)] for a, b, c, d in terms]))
-    return (("Glossary", "Glossar"),
+    return (("Glossary: Art-Net, sACN, DMX and VJ terms", "Glossar: Art-Net, sACN, DMX und VJ-Begriffe"),
             ("VJ-Link glossary: Art-Net, sACN, universe, clip, layer, color slot, drive, scene, cue, phrase, canvas, corner pin, LFO and timecode explained.",
              "VJ-Link-Glossar: Art-Net, sACN, Universe, Clip, Ebene, Farbslot, Antrieb, Szene, Cue, Phrase, Leinwand, Eckpunkt-Verzerrung, LFO und Timecode erklärt."),
             ("Help", "Hilfe"), ("Glossary", "Glossar"),

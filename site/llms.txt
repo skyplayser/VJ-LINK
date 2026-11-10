@@ -1,0 +1,38 @@
+# VJ-Link
+
+> Free, open-source VJ software (Eclipse Public License 2.0) for macOS and Windows, built for lighting jockeys and event technicians. It plays 150 live-generated visuals and 50 effects on any number of screens, projectors and LED walls, and is run by a light desk over Art-Net, sACN, MIDI or OSC. The tempo comes from the music: LJ-Link (Pioneer and Denon players), Ableton Link, MIDI clock, audio input or tap. Includes projection mapping, shows with a timeline and timecode, and camera looks with local person detection. Current version: beta.
+
+- Visuals: fractals, 3D tunnels, demoscene, sacred geometry, particles, retro, op art, audio equalizers and laser looks for a projector in haze. Up to eight layers with blend modes and five color slots set by the desk.
+- Light desk: a fixed 91-channel Art-Net/sACN profile (channel list as CSV) plus free mapping of every control to keyboard, MIDI, DMX and OSC. Guides for grandMA2, grandMA3, dot2, ChamSys MagicQ, Avolites, Hog 4, ETC Eos, Onyx, Daslight, Lightkey, QLC+, LightShark, Zero 88 and FreeStyler; built from the manuals, not yet confirmed on every real desk.
+- Outputs: any number of screens in any resolution, one canvas across all, window output for OBS/NDI/Syphon capture, test patterns, projection mapping with corner pin, 3×3/5×5 grid warp and masks.
+- Show: running order of video, image, camera, black, scene and timecode cues with GO; timeline with scene blocks and strobe/blinder/blackout; Art-Net and MIDI timecode in and out.
+- Local only: no account, no cloud, no telemetry. Only the update check and a problem report sent by the user use the internet.
+- Not an official product of MA Lighting, Daslight, Akai, Korg, Ableton, OBS or Google.
+
+## Guides
+
+- [Free VJ software for Mac and Windows](https://skyplayser.github.io/VJ-LINK/free-vj-software.html): what the free VJ software can do and what to look for. German: https://skyplayser.github.io/VJ-LINK/de/free-vj-software.html
+- [Control visuals from a grandMA](https://skyplayser.github.io/VJ-LINK/grandma-visuals.html): grandMA2 and grandMA3 over Art-Net or sACN, patching VJ-Link as a 91-channel fixture. German: https://skyplayser.github.io/VJ-LINK/de/grandma-visuals.html
+- [Free projection mapping software](https://skyplayser.github.io/VJ-LINK/projection-mapping-software.html): canvases, corner pin, grid warp, masks and several projectors. German: https://skyplayser.github.io/VJ-LINK/de/projection-mapping-software.html
+
+## Wiki
+
+- [Wiki overview](https://skyplayser.github.io/VJ-LINK/wiki.html) – German: https://skyplayser.github.io/VJ-LINK/de/wiki.html
+- [Quick start](https://skyplayser.github.io/VJ-LINK/wiki-quickstart.html): from download to the first picture in five minutes.
+- [All features](https://skyplayser.github.io/VJ-LINK/wiki-features.html)
+- [The 150 visuals](https://skyplayser.github.io/VJ-LINK/wiki-visuals.html) and [the 50 effects](https://skyplayser.github.io/VJ-LINK/wiki-effects.html)
+- [Light desks](https://skyplayser.github.io/VJ-LINK/wiki-desks.html) and [connecting a desk](https://skyplayser.github.io/VJ-LINK/wiki-desk.html) with the full channel list
+- [VJ-Link and LJ-Link](https://skyplayser.github.io/VJ-LINK/wiki-ljlink.html): tempo, phrases, Now Playing and DJ waveforms from the DJ players.
+- [Outputs](https://skyplayser.github.io/VJ-LINK/wiki-outputs.html) and [projection mapping](https://skyplayser.github.io/VJ-LINK/wiki-mapping-projection.html)
+- [SHOW and timeline](https://skyplayser.github.io/VJ-LINK/wiki-show.html) and [timecode](https://skyplayser.github.io/VJ-LINK/wiki-timecode.html)
+- [Reference](https://skyplayser.github.io/VJ-LINK/wiki-reference.html): OSC addresses, control ids, keys and network ports.
+- [Troubleshooting](https://skyplayser.github.io/VJ-LINK/wiki-help.html)
+
+## Links
+
+- [Website (English)](https://skyplayser.github.io/VJ-LINK/)
+- [Website (Deutsch)](https://skyplayser.github.io/VJ-LINK/de/)
+- [Download (latest release)](https://github.com/skyplayser/VJ-LINK/releases/latest)
+- [Source code](https://github.com/skyplayser/VJ-LInk-dev)
+- [Discord community](https://discord.gg/N6DMca4Bjk)
+- Sister project: [LJ-Link](https://skyplayser.github.io/LJ-Link/) shows the lighting jockey every DJ deck and sends the BPM to the light desk.

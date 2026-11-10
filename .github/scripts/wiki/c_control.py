@@ -33,7 +33,7 @@ def _():
         H2("OSC", "OSC"),
         P("OSC arrives on UDP port **8000**. Every control has the address `/vjlink/ctl/<id>` with a value 0–1; the ids are listed in the [reference](wiki-reference.html#osc).", "OSC kommt auf UDP-Port **8000** an. Jedes Element hat die Adresse `/vjlink/ctl/<id>` mit einem Wert 0–1; die IDs stehen in der [Referenz](wiki-reference.html#osc)."),
     )
-    return (("Mapping: keyboard, MIDI controllers, DMX and OSC", "Mapping: Tastatur, MIDI-Controller, DMX und OSC"),
+    return (("MIDI, DMX and OSC mapping for visuals", "MIDI-, DMX- und OSC-Mapping für Visuals"),
             ("Map any VJ-Link control to a key, MIDI note or CC, DMX channel or OSC address, with LED feedback and templates for Akai APC mini and Korg nanoKONTROL2.",
              "Jedes VJ-Link-Element auf Taste, MIDI-Note oder CC, DMX-Kanal oder OSC-Adresse legen, mit LED-Rückmeldung und Vorlagen für Akai APC mini und Korg nanoKONTROL2."),
             ("Control", "Steuerung"), ("Mapping", "Mapping"),
@@ -60,7 +60,7 @@ def _():
         P("**AUDIO** at the top chooses a microphone or line-in with its level. **Works on** decides whether only the audio visuals (equalizer, oscilloscope …) or all visuals react to it.",
           "**AUDIO** oben wählt ein Mikrofon oder Line-In mit Pegel. **Wirkt auf** entscheidet, ob nur die Audio-Visuals (Equalizer, Oszilloskop …) oder alle Visuals darauf reagieren."),
     )
-    return (("Tempo and beat: LJ-Link, Ableton Link, OSC, MIDI clock and tap", "Tempo und Takt: LJ-Link, Ableton Link, OSC, MIDI-Clock und Tap"),
+    return (("Tempo: LJ-Link, Ableton Link, MIDI clock, tap", "Tempo: LJ-Link, Ableton Link, MIDI-Clock, Tap"),
             ("Where VJ-Link gets its tempo: LJ-Link, Ableton Link through Carabiner, OSC, MIDI clock or tap, with automatic choice and fallback without a jump.",
              "Woher VJ-Link sein Tempo bekommt: LJ-Link, Ableton Link über Carabiner, OSC, MIDI-Clock oder Tap, mit automatischer Wahl und Rückfall ohne Sprung."),
             ("Control", "Steuerung"), ("Tempo and beat", "Tempo und Takt"),

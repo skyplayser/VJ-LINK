@@ -42,9 +42,9 @@ def desk_page(file, name, tagline, intro, steps, extras=(), proto=("Art-Net / sA
         if back:
             parts += [H2("From VJ-Link to the desk", "Von VJ-Link zum Pult"), P(*back)]
         parts += list(extras)
-        return ((title or (f"{name} and VJ-Link", f"{name} und VJ-Link")),
-                desc or ((f"Control VJ-Link from {name}: network, Art-Net or sACN output, patching the 91-channel profile and what goes back.",
-                          f"VJ-Link von {name} steuern: Netzwerk, Art-Net- oder sACN-Ausgang, das 91-Kanal-Profil patchen und was zurückgeht.")),
+        return ((title or (f"Control visuals from {name} with VJ-Link", f"{name}: Visuals steuern mit VJ-Link")),
+                desc or ((f"Control VJ-Link from {name}: network, Art-Net or sACN output, patching the 91-channel profile and what goes back – step by step.",
+                          f"VJ-Link von {name} steuern: Netzwerk, Art-Net- oder sACN-Ausgang, das 91-Kanal-Profil patchen und was zurückgeht – Schritt für Schritt.")),
                 ("Light desks", "Lichtpulte"), (name, nde), tagline, SEC(*parts))
     return _
 
@@ -92,9 +92,9 @@ def _():
                 cap=("LJ-Link gives the tempo to desk and VJ-Link; the desk runs scenes and colors on VJ-Link.", "LJ-Link gibt das Tempo an Pult und VJ-Link; das Pult fährt Szenen und Farben in VJ-Link.")),
         P("More in [VJ-Link and LJ-Link](wiki-ljlink.html).", "Mehr unter [VJ-Link und LJ-Link](wiki-ljlink.html)."),
     )
-    return (("Light desks: grandMA, ChamSys, Avolites, Hog, ETC, Daslight and more", "Lichtpulte: grandMA, ChamSys, Avolites, Hog, ETC, Daslight und mehr"),
-            ("Which light desks can control VJ-Link over Art-Net, sACN, MIDI and OSC, and which get timecode back: grandMA2, grandMA3, dot2, MagicQ, Avolites, Hog 4, ETC Eos, Onyx, Daslight, Lightkey, QLC+, LightShark, Zero 88, FreeStyler.",
-             "Welche Lichtpulte VJ-Link über Art-Net, sACN, MIDI und OSC steuern und welche Timecode zurückbekommen: grandMA2, grandMA3, dot2, MagicQ, Avolites, Hog 4, ETC Eos, Onyx, Daslight, Lightkey, QLC+, LightShark, Zero 88, FreeStyler."),
+    return (("Light desks for VJ-Link: grandMA, ChamSys, Avolites", "Lichtpulte für VJ-Link: grandMA, ChamSys, Avolites"),
+            ("Which light desks control VJ-Link over Art-Net, sACN, MIDI and OSC: grandMA2, grandMA3, dot2, MagicQ, Avolites, Hog 4, ETC Eos, Onyx, Daslight, QLC+ and more.",
+             "Welche Lichtpulte VJ-Link über Art-Net, sACN, MIDI und OSC steuern: grandMA2, grandMA3, dot2, MagicQ, Avolites, Hog 4, ETC Eos, Onyx, Daslight, QLC+ und mehr."),
             ("Light desks", "Lichtpulte"), ("All desks", "Alle Pulte"),
             ("Every common desk and how it reaches VJ-Link.", "Jedes gängige Pult und wie es VJ-Link erreicht."), body)
 
@@ -122,7 +122,7 @@ def _():
         P("Layers 5–8 and every other control (laser position, slot hue, scenes 1–32, test patterns, timecode …) can be put on any DMX channel with **MAPPING → DMX / Art-Net**: click the element, move the channel on the desk.",
           "Ebenen 5–8 und jedes weitere Element (Laser-Lage, Farbton der Slots, Szenen 1–32, Testbilder, Timecode …) legst du mit **MAPPING → DMX / Art-Net** auf beliebige DMX-Kanäle: Element anklicken, Kanal am Pult bewegen."),
     )
-    return (("Connect a light desk: Art-Net, sACN and the channel list", "Lichtpult anbinden: Art-Net, sACN und Kanalliste"),
+    return (("Connect a light desk: Art-Net, sACN, channels", "Lichtpult anbinden: Art-Net, sACN, Kanalliste"),
             ("Control VJ-Link from any desk over Art-Net or sACN: universe, start address, network ranges, the full 91-channel list and free DMX mapping.",
              "VJ-Link von jedem Pult über Art-Net oder sACN steuern: Universe, Startadresse, Netzwerkbereiche, die vollständige 91-Kanal-Liste und freies DMX-Mapping."),
             ("Light desks", "Lichtpulte"), ("Basics and channel list", "Grundlagen und Kanalliste"),
@@ -239,6 +239,6 @@ desk_page("wiki-desk-dmx-only.html", "Without network", ("Showtec, Eurolite, Cha
           schema_extra=((110, 190, 150, 46, "net", ("Art-Net node", "Art-Net-Node"), ("DMX in", "DMX rein")), [("desk", "x", "dmx", ("DMX", "DMX"))]),
           schema_cap=("The desk sends DMX to a node, the node sends Art-Net to VJ-Link.", "Das Pult schickt DMX an einen Node, der Node schickt Art-Net an VJ-Link."),
           name_de="Ohne Netzwerk",
-          title=("Desks without network: DMX through an Art-Net node", "Pulte ohne Netzwerk: DMX über einen Art-Net-Node"),
+          title=("DMX desks without network: use an Art-Net node", "DMX-Pult ohne Netzwerk: über einen Art-Net-Node"),
           desc=("Control VJ-Link from DMX-only desks like Showtec, Eurolite or Chauvet with an Art-Net or sACN node that converts DMX to the network.",
                 "VJ-Link von reinen DMX-Pulten wie Showtec, Eurolite oder Chauvet steuern, mit einem Art-Net- oder sACN-Node, der DMX ins Netzwerk wandelt."))

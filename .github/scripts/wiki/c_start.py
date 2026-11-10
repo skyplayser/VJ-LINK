@@ -35,9 +35,9 @@ def _():
             [BADGE("plan"), ("Planned, not built yet.", "Geplant, noch nicht gebaut.")],
         ]),
     )
-    return (("Wiki – visuals, light desk, outputs and show", "Wiki – Visuals, Lichtpult, Ausgänge und Show"),
-            ("The VJ-Link wiki: install, the interface, 150 visuals and 50 effects, light desk over Art-Net and sACN, MIDI and OSC mapping, tempo from LJ-Link, outputs, projection mapping, scenes and the SHOW timeline.",
-             "Das VJ-Link-Wiki: Installation, Oberfläche, 150 Visuals und 50 Effekte, Lichtpult über Art-Net und sACN, MIDI- und OSC-Mapping, Tempo aus LJ-Link, Ausgänge, Projektionsmapping, Szenen und SHOW-Timeline."),
+    return (("VJ-Link wiki: guides for visuals and light desks", "VJ-Link-Wiki: Anleitungen für Visuals und Lichtpult"),
+            ("Guides for the free VJ software: install, 150 visuals, light desks over Art-Net and sACN, MIDI mapping, LJ-Link, projection mapping and shows with timecode.",
+             "Anleitungen zur kostenlosen VJ-Software: Installation, 150 Visuals, Lichtpult über Art-Net und sACN, MIDI-Mapping, LJ-Link, Projektionsmapping und Timecode."),
             ("Wiki", "Wiki"), ("VJ-Link wiki", "VJ-Link-Wiki"),
             ("Everything about VJ-Link, with an honest status for every part.", "Alles über VJ-Link, mit ehrlichem Stand für jeden Teil."), body)
 
@@ -74,7 +74,7 @@ def _():
            ("Patch VJ-Link on the desk: [light desk](wiki-desk.html).", "VJ-Link am Pult patchen: [Lichtpult](wiki-desk.html)."),
            ("Several screens or a wall: [outputs](wiki-outputs.html) and [projection mapping](wiki-mapping-projection.html).", "Mehrere Bildschirme oder eine Wand: [Ausgänge](wiki-outputs.html) und [Projektionsmapping](wiki-mapping-projection.html).")),
     )
-    return (("Quick start", "Schnellstart"),
+    return (("Quick start: set up the VJ software in 5 minutes", "Schnellstart: VJ-Software in 5 Minuten einrichten"),
             ("VJ-Link quick start: install, open the demo show, open the projector as an output, get the tempo from LJ-Link and control it from the desk or a MIDI controller.",
              "VJ-Link-Schnellstart: installieren, Demo-Show öffnen, Beamer als Ausgang öffnen, Tempo aus LJ-Link holen und vom Pult oder MIDI-Controller steuern."),
             ("Start", "Start"), ("Quick start", "Schnellstart"),
@@ -109,7 +109,7 @@ def _():
           "Der Startbildschirm fragt höchstens einmal pro Stunde bei GitHub nach einer neuen Version, **Einstellungen → Update** auf Wunsch. **Herunterladen und installieren** lädt die neue Version: Auf dem Mac beendet sich VJ-Link, ersetzt sich und startet neu; unter Windows öffnet sich der Installer. Das Projekt wird laufend gesichert, nichts geht verloren."),
         ADM("tip", ("Update at home, not at the gig. Without internet the check just says it could not reach GitHub.", "Zu Hause aktualisieren, nicht auf dem Gig. Ohne Internet meldet die Prüfung nur, dass GitHub nicht erreichbar ist.")),
     )
-    return (("Install and update", "Installieren und aktualisieren"),
+    return (("Install VJ-Link on Mac and Windows", "VJ-Link installieren auf Mac und Windows"),
             ("Install VJ-Link on macOS and Windows: which file, how to open an unsigned app, camera, microphone and network permissions, and updates.",
              "VJ-Link auf macOS und Windows installieren: welche Datei, eine nicht signierte App öffnen, Kamera-, Mikrofon- und Netzwerkrechte und Updates."),
             ("Start", "Start"), ("Install and update", "Installieren und aktualisieren"),
@@ -159,8 +159,8 @@ def _():
         P("The lock at the top: during the show you can still operate everything (faders, clips, scenes, effect strengths, GO, blackout), but nothing can be deleted, added, renamed or loaded. Hold the lock for one second to unlock.",
           "Das Schloss oben: Während der Show lässt sich weiter alles bedienen (Fader, Clips, Szenen, Effekt-Stärken, WEITER, Blackout), aber nichts löschen, hinzufügen, umbenennen oder laden. Zum Entsperren das Schloss eine Sekunde gedrückt halten."),
     )
-    return (("The interface", "Die Oberfläche"),
-            ("A tour of the VJ-Link interface: the five tabs, top bar, fader bar, layer panels, settings and lock mode.",
+    return (("The VJ-Link interface explained", "Die Oberfläche von VJ-Link erklärt"),
+            ("A tour of the VJ-Link interface: the five tabs, top bar, fader bar with strobe and scenes, layer panels, settings and the lock mode for the show.",
              "Ein Rundgang durch die VJ-Link-Oberfläche: die fünf Tabs, obere Leiste, Fader-Leiste, Ebenen-Panels, Einstellungen und Sperrmodus."),
             ("Start", "Start"), ("The interface", "Die Oberfläche"),
             ("What every part of the screen is for.", "Wofür jeder Teil des Bildschirms da ist."), body)
@@ -192,7 +192,7 @@ def _():
         P("A webcam on the DJ booth, the look **Mask positive** on the top layer: the visuals only appear inside the people. Person detection runs on the computer itself.",
           "Eine Webcam am DJ-Pult, der Look **Maske positiv** auf der obersten Ebene: Die Visuals erscheinen nur in den Personen. Die Personen-Erkennung läuft auf dem Rechner selbst."),
     )
-    return (("Use cases: club, mobile DJ, event and projection", "Anwendungsfälle: Club, mobiler DJ, Event und Projektion"),
+    return (("Use cases: club, wedding, event, stage", "Anwendungsfälle: Club, Hochzeit, Event, Bühne"),
             ("VJ-Link use cases: club with LED wall and grandMA, mobile DJ with one projector, events with several screens, projection mapping and camera looks.",
              "VJ-Link-Anwendungsfälle: Club mit LED-Wand und grandMA, mobiler DJ mit einem Beamer, Events mit mehreren Bildschirmen, Projektionsmapping und Kamera-Looks."),
             ("Start", "Start"), ("Use cases", "Anwendungsfälle"),
@@ -252,8 +252,8 @@ def _():
             [("Languages", "Sprachen"), ("English and German, from the system, switchable", "Deutsch und Englisch, aus dem System, umschaltbar"), ("[Install](wiki-install.html)", "[Installieren](wiki-install.html)")],
         ]),
     )
-    return (("All features of VJ-Link", "Alle Funktionen von VJ-Link"),
-            ("Every feature of VJ-Link at a glance: visuals, effects, layers, color slots, media, cameras, desk control, mapping, tempo, outputs, projection mapping, scenes, SHOW, timecode and more.",
-             "Jede Funktion von VJ-Link auf einen Blick: Visuals, Effekte, Ebenen, Farbslots, Medien, Kameras, Pultsteuerung, Mapping, Tempo, Ausgänge, Projektionsmapping, Szenen, SHOW, Timecode und mehr."),
+    return (("All features of the free VJ software", "Alle Funktionen der kostenlosen VJ-Software"),
+            ("Every feature of VJ-Link at a glance: visuals, effects, layers, cameras, desk control, tempo, outputs, projection mapping, scenes, SHOW and timecode.",
+             "Alle Funktionen von VJ-Link auf einen Blick: Visuals, Effekte, Ebenen, Kameras, Pultsteuerung, Tempo, Ausgänge, Projektionsmapping, SHOW und Timecode."),
             ("Start", "Start"), ("All features", "Alle Funktionen"),
             ("Everything VJ-Link can do, with links.", "Alles, was VJ-Link kann, mit Links."), body)

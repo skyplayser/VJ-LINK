@@ -277,7 +277,7 @@ def _head(file, title, desc):
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title data-de="{esc(title[1])} | VJ-Link Wiki">{esc(title[0])} | VJ-Link Wiki</title>
+<title data-de="{esc(title[1])} | VJ-Link">{esc(title[0])} | VJ-Link</title>
 <meta name="description" content="{esc(desc[0])}" data-de-content="{esc(desc[1])}">
 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
 <meta name="author" content="SKYPLAYSER / NEXTPHILM">

@@ -36,7 +36,7 @@ def _():
         ADM("alpha", ("The laser looks have not been tried with a projector in real haze yet.", "Die Laser-Looks wurden noch nicht mit einem Beamer in echtem Nebel ausprobiert.")),
     )
     return (("Layers, clips and color slots", "Ebenen, Clips und Farbslots"),
-            ("VJ-Link layers: clip rows, blend modes, color sources, drive (audio, beat, static), position, color slots from the desk and laser layers for a projector in haze.",
+            ("VJ-Link layers: clip rows, blend modes, color sources, drive (audio, beat, static), position, color slots from the desk and laser looks for haze.",
              "VJ-Link-Ebenen: Clip-Zeilen, Mischmodi, Farbquellen, Antrieb (Audio, Takt, statisch), Lage, Farbslots vom Pult und Laser-Ebenen für den Beamer im Nebel."),
             ("Visuals", "Visuals"), ("Layers and clips", "Ebenen und Clips"),
             ("How the picture is built from up to eight layers.", "Wie das Bild aus bis zu acht Ebenen entsteht."), body)
@@ -59,9 +59,9 @@ def _():
         ADM("tip", ("Colors: with the color source **Original** each visual shows its own colors. With a slot it takes the show colors from the desk.",
                     "Farben: Mit der Farbquelle **Original** zeigt jedes Visual seine eigenen Farben. Mit einem Slot übernimmt es die Show-Farben vom Pult.")),
     )
-    return (("The 150 visuals of VJ-Link", "Die 150 Visuals von VJ-Link"),
-            ("All 150 VJ-Link visuals in 15 categories: minimal, 3D, fractals, demoscene, sacred geometry, glitch, op art, organic, audio, geometry, particles, retro, light and laser looks.",
-             "Alle 150 VJ-Link-Visuals in 15 Kategorien: Minimal, 3D, Fraktale, Demoscene, Heilige Geometrie, Glitch, Op-Art, Organisch, Audio, Geometrie, Partikel, Retro, Licht und Laser-Looks."),
+    return (("150 visuals: fractals, 3D, lasers, particles", "150 Visuals: Fraktale, 3D, Laser, Partikel"),
+            ("All 150 VJ-Link visuals in 15 categories: minimal, 3D, fractals, demoscene, sacred geometry, glitch, op art, audio, particles, retro and lasers.",
+             "Alle 150 VJ-Link-Visuals in 15 Kategorien: Minimal, 3D, Fraktale, Demoscene, Heilige Geometrie, Glitch, Op-Art, Audio, Partikel, Retro und Laser."),
             ("Visuals", "Visuals"), ("The 150 visuals", "Die 150 Visuals"),
             ("Every visual, sorted by category.", "Jedes Visual, nach Kategorie sortiert."), body)
 
@@ -108,7 +108,7 @@ def _():
           "Bibliothek → LJ-Link (DJ): **Now Playing** ist eine Bauchbinde mit Cover, Titel und Artist des Master-Decks, 8, 15 oder 30 s nach einem Trackwechsel oder immer; **DJ-Waveform** ist die scrollende Wellenform wie am Player. Im Privatsphäre-Modus von LJ-Link bleibt Now Playing leer."),
     )
     return (("Logos, videos and text clips", "Logos, Videos und Text-Clips"),
-            ("Media in VJ-Link: logos with automatic background removal and beat animation, videos with beat-locked loops, text clips, Now Playing and DJ waveform from LJ-Link.",
+            ("Media in VJ-Link: logos with automatic background removal and beat animation, videos with beat loops, text clips, Now Playing and DJ waveforms.",
              "Medien in VJ-Link: Logos mit automatischem Freistellen und Animation im Takt, Videos mit Loop im Takt, Text-Clips, Now Playing und DJ-Waveform aus LJ-Link."),
             ("Visuals", "Visuals"), ("Logos, videos and text", "Logos, Videos und Text"),
             ("Your own media as clips.", "Deine eigenen Medien als Clips."), body)
@@ -136,8 +136,8 @@ def _():
                      "Getestet mit einer Person vor einer Webcam. Mehrere Personen, Personen weit weg auf einer großen Bühne und Bühnenlicht mit Nebel und Gegenlicht sind noch nicht getestet.")),
         ADM("tip", ("The masks work on all layers below them, so put the camera layer at the very top.", "Die Masken wirken auf alle Ebenen darunter; leg die Kamera-Ebene deshalb ganz nach oben.")),
     )
-    return (("Cameras, silhouettes and masks with person detection", "Kameras, Silhouetten und Masken mit Personen-Erkennung"),
-            ("Use a webcam, capture card or OBS Virtual Camera in VJ-Link: silhouette, outline, dot matrix, ASCII, thermal and masks with local person detection, no green screen.",
-             "Webcam, Capture-Karte oder OBS Virtual Camera in VJ-Link: Silhouette, Umriss, Dot-Matrix, ASCII, Wärmebild und Masken mit lokaler Personen-Erkennung, ohne Greenscreen."),
+    return (("Camera looks: silhouettes and masks, no green screen", "Kamera-Looks: Silhouette und Masken ohne Greenscreen"),
+            ("Webcam, capture card or OBS camera in VJ-Link: silhouette, outline, dot matrix, ASCII and masks with local person detection, no green screen.",
+             "Webcam, Capture-Karte oder OBS-Kamera in VJ-Link: Silhouette, Umriss, Dot-Matrix, ASCII und Masken mit lokaler Personen-Erkennung, ohne Greenscreen."),
             ("Visuals", "Visuals"), ("Cameras and person detection", "Kameras und Personen-Erkennung"),
             ("Live camera looks for the dance floor and the stage.", "Live-Kamera-Looks für Tanzfläche und Bühne."), body)

@@ -24,8 +24,8 @@ def _():
            ("Scene cues in SHOW and scene blocks on the timeline.", "Szenen-Cues in der SHOW und Szenen-Blöcke auf der Timeline.")),
     )
     return (("Scenes with transitions and automatic order", "Szenen mit Übergang und automatischer Abfolge"),
-            ("VJ-Link scenes: save the picture, transition in beats or seconds, fade or through black, next after bars, seconds or a phrase change from LJ-Link, and recall from desk, MIDI and OSC.",
-             "VJ-Link-Szenen: Bild speichern, Übergang in Beats oder Sekunden, überblenden oder über Schwarz, weiter nach Takten, Sekunden oder Phrasenwechsel aus LJ-Link, Abruf vom Pult, per MIDI und OSC."),
+            ("VJ-Link scenes: transitions in beats or seconds, fade or through black, auto after bars or phrase changes, recalled from the desk, MIDI or OSC.",
+             "VJ-Link-Szenen: Übergang in Beats oder Sekunden, Blende oder über Schwarz, Auto nach Takten oder Phrasen, Abruf vom Pult, per MIDI oder OSC."),
             ("Show", "Show"), ("Scenes", "Szenen"),
             ("The building blocks of a show.", "Die Bausteine einer Show."), body)
 
@@ -64,9 +64,9 @@ def _():
            ("A second track holds effects: strobe, flash, white, W-flash, blinder and blackout.", "Eine zweite Spur hält Effekte: Strobe, Flash, White, W-Flash, Blinder und Blackout."),
            ("In gaps the scene that ran at the start applies. Each block has its own brightness.", "In Lücken gilt die Szene, die beim Start lief. Jeder Block hat eine eigene Helligkeit.")),
     )
-    return (("SHOW: running order of cues with a timeline", "SHOW: Ablauf aus Cues mit Timeline"),
-            ("The VJ-Link SHOW: video, image, camera, black, scene and timecode cues with GO, and a timeline with scene blocks and strobe, blinder and blackout like in an editing program.",
-             "Die VJ-Link-SHOW: Video-, Bild-, Kamera-, Schwarz-, Szenen- und Timecode-Cues mit WEITER und eine Timeline mit Szenen-Blöcken und Strobe, Blinder und Blackout wie im Schnittprogramm."),
+    return (("Show running order with timeline and cues", "Show-Ablauf mit Timeline und Cues"),
+            ("Run shows with video, image, camera, scene and timecode cues, GO on the space bar and a timeline with scenes, strobe and blackout.",
+             "Shows mit Video-, Bild-, Kamera-, Szenen- und Timecode-Cues, WEITER auf der Leertaste und einer Timeline mit Szenen, Strobe und Blackout."),
             ("Show", "Show"), ("SHOW and timeline", "SHOW und Timeline"),
             ("A show with videos and cues, started with GO.", "Eine Show mit Videos und Cues, gestartet mit WEITER."), body)
 
@@ -86,7 +86,7 @@ def _():
           "VJ-Link sendet seine eigene Uhr oder gibt die empfangene weiter, etwa an einen grandMA, dessen Timecode-Show dann ihre Cues auslöst. Die Uhr steuern Timecode-Cues in der SHOW (Start ab Zeit, Stopp, Springen) und das Mapping."),
         ADM("beta", ("Built and tested with software senders and receivers, not yet with a real desk.", "Gebaut und mit Software-Sendern und -Empfängern getestet, noch nicht mit einem echten Pult.")),
     )
-    return (("Timecode in and out: Art-Net and MIDI timecode", "Timecode rein und raus: Art-Net und MIDI-Timecode"),
+    return (("Timecode: Art-Net and MIDI timecode (MTC)", "Timecode: Art-Net und MIDI-Timecode (MTC)"),
             ("Timecode in VJ-Link: receive Art-Net or MIDI timecode to start cues and follow videos, or send it to a grandMA timecode show.",
              "Timecode in VJ-Link: Art-Net- oder MIDI-Timecode empfangen, um Cues zu starten und Videos folgen zu lassen, oder an eine grandMA-Timecode-Show senden."),
             ("Show", "Show"), ("Timecode", "Timecode"),

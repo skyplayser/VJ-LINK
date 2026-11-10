@@ -33,9 +33,9 @@ def _():
             ("The test pattern “Numbers” shows on every output its number, name and position.", "Das Testbild „Nummern“ zeigt auf jedem Ausgang Nummer, Name und Lage.")),
         ADM("tip", ("With only one screen an output covers the interface. Esc or Close in the main window ends it.", "Mit nur einem Bildschirm verdeckt ein Ausgang die Oberfläche. Esc oder Schließen im Hauptfenster beendet ihn.")),
     )
-    return (("Outputs: screens, LED walls, canvas and window output", "Ausgänge: Bildschirme, LED-Wände, Leinwand und Fenster-Ausgang"),
-            ("VJ-Link outputs: any number of screens and projectors in any resolution, the same picture or one canvas across all, window output for OBS, NDI and Syphon, and test patterns.",
-             "VJ-Link-Ausgänge: beliebig viele Bildschirme und Beamer in jeder Auflösung, überall dasselbe Bild oder eine Leinwand über alle, Fenster-Ausgang für OBS, NDI und Syphon und Testbilder."),
+    return (("Multiple screens, LED walls and canvas", "Mehrere Bildschirme, LED-Wände und Leinwand"),
+            ("Run visuals on any number of screens, projectors and LED walls in any resolution, one canvas across all, window output for OBS and test patterns.",
+             "Visuals auf beliebig vielen Bildschirmen, Beamern und LED-Wänden in jeder Auflösung, eine Leinwand über alle, Fenster-Ausgang für OBS und Testbilder."),
             ("Outputs", "Ausgänge"), ("Screens and canvas", "Bildschirme und Leinwand"),
             ("Projectors, LED walls and capture.", "Beamer, LED-Wände und Abgreifen."), body)
 
@@ -70,8 +70,8 @@ def _():
           "Die Pult-Kanäle 71–75 setzen die Helligkeit der Bilder, 76–91 die Deckkraft ihrer Ebenen 1–4. MIDI und OSC können das mit festen Elementen je Bild genauso."),
         ADM("alpha", ("Projection mapping has been tried on screens, not yet with projectors on a real set.", "Projektionsmapping wurde an Bildschirmen ausprobiert, noch nicht mit Beamern an einem echten Bühnenbild.")),
     )
-    return (("Projection mapping with corner pin, grid warp and masks", "Projektionsmapping mit Eckpunkten, Raster-Verzerrung und Masken"),
-            ("Projection mapping in VJ-Link: canvases on boxes, columns and walls, 4-corner and grid warp, masks, a stage photo as a guide and up to five pictures with their own layers.",
-             "Projektionsmapping in VJ-Link: Leinwände auf Kisten, Säulen und Wänden, 4-Ecken- und Raster-Verzerrung, Masken, ein Bühnenfoto als Hilfe und bis zu fünf Bilder mit eigenen Ebenen."),
+    return (("Free projection mapping: corners, grid warp, masks", "Projektionsmapping kostenlos: Ecken, Raster, Masken"),
+            ("Free projection mapping software: map visuals onto boxes, columns and walls with corner pin, grid warp and masks, up to five pictures with own layers.",
+             "Kostenlose Projektionsmapping-Software: Visuals auf Kisten, Säulen und Wände mappen, mit Eckpunkten, Raster-Verzerrung, Masken und bis zu fünf Bildern."),
             ("Outputs", "Ausgänge"), ("Projection mapping", "Projektionsmapping"),
             ("Visuals on walls, boxes and columns.", "Visuals auf Wänden, Kisten und Säulen."), body)

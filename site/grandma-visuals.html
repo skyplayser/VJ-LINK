@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Written by .github/scripts/guides.py – edit there. -->
+<title data-de="Visuals mit der grandMA steuern (Art-Net, sACN) | VJ-Link">Control visuals from a grandMA (Art-Net, sACN) | VJ-Link</title>
+<meta name="description" content="Control live visuals from a grandMA2 or grandMA3 over Art-Net or sACN: patch VJ-Link as a 91-channel fixture, recall scenes and colors, sync with timecode." data-de-content="Live-Visuals von grandMA2 oder grandMA3 steuern, über Art-Net oder sACN: VJ-Link als Gerät mit 91 Kanälen patchen, Szenen und Farben abrufen, Timecode.">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+<meta name="author" content="SKYPLAYSER / NEXTPHILM">
+<link rel="canonical" href="https://skyplayser.github.io/VJ-LINK/grandma-visuals.html" data-de-href="https://skyplayser.github.io/VJ-LINK/de/grandma-visuals.html">
+<link rel="alternate" hreflang="en" href="https://skyplayser.github.io/VJ-LINK/grandma-visuals.html">
+<link rel="alternate" hreflang="de" href="https://skyplayser.github.io/VJ-LINK/de/grandma-visuals.html">
+<link rel="alternate" hreflang="x-default" href="https://skyplayser.github.io/VJ-LINK/grandma-visuals.html">
+<link rel="icon" href="images/logo.png" type="image/png">
+<link rel="apple-touch-icon" href="images/logo.png">
+<meta name="theme-color" content="#07090c">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="VJ-Link">
+<meta property="og:locale" content="en_US" data-de-content="de_DE">
+<meta property="og:locale:alternate" content="de_DE" data-de-content="en_US">
+<meta property="og:title" content="Control visuals from a grandMA (Art-Net, sACN) | VJ-Link" data-de-content="Visuals mit der grandMA steuern (Art-Net, sACN) | VJ-Link">
+<meta property="og:description" content="Control live visuals from a grandMA2 or grandMA3 over Art-Net or sACN: patch VJ-Link as a 91-channel fixture, recall scenes and colors, sync with timecode." data-de-content="Live-Visuals von grandMA2 oder grandMA3 steuern, über Art-Net oder sACN: VJ-Link als Gerät mit 91 Kanälen patchen, Szenen und Farben abrufen, Timecode.">
+<meta property="og:image" content="https://skyplayser.github.io/VJ-LINK/images/og.png">
+<meta property="og:url" content="https://skyplayser.github.io/VJ-LINK/grandma-visuals.html" data-de-content="https://skyplayser.github.io/VJ-LINK/de/grandma-visuals.html">
+<meta name="twitter:card" content="summary_large_image">
+<!-- structured-data -->
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a href="./" class="brand" style="display:flex;align-items:center;gap:10px"><img src="images/logo.png" alt="" width="32" height="32"><span>VJ-Link</span></a>
+    <button class="menu-btn" id="menu" aria-label="Menu" aria-expanded="false">&#9776;</button>
+    <nav id="nav">
+      <a href="./#features" data-de="Funktionen">Features</a>
+      <a href="#screens-mapping" data-de="Mapping">Mapping</a>
+      <a href="./#download">Download</a>
+      <a href="wiki.html">Wiki</a>
+      <a href="wiki-help.html" data-de="Hilfe">Help</a>
+      <a href="https://discord.gg/N6DMca4Bjk" rel="noopener">Discord</a>
+      <a href="https://github.com/skyplayser/VJ-LINK">GitHub</a>
+      <a class="lang" id="lang" href="de/grandma-visuals.html" hreflang="de" lang="de" title="Deutsch" data-de-href="../grandma-visuals.html" data-de-hreflang="en" data-de-lang="en" data-de-title="English" data-de="EN" style="text-decoration:none">DE</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap article">
+  <nav class="crumbs" aria-label="Breadcrumb"><a href="./">VJ-Link</a> › <span data-de="Visuals von der grandMA">Visuals from a grandMA</span></nav>
+  <div class="hero">
+    <h1><span class="kicker" data-de="Anleitung · grandMA2 / grandMA3 → VJ-Link">Guide · grandMA2 / grandMA3 → VJ-Link</span><span data-de="Visuals mit der grandMA steuern">Control visuals from a grandMA</span></h1>
+    <p class="tag" data-de="Die Bildschirme fahren wie ein Gerät: Szenen, Farben, Strobe und Blackout kommen von der grandMA, die Visuals folgen dem Beat der Musik.">Run the screens like a fixture: scenes, colors, strobe and blackout come from the grandMA, the visuals follow the beat of the music.</p>
+    <div class="cta" style="justify-content:flex-start">
+      <a class="btn primary" href="./#download" data-de="Kostenlos herunterladen">Download for free</a>
+      <a class="btn" href="wiki.html" data-de="Zum Wiki">Read the wiki</a>
+    </div>
+  </div>
+
+    <section id="answer">
+      <h2 data-de="Kurz gesagt">Short answer</h2>
+      <p data-de="Die grandMA so einstellen, dass sie Art-Net oder sACN an den VJ-Link-Rechner sendet, die Kanalliste von VJ-Link speichern und sie als Gerät mit 91 Kanälen patchen. Dann ruft jeder Executor eine Szene ab, setzt die fünf Farbslots, die Deckkraft von vier Ebenen, den Strobe und den Blackout. Mit LJ-Link kommt das Tempo direkt vom DJ.">Set the grandMA to send Art-Net or sACN to the VJ-Link computer, save VJ-Link&#x27;s channel list and patch it as a fixture with 91 channels. Then every executor can recall a scene, set the five color slots, the opacity of four layers, the strobe and the blackout. With LJ-Link the tempo comes straight from the DJ.</p>
+      <img class="pic" src="images/connect.png" alt="CONNECT tab with Art-Net, sACN and live DMX values" data-de-alt="Tab VERBINDEN mit Art-Net, sACN und DMX-Live-Werten" loading="lazy" decoding="async">
+    </section>
+    <section id="need">
+      <h2 data-de="Was du brauchst">What you need</h2>
+      <ul><li data-de="Ein grandMA2- oder grandMA3-Pult oder onPC mit Netzwerk-Ausgang.">A grandMA2 or grandMA3 console or onPC with network output.</li><li data-de="Einen Rechner mit VJ-Link im selben Netz (gleicher IP-Bereich) und daran einen Beamer oder eine LED-Wand.">A computer with VJ-Link in the same network (same IP range), and a projector or LED wall on it.</li><li data-de="Optional: LJ-Link für das Tempo des DJs.">Optional: LJ-Link for the tempo of the DJ.</li></ul>
+    </section>
+    <section id="grandma2">
+      <h2 data-de="grandMA2 und grandMA2 onPC: Schritt für Schritt">grandMA2 and grandMA2 onPC: step by step</h2>
+      <ol><li data-de="Setup → Network → Network Protocols.">Setup → Network → Network Protocols.</li><li data-de="Art-Net (oder sACN) einschalten und die Zeile auf Output mit dem Universe stellen, auf das VJ-Link hört. Art-Net-Universe 0 in VJ-Link heißt am MA oft 0.0 oder 1; mit den Live-Werten unter VERBINDEN prüfen.">Switch Art-Net (or sACN) on and set the line to Output with the universe VJ-Link listens to. Art-Net universe 0 in VJ-Link is often shown as 0.0 or 1 on the MA; check with the live values under CONNECT.</li><li data-de="In VJ-Link die Kanalliste speichern (VERBINDEN → Kanalliste speichern) und VJ-Link mit 91 Kanälen auf der Startadresse patchen.">Save the channel list in VJ-Link (CONNECT → Save channel list) and patch VJ-Link with 91 channels at the start address.</li><li data-de="Den Master-Kanal bewegen: Die DMX-Anzeige in VJ-Link wird grün, und das Bild folgt.">Move the master channel: the DMX pill in VJ-Link turns green and the picture follows.</li></ol>
+    </section>
+    <section id="grandma3">
+      <h2 data-de="grandMA3 und grandMA3 onPC: Schritt für Schritt">grandMA3 and grandMA3 onPC: step by step</h2>
+      <ol><li data-de="Menu → In &amp; Out → DMX Protocols.">Menu → In &amp; Out → DMX Protocols.</li><li data-de="Eine Art-Net- oder sACN-Zeile anlegen, Modus Output, das Universe, auf das VJ-Link hört, und als Ziel den VJ-Link-Rechner (oder Broadcast).">Add an Art-Net or sACN line, mode Output, the universe VJ-Link listens to, and as destination the VJ-Link computer (or broadcast).</li><li data-de="VJ-Link mit den 91 Kanälen der Kanalliste patchen.">Patch VJ-Link with the 91 channels of the channel list.</li><li data-de="Optional OSC: In &amp; Out → OSC, eine Zeile mit dem VJ-Link-Rechner und Port 8000, Modus Send. Ein Befehl wie SendOSC 1 &quot;/vjlink/scene/go,i,3&quot; ruft Szene 3 ab.">Optional OSC: In &amp; Out → OSC, a line with the VJ-Link computer and port 8000, mode Send. A command like SendOSC 1 &quot;/vjlink/scene/go,i,3&quot; recalls scene 3.</li></ol>
+    </section>
+    <section id="channels">
+      <h2 data-de="Was das Pult steuert">What the desk controls</h2>
+      <ul><li data-de="Global: Master, Strobe, Szene, Blende, Tempo-Faktor, Effekt-Intensität, Auto und Blackout.">Global: master, strobe, scene, transition, tempo factor, effect intensity, auto and blackout.</li><li data-de="Fünf Farbslots mit Dimmer und RGB – die Visuals übernehmen die Farben der Lichtshow.">Five color slots with dimmer and RGB – the visuals take the colors of the light show.</li><li data-de="Ebenen 1–4: Deckkraft, Clip-Bank, Clip, Farbquelle, Geschwindigkeit, drei Effekte, Strobe und Mischmodus.">Layers 1–4: opacity, clip bank, clip, color source, speed, three effects, strobe and blend mode.</li><li data-de="Alles andere lässt sich auf beliebige DMX-Kanäle, MIDI-Noten oder OSC-Adressen legen.">Everything else can be mapped to any DMX channel, MIDI note or OSC address.</li></ul>
+      <p data-de="Umgekehrt sendet VJ-Link Art-Net- oder MIDI-Timecode, sodass eine grandMA-Timecode-Show synchron mit den Videos der Show läuft.">The other way round VJ-Link sends Art-Net or MIDI timecode, so a grandMA timecode show can run in sync with the videos of the show.</p>
+    </section>
+    <section id="faq">
+      <h2 data-de="Häufige Fragen">Questions</h2>
+      <details><summary data-de="Welche grandMA geht?">Which grandMA works?</summary><p data-de="grandMA2 und grandMA3, Pulte und onPC, und der dot2 mit Art-Net-Ausgang. Das Profil folgt den MA-Handbüchern und ist noch nicht an jedem Pult bestätigt; der Empfang von Art-Net und sACN ist getestet.">grandMA2 and grandMA3, consoles and onPC, and the dot2 with Art-Net output. The profile follows the MA manuals and is not yet confirmed on every desk; Art-Net and sACN reception is tested.</p></details>
+      <details><summary data-de="Brauche ich eine Fixture-Datei?">Do I need a fixture file?</summary><p data-de="Nein. 91 Dimmerkanäle patchen oder aus der CSV-Kanalliste, die VJ-Link speichert, ein Gerät bauen.">No. Patch 91 dimmer channels or build a fixture from the CSV channel list that VJ-Link saves.</p></details>
+      <details><summary data-de="Wie bekommen die Visuals das BPM?">How do the visuals get the BPM?</summary><p data-de="Mit LJ-Link kommen Tempo und Phrasen von den Pioneer- oder Denon-Playern; sonst aus Ableton Link, MIDI-Clock, dem Audio-Eingang oder Tap.">With LJ-Link the tempo and the phrases come from the Pioneer or Denon players; otherwise from Ableton Link, MIDI clock, the audio input or tap.</p></details>
+    </section>
+<div class="box"><h2 data-de="Kostenlos für macOS und Windows">Free for macOS and Windows</h2><p data-de="VJ-Link ist kostenlos und Open Source (EPL 2.0). Installieren, Demo-Show öffnen, und in Minuten laufen Live-Visuals.">VJ-Link is free and open source (EPL 2.0). Install it, open the demo show and you have live visuals in minutes.</p><p><a class="btn primary" href="./#download" data-de="Kostenlos herunterladen">Download for free</a></p></div>
+    <section id="more">
+      <h2 data-de="Weitere Anleitungen">More guides</h2>
+      <ul><li><a href="free-vj-software.html" data-de="Kostenlose VJ-Software für Mac und Windows">Free VJ software for Mac and Windows</a></li><li><a href="projection-mapping-software.html" data-de="Projektionsmapping-Software kostenlos">Free projection mapping software</a></li><li><a href="wiki-desks.html" data-de="Alle Lichtpulte im Wiki">All light desks in the wiki</a></li><li><a href="wiki-quickstart.html" data-de="Schnellstart in 5 Minuten">Quick start in 5 minutes</a></li></ul>
+    </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p data-de="Open Source unter der Eclipse Public License 2.0, ohne Gewährleistung. Die Personen-Erkennung nutzt MediaPipe (Apache-2.0). VJ-Link ist kein offizielles Produkt von MA Lighting, Daslight, Akai, Korg, Ableton, OBS oder Google. Alle Produktnamen gehören ihren Inhabern und dienen nur der Beschreibung der Kompatibilität.">Open source under the Eclipse Public License 2.0, without warranty. Person detection uses MediaPipe (Apache-2.0). VJ-Link is not an official product of MA Lighting, Daslight, Akai, Korg, Ableton, OBS or Google. All product names belong to their owners and are used only to describe compatibility.</p>
+    <p><a href="https://github.com/skyplayser/VJ-LINK">GitHub</a> · <a href="https://github.com/skyplayser/VJ-LINK/releases" data-de="Versionen">Releases</a> · <a href="wiki.html">Wiki</a> · <a href="wiki-help.html" data-de="Hilfe">Help</a> · <a href="https://discord.gg/N6DMca4Bjk" rel="noopener">Discord</a> · <a href="https://github.com/skyplayser/VJ-LINK/issues">Issues</a> · <a href="free-vj-software.html" data-de="Kostenlose VJ-Software">Free VJ software</a> · <a href="grandma-visuals.html" data-de="Visuals mit grandMA">Visuals with grandMA</a> · <a href="projection-mapping-software.html" data-de="Projektionsmapping">Projection mapping</a> · <a href="https://github.com/skyplayser/VJ-LInk-dev" data-de="Quellcode">Source code</a> · <a href="https://github.com/skyplayser/VJ-LINK/blob/main/LICENSE" data-de="Lizenz">License</a> · <a href="https://skyplayser.github.io/LJ-Link/" data-de-href="https://skyplayser.github.io/LJ-Link/de/" data-de="Probier auch: LJ-Link">Try also: LJ-Link</a> · <a href="impressum.html">Impressum</a> · <a href="datenschutz.html" data-de="Datenschutz">Privacy</a></p>
+    <p class="credit">Idea SKYPLAYSER/NEXTPHILM<br>Prompted with ❤️ made by Claude</p>
+  </div>
+</footer>
+
+<div class="viewer" id="viewer" role="dialog" aria-label="Picture"><img alt=""></div>
+
+<script>
+  (function () {
+    // Language: English at /, German at /de/ (built from data-de). A saved choice wins, otherwise a German
+    // browser goes from / to /de/ on the first visit. The button is a plain link, so search engines see both.
+    var langBtn = document.getElementById("lang");
+    var lang = document.documentElement.lang === "de" ? "de" : "en";
+    var saved = null;
+    try { saved = localStorage.getItem("vj-lang"); } catch (e) { /* private mode */ }
+    var want = saved || ((navigator.language || "en").toLowerCase().indexOf("de") === 0 ? "de" : "en");
+    if (langBtn && want !== lang && (saved || lang === "en")) { location.replace(langBtn.href + location.hash); return; }
+    if (langBtn) langBtn.addEventListener("click", function () {
+      try { localStorage.setItem("vj-lang", lang === "de" ? "en" : "de"); } catch (e) { /* private mode */ }
+    });
+
+    // The download that fits this computer is highlighted and used by the big button.
+    var ua = navigator.userAgent, os = /Windows/.test(ua) ? "win" : /Mac/.test(ua) ? "mac-arm" : null;
+    var card = os && document.querySelector('.dl .card[data-os="' + os + '"]');
+    if (card) {
+      card.classList.add("suggested");
+      var hero = document.getElementById("hero-download");
+      if (hero && os === "win") hero.href = card.querySelector("a").href;
+    }
+
+    // The newest version, from GitHub (only on pages that show it).
+    var heroV = document.getElementById("hero-version"), dlV = document.getElementById("dl-version");
+    if (heroV || dlV) fetch("https://api.github.com/repos/skyplayser/VJ-LINK/releases/latest")
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        if (!j || !j.tag_name) return;
+        var v = j.tag_name.replace(/^v/, ""), de = lang === "de";
+        if (heroV) heroV.textContent = "Version " + v + " · ";
+        if (dlV) dlV.textContent = de ? "Aktuelle Version: " + v + "." : "Current version: " + v + ".";
+      })
+      .catch(function () { /* offline: no version line */ });
+
+    // Phone menu.
+    var menu = document.getElementById("menu"), nav = document.getElementById("nav");
+    if (menu && nav) {
+      menu.onclick = function () { var open = nav.classList.toggle("open"); menu.setAttribute("aria-expanded", open); };
+      nav.addEventListener("click", function (e) { if (e.target.tagName === "A") nav.classList.remove("open"); });
+    }
+
+    // Pictures open large.
+    var viewer = document.getElementById("viewer");
+    if (viewer) {
+      document.querySelectorAll(".gallery img, .split img, .dfig img").forEach(function (img) {
+        img.addEventListener("click", function () { viewer.querySelector("img").src = img.src; viewer.classList.add("open"); });
+      });
+      viewer.onclick = function () { viewer.classList.remove("open"); };
+      document.addEventListener("keydown", function (e) { if (e.key === "Escape") viewer.classList.remove("open"); });
+    }
+  })();
+</script>
+</body>
+</html>

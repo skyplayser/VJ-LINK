@@ -92,8 +92,8 @@ def _():
                 [("dj", "pc", "cable", None), ("pc", "dmx", "usb", ("USB", "USB")), ("pc", "bm", "cable", ("HDMI", "HDMI"))]),
         P("See also [Daslight](wiki-desk-daslight.html).", "Siehe auch [Daslight](wiki-desk-daslight.html)."),
     )
-    return (("Setups with LJ-Link: one laptop, booth and FOH, club with grandMA, mobile with Daslight", "Aufbauten mit LJ-Link: ein Laptop, Booth und FOH, Club mit grandMA, mobil mit Daslight"),
-            ("Connection diagrams for VJ-Link with LJ-Link: everything on one laptop, LJ-Link at the booth and VJ-Link at FOH, a club with CDJs, grandMA and LED wall, and a mobile setup with Daslight.",
-             "Verbindungsschemas für VJ-Link mit LJ-Link: alles auf einem Laptop, LJ-Link an der Booth und VJ-Link am FOH, ein Club mit CDJs, grandMA und LED-Wand und ein mobiler Aufbau mit Daslight."),
+    return (("Setups with LJ-Link: laptop, club, mobile", "Aufbauten mit LJ-Link: Laptop, Club, mobil"),
+            ("Diagrams for VJ-Link with LJ-Link: all on one laptop, booth and FOH, a club with CDJs, grandMA and LED wall, and a mobile setup with Daslight.",
+             "Schemas für VJ-Link mit LJ-Link: alles auf einem Laptop, Booth und FOH, ein Club mit CDJs, grandMA und LED-Wand und mobil mit Daslight."),
             ("LJ-Link", "LJ-Link"), ("Setups with LJ-Link", "Aufbauten mit LJ-Link"),
             ("Diagrams for every typical setup.", "Schemas für jeden typischen Aufbau."), body)

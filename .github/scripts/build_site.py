@@ -75,6 +75,39 @@ def pictures(page, site):
     return re.sub(r'<img\s[^>]*?src="((?:\.\./)?images/[^"]+\.png)"[^>]*>', wrap, page)
 
 
+def latest_version():
+    """Version of the newest release on GitHub; None when offline (the page then simply omits it)."""
+    import urllib.request
+    try:
+        req = urllib.request.Request("https://api.github.com/repos/skyplayser/VJ-LINK/releases/latest",
+                                     headers={"Accept": "application/vnd.github+json", "User-Agent": "vjlink-site-build"})
+        with urllib.request.urlopen(req, timeout=10) as r:
+            return json.load(r).get("tag_name", "").lstrip("v") or None
+    except Exception:
+        return None
+
+
+VERSION = None
+
+
+def dimensions(page, site):
+    """Width and height on every local picture that has none, so the layout does not jump while loading."""
+    cache = {}
+    def add(m):
+        tag, path = m[0], m[1]
+        if re.search(r"\swidth=", tag):
+            return tag
+        local = site / re.sub(r"^(\.\./)+", "", path)
+        if not local.exists():
+            return tag
+        if local not in cache:
+            with Image.open(local) as im:
+                cache[local] = im.size
+        w, h = cache[local]
+        return tag[:-1].rstrip("/").rstrip() + ' width="%d" height="%d">' % (w, h)
+    return re.sub(r'<img\s[^>]*?src="((?:\.\./)?images/[^"]+\.(?:png|jpg|webp))"[^>]*>', add, page)
+
+
 def text(fragment):
     return html.unescape(re.sub(r"<[^>]+>", "", fragment)).strip()
 
@@ -94,7 +127,7 @@ def structured_data(page, lang, url, home):
                                                 page.split('id="features"')[1].split("</section>")[0])]
         app.update({
             "url": url, "description": meta("description"), "inLanguage": lang,
-            "applicationSubCategory": "VJ and lighting software", "operatingSystem": "macOS 12+, Windows 10, Windows 11", "softwareVersion": "0.0.1",
+            "applicationSubCategory": "VJ and lighting software", "operatingSystem": "macOS 12+, Windows 10, Windows 11", **({"softwareVersion": VERSION} if VERSION else {}),
             "isAccessibleForFree": True, "downloadUrl": REPO + "/releases/latest", "installUrl": url + "#download",
             "image": BASE + "images/logo.png", "screenshot": shots, "featureList": features,
             "keywords": "VJ software, live visuals, lightjockey, LJ, Lichtjockey, VJ, Visuals, grandMA, DMX, Art-Net, "
@@ -141,8 +174,10 @@ def sitemap(site, pages):
 
 
 def main():
+    global VERSION
     site, images = Path(sys.argv[1]), Path(sys.argv[2])
     copy_images(site, images)
+    VERSION = latest_version()
     css = (site / "style.css").read_text(encoding="utf-8")
     # The pages link style.css so they also work unbuilt; the build puts it inline (one request less).
     finish = lambda p: re.sub(r'<link rel="stylesheet" href="(?:\.\./)?style\.css">', lambda m: "<style>\n%s</style>" % css,
@@ -152,8 +187,9 @@ def main():
     (site / "de").mkdir(exist_ok=True)
     for name, source in pages:
         path = "" if name == "index.html" else name
-        en = structured_data(pictures(source, site), "en", BASE + path, BASE)
-        de = structured_data(pictures(to_german(source, site), site), "de", BASE + "de/" + path, BASE + "de/")
+        en = structured_data(pictures(dimensions(source, site), site), "en", BASE + path, BASE)
+        de_src = to_german(source, site)
+        de = structured_data(pictures(dimensions(de_src, site), site), "de", BASE + "de/" + path, BASE + "de/")
         (site / name).write_text(finish(en), encoding="utf-8")
         (site / "de" / name).write_text(finish(de), encoding="utf-8")
     sitemap(site, [(n, s) for n, s in pages if 'name="robots" content="noindex' not in s])  # not the redirects
