@@ -42,7 +42,7 @@ Fehlermeldung, wenn du eine schickst.
 
 ## Was du bekommst
 
-- **150 Visuals in 16 Kategorien:** Minimal und Monochrom, 3D und Raum, Fraktale, Demoscene, Heilige Geometrie, Daten und
+- **150 Visuals in 15 Kategorien:** Minimal und Monochrom, 3D und Raum, Fraktale, Demoscene, Heilige Geometrie, Daten und
   Glitch, Op-Art, Organisch und Flüssig, Audio und Equalizer, Partikel, Retro und Synthwave, Geometrie und Tunnel, Licht und
   Raum sowie 16 Laser-Looks für einen Beamer im Nebel. Alle eigens für VJ-Link geschrieben, alle reagieren auf Beat oder Audio.
 - **50 Effekte** in einem Stapel mit bis zu sechs je Ebene: Feedback, Datamosh, Slit-Scan, VHS, Bloom, Kaleidoskop, Halbton,
@@ -57,7 +57,7 @@ Fehlermeldung, wenn du eine schickst.
   und OSC wie in Daslight: Element anklicken, Fader bewegen. Vorlagen für Akai APC mini und Korg nanoKONTROL2, LED-Rückmeldung,
   Modulation mit LFOs oder Audio-Bändern.
 - **Tempo von überall:** LJ-Link (wird automatisch gefunden, auch auf anderen Rechnern), Ableton Link (über Carabiner), OSC,
-  MIDI-Clock, Audio-Eingang oder Tap.
+  MIDI-Clock oder Tap.
 - **Ausgänge:** ein Fenster pro Bildschirm in jeder Auflösung, überall dasselbe Bild oder eine Leinwand über alle, ein
   Fenster-Ausgang für OBS, NDI- und Syphon-Werkzeuge, Testbilder und **Projektionsmapping** mit Eckpunkten, Raster-Verzerrung
   (3×3, 5×5) und Masken.
@@ -141,9 +141,10 @@ Das Programm startet in der Sprache deines Systems; im Startbildschirm schaltest
 
 VJ-Link nimmt Art-Net oder sACN auf einem Universe an. Das feste Profil *Standard* hat 91 Kanäle: Master, Strobe, Szene, Blende,
 Tempo-Faktor, Effekt-Intensität, Auto und Blackout; die fünf Farbslots mit Dimmer und RGB; für die Ebenen 1–4 Deckkraft,
-Clip-Bank, Clip, Farbquelle, Geschwindigkeit, drei Effekte, Strobe und Mischmodus; Strobe-Intensität und -Modus; und auf den
+Clip-Bank (vorerst immer 1), Clip (Visual 1–150 aus dem Katalog), Farbquelle, Geschwindigkeit, drei Effekte, Strobe und Mischmodus; Strobe-Intensität und -Modus; und auf den
 Kanälen 71–91 die Bilder des Projektionsmappings. Alles andere (Ebenen 5–8, jeder weitere Regler) lässt sich frei zuweisen. Es wirken nur Kanäle, die
-sich ändern – Maus, MIDI und Pult arbeiten also nebeneinander.
+sich ändern – Maus, MIDI und Pult arbeiten also nebeneinander. Eigene Logos, Videos und Text-Clips legst du über freie
+DMX-Zuweisung (MAPPING → DMX) auf eine Ebene.
 
 | Pult | Weg | Stand |
 |---|---|---|

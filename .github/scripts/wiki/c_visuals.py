@@ -90,8 +90,8 @@ def _():
 def _():
     body = SEC(
         H2("Logos and images", "Logos und Bilder"),
-        P("PNG, JPG, WebP, GIF and SVG up to 25 MB: drag them onto the window or use **+ Load file** in the library. A logo on a white or black background is recognised and the background is removed (Graphic → Remove background, with tolerance).",
-          "PNG, JPG, WebP, GIF und SVG bis 25 MB: ins Fenster ziehen oder in der Bibliothek **+ Datei laden**. Ein Logo auf weißem oder schwarzem Hintergrund wird erkannt und der Hintergrund entfernt (Grafik → Freistellen, mit Toleranz)."),
+        P("PNG, JPG, WebP, GIF (first frame only) and SVG up to 25 MB: drag them onto a row of the clip grid (they land on that layer; anywhere else: the selected layer) or use **+ Load file** in the library. A logo on a white or black background is recognised and the background is removed (Graphic → Remove background, with tolerance).",
+          "PNG, JPG, WebP, GIF (nur das erste Bild) und SVG bis 25 MB: auf eine Zeile im Clip-Raster ziehen (sie landen auf dieser Ebene, sonst auf der gewählten) oder in der Bibliothek **+ Datei laden**. Ein Logo auf weißem oder schwarzem Hintergrund wird erkannt und der Hintergrund entfernt (Grafik → Freistellen, mit Toleranz)."),
         UL(("Position, size and rotation, and an animation in time: pulse, spin, bounce, float, wobble or zoom, ½ to 8 beats per round.", "Lage, Größe und Drehung und eine Animation im Takt: Pulsieren, Drehen, Hüpfen, Schweben, Wackeln oder Heranzoomen, ½ bis 8 Beats pro Durchlauf."),
            ("With the drive **Static** a graphic stands still.", "Mit dem Antrieb **Statisch** steht eine Grafik still.")),
         H2("Videos", "Videos"),

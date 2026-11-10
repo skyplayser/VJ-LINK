@@ -41,7 +41,7 @@ It runs locally. There is no account, no cloud and no telemetry. The only connec
 
 ## What you get
 
-- **150 visuals in 16 categories:** minimal and monochrome, 3D and space, fractals, demoscene, sacred geometry, data and glitch,
+- **150 visuals in 15 categories:** minimal and monochrome, 3D and space, fractals, demoscene, sacred geometry, data and glitch,
   op art, organic and fluid, audio and equalizer, particles, retro and synthwave, geometry and tunnels, light and space, and 16
   laser looks for a projector in haze. All written for VJ-Link, all react to the beat or the audio.
 - **50 effects** in a stack of up to six per layer: feedback, datamosh, slit-scan, VHS, bloom, kaleidoscope, halftone, LCD,
@@ -56,7 +56,7 @@ It runs locally. There is no account, no cloud and no telemetry. The only connec
   MIDI, DMX and OSC like in Daslight: click an element, move the fader. Templates for Akai APC mini and Korg nanoKONTROL2, LED
   feedback, modulation with LFOs or audio bands.
 - **Tempo from everywhere:** LJ-Link (found automatically, also on other computers), Ableton Link (through Carabiner), OSC,
-  MIDI clock, the audio input or tap.
+  MIDI clock or tap.
 - **Outputs:** one window per screen in any resolution, the same picture on all of them or one canvas across all, a window output
   for OBS, NDI and Syphon tools, test patterns, and **projection mapping** with corner pin, grid warp (3×3, 5×5) and masks.
 - **SHOW:** a running order of video, image, camera, black, scene and timecode cues with GO on the space bar, and a timeline
@@ -136,10 +136,11 @@ The program starts in the language of your system; the start screen switches bet
 ## Light desk
 
 VJ-Link takes Art-Net or sACN on one universe. The fixed profile *Standard* has 91 channels: master, strobe, scene, transition,
-tempo factor, effect intensity, auto and blackout; the five color slots with dimmer and RGB; for layers 1–4 opacity, clip bank,
-clip, color source, speed, three effects, strobe and blend mode; strobe intensity and mode; and on channels 71–91 the pictures of
+tempo factor, effect intensity, auto and blackout; the five color slots with dimmer and RGB; for layers 1–4 opacity, clip bank
+(always 1 for now), clip (visual 1–150 from the catalog), color source, speed, three effects, strobe and blend mode; strobe intensity and mode; and on channels 71–91 the pictures of
 the projection mapping. Everything else (layers 5–8, every other control) can be mapped freely. Only channels that change take
-effect, so the mouse, MIDI and the desk can work side by side.
+effect, so the mouse, MIDI and the desk can work side by side. Your own logos, videos and text clips go on a layer through
+free DMX mapping (MAPPING → DMX).
 
 | Desk | How | State |
 |---|---|---|
