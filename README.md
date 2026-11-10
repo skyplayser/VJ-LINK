@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <img alt="Status: beta 0.1.1" src="https://img.shields.io/badge/status-beta%200.1.1-FF5C93">
+  <img alt="Status: beta 0.1.2" src="https://img.shields.io/badge/status-beta%200.1.2-FF5C93">
   <img alt="macOS and Windows, free" src="https://img.shields.io/badge/macOS%20%7C%20Windows-free-3DDC84">
   <img alt="License: EPL-2.0" src="https://img.shields.io/badge/license-EPL--2.0-60a5fa">
 </p>
@@ -36,7 +36,7 @@ It runs locally. There is no account, no cloud and no telemetry. The only connec
 (GitHub) and a problem report, when you send one.
 
 > [!WARNING]
-> **This is the beta 0.1.1.** After a full test day (bugs, workflows, interface and a security test) it is a lot more robust
+> **This is the beta 0.1.2.** After a full test day (bugs, workflows, interface and a security test) it is a lot more robust
 > than the first alpha, but large parts have still not met real stage hardware. Please try it before an important show, and
 > tell us what you find: **Help → Report a problem** in the program.
 

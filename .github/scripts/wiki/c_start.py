@@ -6,8 +6,8 @@ group("Start", "Start")
 @page("wiki.html", "Overview", "Übersicht")
 def _():
     body = SEC(
-        ADM("beta", ("This wiki describes the beta **0.1.1**. Many parts have not met real stage hardware yet; every page says what is tested and what is not.",
-                      "Dieses Wiki beschreibt die Beta **0.1.1**. Viele Teile haben noch keine echte Bühnentechnik gesehen; jede Seite sagt, was getestet ist und was nicht.")),
+        ADM("beta", ("This wiki describes the beta **0.1.2**. Many parts have not met real stage hardware yet; every page says what is tested and what is not.",
+                      "Dieses Wiki beschreibt die Beta **0.1.2**. Viele Teile haben noch keine echte Bühnentechnik gesehen; jede Seite sagt, was getestet ist und was nicht.")),
         H2("What VJ-Link does", "Was VJ-Link macht"),
         P("VJ-Link plays live visuals on screens, projectors and LED walls. The light desk leads: it recalls scenes, sets the colors, the brightness, the strobe and the blackout. The tempo comes from the music, best from [LJ-Link](wiki-ljlink.html), so everything moves in time without anybody tapping.",
           "VJ-Link spielt Live-Visuals auf Bildschirmen, Beamern und LED-Wänden. Das Lichtpult führt: Es ruft Szenen ab und setzt Farben, Helligkeit, Strobe und Blackout. Das Tempo kommt aus der Musik, am besten aus [LJ-Link](wiki-ljlink.html), sodass alles im Takt läuft, ohne dass jemand tappen muss."),
