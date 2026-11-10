@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <img alt="Stand: Alpha 0.0.1" src="https://img.shields.io/badge/Stand-Alpha%200.0.1-FF5C93">
+  <img alt="Stand: Beta 0.1.1" src="https://img.shields.io/badge/Stand-Beta%200.1.1-FF5C93">
   <img alt="macOS und Windows, kostenlos" src="https://img.shields.io/badge/macOS%20%7C%20Windows-kostenlos-3DDC84">
   <img alt="Lizenz: EPL-2.0" src="https://img.shields.io/badge/Lizenz-EPL--2.0-60a5fa">
 </p>
@@ -36,9 +36,9 @@ Alles läuft lokal. Kein Konto, keine Cloud, keine Telemetrie. Nach außen geht 
 Fehlermeldung, wenn du eine schickst.
 
 > [!WARNING]
-> **Das ist die erste öffentliche Alpha (0.0.1).** Auf unseren Rechnern läuft sie gut, aber große Teile haben noch keine echte
-> Bühnentechnik gesehen. Verlass dich bitte noch nicht bei einer wichtigen Show darauf, und sag uns, was dir auffällt:
-> **Hilfe → Fehler melden** im Programm.
+> **Das ist die Beta 0.1.1.** Nach einem kompletten Testtag (Fehler, Arbeitsabläufe, Oberfläche und Sicherheitstest) ist sie
+> deutlich robuster als die erste Alpha, aber große Teile haben noch keine echte Bühnentechnik gesehen. Probier sie bitte vor
+> einer wichtigen Show aus, und sag uns, was dir auffällt: **Hilfe → Fehler melden** im Programm.
 
 ## Was du bekommst
 
@@ -174,10 +174,10 @@ Sag uns bitte, was du getestet hast: **Hilfe → Fehler melden** oder auf [Disco
 
 | Ziel | Stand |
 |---|---|
-| Visuals, Effekte, Ebenen, Szenen, SHOW, Timeline | fertig (Alpha) |
+| Visuals, Effekte, Ebenen, Szenen, SHOW, Timeline | fertig (Beta) |
 | Art-Net, sACN, MIDI, OSC, Tastatur-Mapping | fertig, Tests an echten Pulten fehlen |
-| Projektionsmapping, Leinwand, Fenster-Ausgang | fertig (Alpha) |
-| Personen-Erkennung für Kamera-Looks | fertig (Alpha) |
+| Projektionsmapping, Leinwand, Fenster-Ausgang | fertig (Beta) |
+| Personen-Erkennung für Kamera-Looks | fertig (Beta) |
 | Natives Syphon und Spout, NDI | geplant (bis dahin: Fenster-Ausgang und Bildschirmaufnahme) |
 | Pult-Profile als GDTF und grandMA2-XML | geplant |
 | Fernbedienung im Browser | geplant |

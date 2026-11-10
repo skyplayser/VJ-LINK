@@ -6,8 +6,8 @@ group("Start", "Start")
 @page("wiki.html", "Overview", "Übersicht")
 def _():
     body = SEC(
-        ADM("alpha", ("This wiki describes the first public alpha **0.0.1**. Many parts have not met real stage hardware yet; every page says what is tested and what is not.",
-                      "Dieses Wiki beschreibt die erste öffentliche Alpha **0.0.1**. Viele Teile haben noch keine echte Bühnentechnik gesehen; jede Seite sagt, was getestet ist und was nicht.")),
+        ADM("beta", ("This wiki describes the beta **0.1.1**. Many parts have not met real stage hardware yet; every page says what is tested and what is not.",
+                      "Dieses Wiki beschreibt die Beta **0.1.1**. Viele Teile haben noch keine echte Bühnentechnik gesehen; jede Seite sagt, was getestet ist und was nicht.")),
         H2("What VJ-Link does", "Was VJ-Link macht"),
         P("VJ-Link plays live visuals on screens, projectors and LED walls. The light desk leads: it recalls scenes, sets the colors, the brightness, the strobe and the blackout. The tempo comes from the music, best from [LJ-Link](wiki-ljlink.html), so everything moves in time without anybody tapping.",
           "VJ-Link spielt Live-Visuals auf Bildschirmen, Beamern und LED-Wänden. Das Lichtpult führt: Es ruft Szenen ab und setzt Farben, Helligkeit, Strobe und Blackout. Das Tempo kommt aus der Musik, am besten aus [LJ-Link](wiki-ljlink.html), sodass alles im Takt läuft, ohne dass jemand tappen muss."),
@@ -102,8 +102,8 @@ def _():
         STEPS(("Start `VJ-Link-windows.exe`. In the SmartScreen window press **More info**, then **Run anyway**.", "`VJ-Link-windows.exe` starten. Im SmartScreen-Fenster **Weitere Informationen**, dann **Trotzdem ausführen** drücken."),
               ("Click through the installer.", "Den Installer durchklicken."),
               ("When the firewall asks, tick **Private networks** and allow access. Without it Art-Net, sACN, OSC and LJ-Link cannot reach VJ-Link.", "Fragt die Firewall, **Private Netzwerke** anhaken und zulassen. Ohne das erreichen Art-Net, sACN, OSC und LJ-Link VJ-Link nicht.")),
-        ADM("warn", ("Windows is built but **not tested yet** in this alpha. Please tell us how it runs: [report a problem](wiki-help.html#report).",
-                     "Windows ist gebaut, in dieser Alpha aber **noch nicht getestet**. Sag uns bitte, wie es läuft: [Fehler melden](wiki-help.html#report).")),
+        ADM("warn", ("Windows is built but **not tested yet** in this beta. Please tell us how it runs: [report a problem](wiki-help.html#report).",
+                     "Windows ist gebaut, in dieser Beta aber **noch nicht getestet**. Sag uns bitte, wie es läuft: [Fehler melden](wiki-help.html#report).")),
         H2("Updates", "Updates"),
         P("The start screen checks GitHub for a new version, at most once an hour, and **Settings → Update** does it on request. **Download and install** loads the new version: on a Mac VJ-Link quits, replaces itself and starts again; on Windows the installer opens. The project is saved all the time, nothing is lost.",
           "Der Startbildschirm fragt höchstens einmal pro Stunde bei GitHub nach einer neuen Version, **Einstellungen → Update** auf Wunsch. **Herunterladen und installieren** lädt die neue Version: Auf dem Mac beendet sich VJ-Link, ersetzt sich und startet neu; unter Windows öffnet sich der Installer. Das Projekt wird laufend gesichert, nichts geht verloren."),
