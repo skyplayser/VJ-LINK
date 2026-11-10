@@ -63,18 +63,18 @@
     <p class="meta"><span id="hero-version"></span><span data-de="Beta · macOS und Windows · kostenlos · Open Source">Beta · macOS and Windows · free · open source</span></p>
     <img class="shot" src="images/visuals.png" alt="VJ-Link with eight layers of visuals, the clip grid, five color slots and ten scenes" data-de-alt="VJ-Link mit acht Ebenen Visuals, dem Clip-Raster, fünf Farbslots und zehn Szenen" width="1920" height="1080" fetchpriority="high">
     <div class="makers">
-      <span class="maker"><b>grandMA2 / grandMA3</b> · Art-Net, sACN</span>
-      <span class="maker"><b>Daslight</b> · Art-Net, sACN</span>
+      <span class="maker">grandMA2 / grandMA3 · Art-Net, sACN</span>
+      <span class="maker">Daslight · Art-Net, sACN</span>
       <span class="maker"><b>MIDI</b> · <span data-de="Controller und Pulte">controllers and desks</span></span>
       <span class="maker"><b>OSC</b> · <span data-de="jeder Regler">every control</span></span>
       <span class="maker"><b>LJ-Link</b> · <span data-de="Tempo, Phrasen, Titel">tempo, phrases, titles</span></span>
-      <span class="maker"><b>Ableton Link</b> · Carabiner</span>
+      <span class="maker">Ableton Link · Carabiner</span>
       <span class="maker"><b>Timecode</b> · Art-Net, MTC</span>
-      <span class="maker"><span data-de="Fenster-Ausgang für">Window output for</span> <b>OBS · NDI · Syphon</b></span>
+      <span class="maker"><span data-de="Fenster-Ausgang für OBS (NDI/Syphon über Zusatzprogramme)">Window output for OBS (NDI/Syphon via add-ons)</span></span>
     </div>
   </div>
 
-  <div class="whatsnew"><a class="btn" href="https://github.com/skyplayser/VJ-LINK/releases/latest"><span class="new-dot" aria-hidden="true"></span><span data-de="Neu: Beta 0.1.2 – Mapping-Vorschau ohne Verzerrung">New: beta 0.1.2 – mapping preview without distortion</span><span aria-hidden="true">→</span></a></div>
+  <div class="whatsnew"><a class="btn" href="https://github.com/skyplayser/VJ-LINK/releases/latest"><span class="new-dot" aria-hidden="true"></span><span data-de="Neu: Beta 0.1.3 – sichere Blitze und alle Lizenzen im Programm">New: beta 0.1.3 – safe flashes and all licenses in the app</span><span aria-hidden="true">→</span></a></div>
 
   <section id="features">
     <p class="eyebrow" data-de="Funktionen">Features</p>
@@ -184,7 +184,7 @@
   <section id="download">
     <p class="eyebrow">Download</p>
     <h2 data-de="Kostenlos für macOS und Windows">Free for macOS and Windows</h2>
-    <p class="lead"><span data-de="Beta 0.1.2: Bitte vor einer wichtigen Show in Ruhe ausprobieren.">Beta 0.1.2: please try it calmly before an important show.</span> <span id="dl-version"></span></p>
+    <p class="lead"><span data-de="Beta 0.1.3: Bitte vor einer wichtigen Show in Ruhe ausprobieren.">Beta 0.1.3: please try it calmly before an important show.</span> <span id="dl-version"></span></p>
     <div class="dl">
       <div class="card" data-os="mac-arm"><h3>macOS · Apple Silicon</h3><p data-de="M1, M2, M3, M4 und neuer">M1, M2, M3, M4 and newer</p><a class="btn primary" href="https://github.com/skyplayser/VJ-LINK/releases/latest/download/VJ-Link-macos-arm64.dmg">.dmg</a></div>
       <div class="card" data-os="mac-intel"><h3>macOS · Intel</h3><p data-de="Macs mit Intel-Prozessor">Macs with an Intel processor</p><a class="btn primary" href="https://github.com/skyplayser/VJ-LINK/releases/latest/download/VJ-Link-macos-intel.dmg">.dmg</a></div>
@@ -197,7 +197,7 @@
   <section id="install">
     <p class="eyebrow" data-de="Installieren">Install</p>
     <h2 data-de="Erster Start: die Warnung überspringen">First start: getting past the warning</h2>
-    <p class="lead" data-de="VJ-Link ist (noch) nicht bei Apple und Microsoft signiert. Das kostet Geld und sagt nichts über die Sicherheit aus, aber beide Systeme warnen deshalb einmal beim ersten Start. Danach startet das Programm ganz normal.">VJ-Link is not signed with Apple or Microsoft (yet). Signing costs money and says nothing about safety, but both systems warn once on the first start because of it. After that the program starts normally.</p>
+    <p class="lead" data-de="VJ-Link ist (noch) nicht bei Apple und Microsoft signiert. Eine Signatur kostet Geld; ohne sie kann macOS bzw. Windows den Entwickler nicht prüfen und warnt einmal beim ersten Start. Lade das Programm deshalb nur von der offiziellen Seite. Danach startet es ganz normal.">VJ-Link is not signed with Apple or Microsoft (yet). Signing costs money; without it, macOS or Windows cannot verify the developer and warns once on the first start. So only download the program from the official page. After that it starts normally.</p>
     <div class="split" style="align-items:start">
       <div class="card">
         <h3><span class="ico">⌘</span>macOS</h3>
@@ -210,7 +210,7 @@
           <li data-de="Im nächsten Fenster noch einmal „Öffnen“ wählen.">In the next window choose “Open” once more.</li>
           <li data-de="Kamera, Mikrofon und lokales Netzwerk erlauben, wenn macOS fragt und du sie brauchst.">Allow the camera, the microphone and the local network when macOS asks and you need them.</li>
         </ol>
-        <details><summary data-de="Für Profis: per Terminal">For experts: with Terminal</summary><p data-de="Nach dem Kopieren nach „Programme“ diesen Befehl im Terminal ausführen, dann startet die App ohne Warnung:">After copying to Applications, run this command in Terminal, then the app starts without the warning:</p><p><code>xattr -dr com.apple.quarantine "/Applications/VJ-Link.app"</code></p></details>
+        <details><summary data-de="Für Profis: per Terminal">For experts: with Terminal</summary><p data-de="Nach dem Kopieren nach „Programme“ diesen Befehl im Terminal ausführen, dann startet die App ohne Warnung:">After copying to Applications, run this command in Terminal, then the app starts without the warning:</p><p><code>xattr -dr com.apple.quarantine "/Applications/VJ-Link.app"</code></p><p class="small" data-de="Das schaltet die Download-Prüfung von macOS für diese App ab. Nutze es nur für eine Kopie von der offiziellen Seite.">This switches off macOS’s download check for this app. Only use it for a copy from the official page.</p></details>
       </div>
       <div class="card">
         <h3><span class="ico">⊞</span>Windows</h3>
@@ -291,14 +291,16 @@
     <details><summary data-de="Kann ich das Bild in OBS oder Resolume weiterverwenden?">Can I use the picture in OBS or Resolume?</summary><p data-de="Ja, über den Fenster-Ausgang: ein normales Fenster mit fester Auflösung, das du per Fensteraufnahme abgreifst (OBS, NDI- und Syphon-Werkzeuge). Natives Syphon, Spout und NDI sind geplant.">Yes, with the window output: a normal window with a fixed resolution that you capture as a window (OBS, NDI and Syphon tools). Native Syphon, Spout and NDI are planned.</p></details>
     <details><summary data-de="Braucht VJ-Link Internet?">Does VJ-Link need internet?</summary><p data-de="Nein. Nur die Update-Prüfung und das Senden einer Fehlermeldung gehen ins Internet. Kamera und Personen-Erkennung laufen auf deinem Rechner.">No. Only the update check and sending a problem report go to the internet. Camera and person detection run on your computer.</p></details>
     <details><summary data-de="Welche Videoformate gehen?">Which video formats work?</summary><p data-de="MP4 mit H.264 und WebM laufen überall, MOV und M4V meistens auch.">MP4 with H.264 and WebM play everywhere, MOV and M4V usually too.</p></details>
-    <details><summary data-de="Mein Mac sagt „VJ-Link“ nicht geöffnet – ist das gefährlich?">My Mac says “VJ-Link” Not Opened – is it dangerous?</summary><p data-de="Nein, das bedeutet nur, dass die App nicht bei Apple signiert ist. Wie du sie trotzdem öffnest, steht oben unter „Installieren“.">No, it only means the app is not signed with Apple. How to open it anyway is explained above under “Install”.</p></details>
+    <details><summary data-de="Mein Mac sagt „VJ-Link“ nicht geöffnet – was bedeutet das?">My Mac says “VJ-Link” Not Opened – what does that mean?</summary><p data-de="Die App ist (noch) nicht bei Apple signiert, deshalb kann macOS den Entwickler nicht prüfen. Lade VJ-Link nur von der offiziellen GitHub-Seite (github.com/skyplayser/VJ-LINK) oder über diese Website. Wie du die App dann öffnest, steht oben unter „Installieren“.">The app is not signed with Apple (yet), so macOS cannot verify the developer. Only download VJ-Link from the official GitHub page (github.com/skyplayser/VJ-LINK) or via this website. How to open it then is explained above under “Install”.</p></details>
+    <details><summary data-de="Sind Strobe und Blitze sicher?">Are strobe and flashes safe?</summary><p data-de="Schnelle Blitze, Strobe und starke Farbwechsel können bei Menschen mit fotosensitiver Epilepsie Anfälle auslösen. Halte die Blitzfrequenz niedrig (höchstens drei Blitze pro Sekunde), kündige Strobe-Effekte an, wenn der Veranstalter das verlangt, und beachte die Regeln des Veranstaltungsorts. Richte helle Projektorstrahlen im Nebel nicht in Augenhöhe auf das Publikum. Software kann ausfallen: Halte für die Show einen Plan B bereit. VJ-Link zeigt diesen Hinweis vor dem ersten Ausgang und begrenzt Blitze ab Werk auf drei pro Sekunde (Einstellungen → Sicherheit).">Fast flashes, strobe and strong colour changes can trigger seizures in people with photosensitive epilepsy. Keep the flash rate low (at most three flashes per second), announce strobe effects where the venue requires it and follow the venue’s rules. Do not aim bright projector beams through haze at the audience at eye level. Software can fail: keep a fallback ready for the show. VJ-Link shows this notice before the first output and limits flashes to three per second by default (Settings → Safety).</p></details>
+    <details><summary data-de="Ist das Show-Netz geschützt?">Is the show network protected?</summary><p data-de="Art-Net, sACN, OSC und der LJ-Link-Eingang haben keine Anmeldung – das ist Branchenstandard. Trenne Show-Netz und Gäste-WLAN und erlaube VJ-Link in der Firewall nur für das private Show-Netz.">Art-Net, sACN, OSC and the LJ-Link input have no login – that is the industry standard. Keep the show network apart from guest Wi-Fi and allow VJ-Link in the firewall only for the private show network.</p></details>
     <details><summary data-de="Kostet VJ-Link etwas?">Does VJ-Link cost anything?</summary><p data-de="Nein. VJ-Link ist kostenlos und Open Source unter der Eclipse Public License 2.0 – wie LJ-Link.">No. VJ-Link is free and open source under the Eclipse Public License 2.0 – like LJ-Link.</p></details>
   </section>
 </main>
 
 <footer>
   <div class="wrap">
-    <p data-de="Open Source unter der Eclipse Public License 2.0, ohne Gewährleistung. Die Personen-Erkennung nutzt MediaPipe (Apache-2.0). VJ-Link ist kein offizielles Produkt von MA Lighting, Daslight, Akai, Korg, Ableton, OBS oder Google. Alle Produktnamen gehören ihren Inhabern und dienen nur der Beschreibung der Kompatibilität.">Open source under the Eclipse Public License 2.0, without warranty. Person detection uses MediaPipe (Apache-2.0). VJ-Link is not an official product of MA Lighting, Daslight, Akai, Korg, Ableton, OBS or Google. All product names belong to their owners and are used only to describe compatibility.</p>
+    <p data-de="Open Source unter der Eclipse Public License 2.0, ohne Gewährleistung. Die Personen-Erkennung nutzt MediaPipe (Apache-2.0). VJ-Link ist ein unabhängiges Projekt und kein offizielles Produkt der genannten Hersteller; alle Marken gehören ihren Inhabern und werden nur genannt, um die Kompatibilität zu beschreiben. Ableton und Link sind Marken der Ableton AG. Art-Net™ Designed by and Copyright Artistic Licence Holdings Ltd.">Open source under the Eclipse Public License 2.0, without warranty. Person detection uses MediaPipe (Apache-2.0). VJ-Link is an independent project and not an official product of, or endorsed by, any of the manufacturers named; all trademarks belong to their owners and are used only to describe compatibility. Ableton and Link are trademarks of Ableton AG. Art-Net™ Designed by and Copyright Artistic Licence Holdings Ltd.</p>
     <p><a href="https://github.com/skyplayser/VJ-LINK">GitHub</a> · <a href="https://github.com/skyplayser/VJ-LINK/releases" data-de="Versionen">Releases</a> · <a href="wiki.html">Wiki</a> · <a href="wiki-help.html" data-de="Hilfe">Help</a> · <a href="https://discord.gg/N6DMca4Bjk" rel="noopener">Discord</a> · <a href="https://github.com/skyplayser/VJ-LINK/issues">Issues</a> · <a href="free-vj-software.html" data-de="Kostenlose VJ-Software">Free VJ software</a> · <a href="grandma-visuals.html" data-de="Visuals mit grandMA">Visuals with grandMA</a> · <a href="projection-mapping-software.html" data-de="Projektionsmapping">Projection mapping</a> · <a href="https://github.com/skyplayser/VJ-LInk-dev" data-de="Quellcode">Source code</a> · <a href="https://github.com/skyplayser/VJ-LINK/blob/main/LICENSE" data-de="Lizenz">License</a> · <a href="https://skyplayser.github.io/LJ-Link/" data-de-href="https://skyplayser.github.io/LJ-Link/de/" data-de="Probier auch: LJ-Link">Try also: LJ-Link</a> · <a href="impressum.html">Impressum</a> · <a href="datenschutz.html" data-de="Datenschutz">Privacy</a></p>
     <p class="credit">Idea SKYPLAYSER/NEXTPHILM<br>Prompted with ❤️ made by Claude</p>
   </div>

@@ -106,6 +106,8 @@ def _():
         H2("From LJ-Link", "Aus LJ-Link"),
         P("Library → LJ-Link (DJ): **Now Playing** is a lower third with cover, title and artist of the master deck, shown 8, 15 or 30 s after a track change or always; **DJ waveform** is the scrolling waveform like on the player. In LJ-Link's privacy mode Now Playing stays empty.",
           "Bibliothek → LJ-Link (DJ): **Now Playing** ist eine Bauchbinde mit Cover, Titel und Artist des Master-Decks, 8, 15 oder 30 s nach einem Trackwechsel oder immer; **DJ-Waveform** ist die scrollende Wellenform wie am Player. Im Privatsphäre-Modus von LJ-Link bleibt Now Playing leer."),
+        ADM("warn", ("**Showing titles and covers in public:** if you put track titles, artists or cover art on screens the audience can see (for example with Now Playing), you may need permission from the rights holders or the venue. LJ-Link's privacy mode hides titles and covers.",
+                     "**Titel und Cover öffentlich zeigen:** Wenn du Titel, Interpret oder Cover auf Leinwände oder Bildschirme bringst, die das Publikum sieht (z. B. mit Now Playing), brauchst du dafür unter Umständen die Erlaubnis der Rechteinhaber oder des Veranstalters. Mit dem Privatsphäre-Modus von LJ-Link bleiben Titel und Cover verborgen.")),
     )
     return (("Logos, videos and text clips", "Logos, Videos und Text-Clips"),
             ("Media in VJ-Link: logos with automatic background removal and beat animation, videos with beat loops, text clips, Now Playing and DJ waveforms.",

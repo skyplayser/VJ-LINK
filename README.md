@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <img alt="Status: beta 0.1.2" src="https://img.shields.io/badge/status-beta%200.1.2-FF5C93">
+  <img alt="Status: beta 0.1.3" src="https://img.shields.io/badge/status-beta%200.1.3-FF5C93">
   <img alt="macOS and Windows, free" src="https://img.shields.io/badge/macOS%20%7C%20Windows-free-3DDC84">
   <img alt="License: EPL-2.0" src="https://img.shields.io/badge/license-EPL--2.0-60a5fa">
 </p>
@@ -33,10 +33,11 @@ their own. It plays on any number of screens, projectors and LED walls, maps ont
 videos and cues.
 
 It runs locally. There is no account, no cloud and no telemetry. The only connections outside your network are the update check
-(GitHub) and a problem report, when you send one.
+(VJ-Link asks GitHub for the newest version at start and then at most once an hour; you can switch it off in *Settings → Update*)
+and a problem report, when you send one.
 
 > [!WARNING]
-> **This is the beta 0.1.2.** After a full test day (bugs, workflows, interface and a security test) it is a lot more robust
+> **This is the beta 0.1.3.** After a full test day (bugs, workflows, interface and a security test) it is a lot more robust
 > than the first alpha, but large parts have still not met real stage hardware. Please try it before an important show, and
 > tell us what you find: **Help → Report a problem** in the program.
 
@@ -44,7 +45,9 @@ It runs locally. There is no account, no cloud and no telemetry. The only connec
 
 - **150 visuals in 15 categories:** minimal and monochrome, 3D and space, fractals, demoscene, sacred geometry, data and glitch,
   op art, organic and fluid, audio and equalizer, particles, retro and synthwave, geometry and tunnels, light and space, and 16
-  laser looks for a projector in haze. All written for VJ-Link, all react to the beat or the audio.
+  laser looks for a projector in haze. Written for VJ-Link; all of them react to the beat or the audio. A few small building blocks
+  follow published, MIT-licensed snippets – see *Shader credits* in
+  [THIRD_PARTY.md](https://github.com/skyplayser/VJ-LInk-dev/blob/grundgeruest/THIRD_PARTY.md).
 - **50 effects** in a stack of up to six per layer: feedback, datamosh, slit-scan, VHS, bloom, kaleidoscope, halftone, LCD,
   pixel sort, luma key, color strobe, beat flip and many more.
 - **Up to eight layers** with blend modes, opacity, position, size and rotation. Each layer chooses its drive: audio when there is
@@ -59,7 +62,7 @@ It runs locally. There is no account, no cloud and no telemetry. The only connec
 - **Tempo from everywhere:** LJ-Link (found automatically, also on other computers), Ableton Link (through Carabiner), OSC,
   MIDI clock or tap.
 - **Outputs:** one window per screen in any resolution, the same picture on all of them or one canvas across all, a window output
-  for OBS, NDI and Syphon tools, test patterns, and **projection mapping** with corner pin, grid warp (3×3, 5×5) and masks.
+  that OBS can capture (NDI and Syphon via OBS plugins or other tools; not built in), test patterns, and **projection mapping** with corner pin, grid warp (3×3, 5×5) and masks.
 - **SHOW:** a running order of video, image, camera, black, scene and timecode cues with GO on the space bar, and a timeline
   where scenes and effects (strobe, flash, blinder, blackout) are laid out like in an editing program. Timecode in and out over
   Art-Net and MIDI.
@@ -116,7 +119,8 @@ The installers are not signed yet, so both systems warn once on the first start:
 - **macOS** (“VJ-Link” Not Opened): drag the app to *Applications* and start it once, click *Done*. Open *System Settings →
   Privacy & Security*, scroll down, click **Open Anyway** next to VJ-Link and confirm with your password, then *Open*. Allow the
   camera, the microphone and the local network when asked and you need them. Terminal alternative:
-  `xattr -dr com.apple.quarantine "/Applications/VJ-Link.app"`.
+  `xattr -dr com.apple.quarantine "/Applications/VJ-Link.app"`. This switches off macOS’s download check for this app, so only
+  use it for a copy you downloaded from this GitHub page or the official website.
 - **Windows** (“Windows protected your PC”): click **More info**, then **Run anyway**. When the firewall asks, tick *Private
   networks* and allow access, otherwise Art-Net, sACN, OSC and LJ-Link cannot reach VJ-Link.
 
@@ -189,7 +193,22 @@ Please tell us what you tested: **Help → Report a problem**, or on [Discord](h
 - **Camera looks** with person detection work best with one or a few people in the picture. Small people far away on a big stage
   are found less reliably.
 - **Projection mapping** needs one output per projector. A window output can stand in for one, for example to capture it in OBS.
-- **Updates** need the internet. Without it everything works as before, the check just says it could not reach GitHub.
+- **Updates** need the internet. Without it everything works as before, the check just says it could not reach GitHub. Before
+  installing, VJ-Link compares the download with the SHA-256 checksum GitHub publishes for it and stops if they differ.
+- **Network:** Art-Net, sACN, OSC and the LJ-Link input have no login – that is the industry standard. Keep the show network apart
+  from guest Wi-Fi and allow VJ-Link in the firewall only for the private show network.
+- **Showing titles and covers in public:** if you put track titles, artists or cover art on screens the audience can see (for
+  example with the *Now Playing* clip), you may need permission from the rights holders or the venue. LJ-Link’s privacy mode
+  hides titles and covers.
+
+## Live safety
+
+Fast flashes, strobe and strong colour changes can trigger seizures in people with photosensitive epilepsy. Keep the flash rate
+low (at most three flashes per second), announce strobe effects where the venue requires it and follow the venue’s rules. Do not
+aim bright projector beams through haze at the audience at eye level. Software can fail: keep a fallback ready for the show.
+
+VJ-Link shows this notice before the first output and limits strobe, strobe white, layer strobe, colour strobe and beat invert to
+three flashes per second (*Safe flashes*, on by default, *Settings → Safety*).
 
 ## Problems?
 
@@ -211,10 +230,15 @@ the DJ’s beat, change scene on the phrase and show what is playing. Free for m
 ## Credits and notices
 
 Person detection uses [MediaPipe](https://github.com/google-ai-edge/mediapipe) (Apache-2.0). Built with Electron. Ableton Link
-works through [Carabiner](https://github.com/Deep-Symmetry/carabiner) by Deep Symmetry, which runs as its own program.
+works through [Carabiner](https://github.com/Deep-Symmetry/carabiner) by Deep Symmetry, which runs as its own program. Logo
+lettering: [Inter](https://github.com/rsms/inter) (SIL Open Font License). The program ships all license texts in
+`THIRD_PARTY_LICENSES.txt` (*Help → Licenses and notices*).
 
-VJ-Link is not an official product of MA Lighting, Daslight, Akai, Korg, Ableton, OBS or Google. All product names belong to
-their owners and are used only to describe compatibility.
+Art-Net™ Designed by and Copyright Artistic Licence Holdings Ltd
+
+VJ-Link is an independent project and not an official product of, or endorsed by, any of the manufacturers named. All product
+names and trademarks belong to their respective owners and are used only to describe compatibility. Ableton and Link are
+trademarks of Ableton AG.
 
 ## License
 
@@ -226,5 +250,7 @@ documentation. The licenses of the bundled libraries are in [THIRD_PARTY.md](htt
 
 <p align="center">
   <sub>Idea SKYPLAYSER/NEXTPHILM<br>
-  Prompted with ❤️ made by Claude</sub>
+  Prompted with ❤️ made by Claude<br>
+  <a href="https://skyplayser.github.io/VJ-LINK/impressum.html">Legal notice (Impressum)</a> ·
+  <a href="https://skyplayser.github.io/VJ-LINK/datenschutz.html">Privacy</a></sub>
 </p>

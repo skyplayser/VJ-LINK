@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <img alt="Stand: Beta 0.1.2" src="https://img.shields.io/badge/Stand-Beta%200.1.2-FF5C93">
+  <img alt="Stand: Beta 0.1.3" src="https://img.shields.io/badge/Stand-Beta%200.1.3-FF5C93">
   <img alt="macOS und Windows, kostenlos" src="https://img.shields.io/badge/macOS%20%7C%20Windows-kostenlos-3DDC84">
   <img alt="Lizenz: EPL-2.0" src="https://img.shields.io/badge/Lizenz-EPL--2.0-60a5fa">
 </p>
@@ -32,11 +32,12 @@ gebaut: Das Lichtpult schickt Szene, Farben, Helligkeit, Strobe und Blackout, un
 Musik. Es spielt auf beliebig vielen Bildschirmen, Beamern und LED-Wänden, mappt auf Wände und Kisten und läuft als
 getimte Show mit Videos und Cues.
 
-Alles läuft lokal. Kein Konto, keine Cloud, keine Telemetrie. Nach außen geht nur die Update-Prüfung (GitHub) und eine
+Alles läuft lokal. Kein Konto, keine Cloud, keine Telemetrie. Nach außen geht nur die Update-Prüfung (VJ-Link fragt beim Start
+und danach höchstens einmal pro Stunde bei GitHub nach der neuesten Version; abschaltbar unter *Einstellungen → Update*) und eine
 Fehlermeldung, wenn du eine schickst.
 
 > [!WARNING]
-> **Das ist die Beta 0.1.2.** Nach einem kompletten Testtag (Fehler, Arbeitsabläufe, Oberfläche und Sicherheitstest) ist sie
+> **Das ist die Beta 0.1.3.** Nach einem kompletten Testtag (Fehler, Arbeitsabläufe, Oberfläche und Sicherheitstest) ist sie
 > deutlich robuster als die erste Alpha, aber große Teile haben noch keine echte Bühnentechnik gesehen. Probier sie bitte vor
 > einer wichtigen Show aus, und sag uns, was dir auffällt: **Hilfe → Fehler melden** im Programm.
 
@@ -44,7 +45,9 @@ Fehlermeldung, wenn du eine schickst.
 
 - **150 Visuals in 15 Kategorien:** Minimal und Monochrom, 3D und Raum, Fraktale, Demoscene, Heilige Geometrie, Daten und
   Glitch, Op-Art, Organisch und Flüssig, Audio und Equalizer, Partikel, Retro und Synthwave, Geometrie und Tunnel, Licht und
-  Raum sowie 16 Laser-Looks für einen Beamer im Nebel. Alle eigens für VJ-Link geschrieben, alle reagieren auf Beat oder Audio.
+  Raum sowie 16 Laser-Looks für einen Beamer im Nebel. Für VJ-Link geschrieben, alle reagieren auf Beat oder Audio. Einige kleine
+  Bausteine folgen veröffentlichten Code-Beispielen unter MIT-Lizenz – siehe „Shader credits“ in
+  [THIRD_PARTY.md](https://github.com/skyplayser/VJ-LInk-dev/blob/grundgeruest/THIRD_PARTY.md).
 - **50 Effekte** in einem Stapel mit bis zu sechs je Ebene: Feedback, Datamosh, Slit-Scan, VHS, Bloom, Kaleidoskop, Halbton,
   LCD, Pixel-Sort, Luma-Key, Farb-Strobe, Beat-Flip und viele mehr.
 - **Bis zu acht Ebenen** mit Mischmodi, Deckkraft, Position, Größe und Drehung. Jede Ebene wählt ihren Antrieb: Audio, falls
@@ -59,7 +62,7 @@ Fehlermeldung, wenn du eine schickst.
 - **Tempo von überall:** LJ-Link (wird automatisch gefunden, auch auf anderen Rechnern), Ableton Link (über Carabiner), OSC,
   MIDI-Clock oder Tap.
 - **Ausgänge:** ein Fenster pro Bildschirm in jeder Auflösung, überall dasselbe Bild oder eine Leinwand über alle, ein
-  Fenster-Ausgang für OBS, NDI- und Syphon-Werkzeuge, Testbilder und **Projektionsmapping** mit Eckpunkten, Raster-Verzerrung
+  Fenster-Ausgang, den OBS abgreifen kann (NDI und Syphon über OBS-Plugins oder Zusatzprogramme, nicht eingebaut), Testbilder und **Projektionsmapping** mit Eckpunkten, Raster-Verzerrung
   (3×3, 5×5) und Masken.
 - **SHOW:** ein Ablauf aus Video-, Bild-, Kamera-, Schwarz-, Szenen- und Timecode-Cues mit WEITER auf der Leertaste, dazu eine
   Timeline, auf der Szenen und Effekte (Strobe, Flash, Blinder, Blackout) wie im Schnittprogramm liegen. Timecode rein und raus
@@ -118,7 +121,8 @@ Die Installer sind noch nicht signiert. Deshalb warnen beide Systeme einmal beim
 - **macOS** („VJ-Link“ nicht geöffnet): App in *Programme* ziehen und einmal starten, auf *Fertig* klicken. *Systemeinstellungen
   → Datenschutz & Sicherheit* öffnen, nach unten scrollen, bei VJ-Link auf **Dennoch öffnen** klicken, mit Passwort bestätigen,
   dann *Öffnen*. Kamera, Mikrofon und lokales Netzwerk erlauben, wenn macOS fragt und du sie brauchst. Im Terminal geht auch:
-  `xattr -dr com.apple.quarantine "/Applications/VJ-Link.app"`.
+  `xattr -dr com.apple.quarantine "/Applications/VJ-Link.app"`. Das schaltet die Download-Prüfung von macOS für diese App ab;
+  nutze es nur für eine Kopie, die du von dieser GitHub-Seite oder der offiziellen Website geladen hast.
 - **Windows** („Der Computer wurde durch Windows geschützt“): auf **Weitere Informationen**, dann auf **Trotzdem ausführen**
   klicken. Fragt die Firewall, *Private Netzwerke* anhaken und zulassen – sonst erreichen Art-Net, sACN, OSC und LJ-Link
   VJ-Link nicht.
@@ -192,7 +196,24 @@ Sag uns bitte, was du getestet hast: **Hilfe → Fehler melden** oder auf [Disco
 - **Kamera-Looks** mit Personen-Erkennung klappen am besten mit einer oder wenigen Personen im Bild. Kleine Personen weit weg auf
   einer großen Bühne werden schlechter erkannt.
 - **Projektionsmapping** braucht einen Ausgang je Beamer. Ein Fenster-Ausgang kann einen ersetzen, etwa zum Abgreifen in OBS.
-- **Updates** brauchen Internet. Ohne läuft alles wie gewohnt, die Prüfung meldet nur, dass GitHub nicht erreichbar ist.
+- **Updates** brauchen Internet. Ohne läuft alles wie gewohnt, die Prüfung meldet nur, dass GitHub nicht erreichbar ist. Vor der
+  Installation vergleicht VJ-Link den Download mit der SHA-256-Prüfsumme, die GitHub dazu veröffentlicht, und bricht ab, wenn sie
+  nicht passt.
+- **Netzwerk:** Art-Net, sACN, OSC und der LJ-Link-Eingang haben keine Anmeldung – das ist Branchenstandard. Trenne Show-Netz und
+  Gäste-WLAN und erlaube VJ-Link in der Firewall nur für das private Show-Netz.
+- **Titel und Cover öffentlich zeigen:** Wenn du Titel, Interpret oder Cover auf Leinwände oder Bildschirme bringst, die das
+  Publikum sieht (z. B. mit dem Clip „Now Playing“), brauchst du dafür unter Umständen die Erlaubnis der Rechteinhaber oder des
+  Veranstalters. Mit dem Privatsphäre-Modus von LJ-Link bleiben Titel und Cover verborgen.
+
+## Sicherheit im Live-Betrieb
+
+Schnelle Blitze, Strobe und starke Farbwechsel können bei Menschen mit fotosensitiver Epilepsie Anfälle auslösen. Halte die
+Blitzfrequenz niedrig (höchstens drei Blitze pro Sekunde), kündige Strobe-Effekte an, wenn der Veranstalter das verlangt, und
+beachte die Regeln des Veranstaltungsorts. Richte helle Projektorstrahlen im Nebel nicht in Augenhöhe auf das Publikum. Software
+kann ausfallen: Halte für die Show einen Plan B bereit.
+
+VJ-Link zeigt diesen Hinweis vor dem ersten Ausgang und begrenzt Strobe, Strobe White, Ebenen-Strobe, Farb-Strobe und
+Beat-Invert auf drei Blitze pro Sekunde (*Sichere Blitze*, Standard an, *Einstellungen → Sicherheit*).
 
 ## Probleme?
 
@@ -217,9 +238,14 @@ Windows.
 
 Die Personen-Erkennung nutzt [MediaPipe](https://github.com/google-ai-edge/mediapipe) (Apache-2.0). Gebaut mit Electron. Ableton
 Link läuft über [Carabiner](https://github.com/Deep-Symmetry/carabiner) von Deep Symmetry, das als eigenes Programm läuft.
+Schriftzug im Logo: [Inter](https://github.com/rsms/inter) (SIL Open Font License). Das Programm liefert alle Lizenztexte in
+`THIRD_PARTY_LICENSES.txt` mit (*Hilfe → Lizenzen und Hinweise*).
 
-VJ-Link ist kein offizielles Produkt von MA Lighting, Daslight, Akai, Korg, Ableton, OBS oder Google. Alle Produktnamen gehören
-ihren Inhabern und dienen nur der Beschreibung der Kompatibilität.
+Art-Net™ Designed by and Copyright Artistic Licence Holdings Ltd
+
+VJ-Link ist ein unabhängiges Projekt und kein offizielles Produkt der genannten Hersteller; es wird von ihnen weder unterstützt
+noch geprüft. Alle genannten Produktnamen und Marken gehören ihren jeweiligen Inhabern und werden nur genannt, um die
+Kompatibilität zu beschreiben. Ableton und Link sind Marken der Ableton AG.
 
 ## Lizenz
 
@@ -232,5 +258,7 @@ Veröffentlichungen, die Website und die Dokumentation. Die Lizenzen der verwend
 
 <p align="center">
   <sub>Idee SKYPLAYSER/NEXTPHILM<br>
-  Prompted with ❤️ made by Claude</sub>
+  Prompted with ❤️ made by Claude<br>
+  <a href="https://skyplayser.github.io/VJ-LINK/impressum.html">Impressum</a> ·
+  <a href="https://skyplayser.github.io/VJ-LINK/datenschutz.html">Datenschutz</a></sub>
 </p>

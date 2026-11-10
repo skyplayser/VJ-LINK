@@ -6,8 +6,8 @@ group("Start", "Start")
 @page("wiki.html", "Overview", "Übersicht")
 def _():
     body = SEC(
-        ADM("beta", ("This wiki describes the beta **0.1.2**. Many parts have not met real stage hardware yet; every page says what is tested and what is not.",
-                      "Dieses Wiki beschreibt die Beta **0.1.2**. Viele Teile haben noch keine echte Bühnentechnik gesehen; jede Seite sagt, was getestet ist und was nicht.")),
+        ADM("beta", ("This wiki describes the beta **0.1.3**. Many parts have not met real stage hardware yet; every page says what is tested and what is not.",
+                      "Dieses Wiki beschreibt die Beta **0.1.3**. Viele Teile haben noch keine echte Bühnentechnik gesehen; jede Seite sagt, was getestet ist und was nicht.")),
         H2("What VJ-Link does", "Was VJ-Link macht"),
         P("VJ-Link plays live visuals on screens, projectors and LED walls. The light desk leads: it recalls scenes, sets the colors, the brightness, the strobe and the blackout. The tempo comes from the music, best from [LJ-Link](wiki-ljlink.html), so everything moves in time without anybody tapping.",
           "VJ-Link spielt Live-Visuals auf Bildschirmen, Beamern und LED-Wänden. Das Lichtpult führt: Es ruft Szenen ab und setzt Farben, Helligkeit, Strobe und Blackout. Das Tempo kommt aus der Musik, am besten aus [LJ-Link](wiki-ljlink.html), sodass alles im Takt läuft, ohne dass jemand tappen muss."),
@@ -97,7 +97,7 @@ def _():
               ("Allow the **camera**, the **microphone** and the **local network** when macOS asks and you need them.", "**Kamera**, **Mikrofon** und **lokales Netzwerk** erlauben, wenn macOS fragt und du sie brauchst.")),
         ADM("note", ("Camera blocked? System Settings → **Privacy & Security** → **Camera** → switch VJ-Link on and restart VJ-Link. The program also offers a button for this.",
                      "Kamera gesperrt? Systemeinstellungen → **Datenschutz & Sicherheit** → **Kamera** → VJ-Link einschalten und VJ-Link neu starten. Das Programm bietet dafür auch einen Knopf an."),
-            ("For experts, this removes the warning for good:", "Für Profis, damit verschwindet die Warnung dauerhaft:"), PRE('xattr -dr com.apple.quarantine "/Applications/VJ-Link.app"')),
+            ("For experts, this removes the warning for good. It switches off macOS's download check for this app, so only use it for a copy from the official GitHub page or website:", "Für Profis, damit verschwindet die Warnung dauerhaft. Das schaltet die Download-Prüfung von macOS für diese App ab; nutze es nur für eine Kopie von der offiziellen GitHub-Seite oder Website:"), PRE('xattr -dr com.apple.quarantine "/Applications/VJ-Link.app"')),
         H2("Windows", "Windows"),
         STEPS(("Start `VJ-Link-windows.exe`. In the SmartScreen window press **More info**, then **Run anyway**.", "`VJ-Link-windows.exe` starten. Im SmartScreen-Fenster **Weitere Informationen**, dann **Trotzdem ausführen** drücken."),
               ("Click through the installer.", "Den Installer durchklicken."),
@@ -105,8 +105,16 @@ def _():
         ADM("warn", ("Windows is built but **not tested yet** in this beta. Please tell us how it runs: [report a problem](wiki-help.html#report).",
                      "Windows ist gebaut, in dieser Beta aber **noch nicht getestet**. Sag uns bitte, wie es läuft: [Fehler melden](wiki-help.html#report).")),
         H2("Updates", "Updates"),
-        P("The start screen checks GitHub for a new version, at most once an hour, and **Settings → Update** does it on request. **Download and install** loads the new version: on a Mac VJ-Link quits, replaces itself and starts again; on Windows the installer opens. The project is saved all the time, nothing is lost.",
-          "Der Startbildschirm fragt höchstens einmal pro Stunde bei GitHub nach einer neuen Version, **Einstellungen → Update** auf Wunsch. **Herunterladen und installieren** lädt die neue Version: Auf dem Mac beendet sich VJ-Link, ersetzt sich und startet neu; unter Windows öffnet sich der Installer. Das Projekt wird laufend gesichert, nichts geht verloren."),
+        P("VJ-Link asks GitHub for a new version at start and then at most once an hour; **Settings → Update** does it on request and has the switch **Check for updates automatically**. GitHub sees the IP address of the computer and the program version, nothing else. **Download and install** loads the new version and compares it with the SHA-256 checksum GitHub publishes; if they differ, nothing is installed. Then on a Mac VJ-Link quits, replaces itself and starts again; on Windows the installer opens. The project is saved all the time, nothing is lost.",
+          "VJ-Link fragt beim Start und danach höchstens einmal pro Stunde bei GitHub nach einer neuen Version; **Einstellungen → Update** fragt auf Wunsch und hat den Schalter **Automatisch nach Updates suchen**. GitHub sieht dabei die IP-Adresse des Rechners und die Programmversion, sonst nichts. **Herunterladen und installieren** lädt die neue Version und vergleicht sie mit der SHA-256-Prüfsumme, die GitHub veröffentlicht; passt sie nicht, wird nichts installiert. Dann beendet sich VJ-Link auf dem Mac, ersetzt sich und startet neu; unter Windows öffnet sich der Installer. Das Projekt wird laufend gesichert, nichts geht verloren."),
+        H2("Live safety", "Sicherheit im Live-Betrieb", "safety"),
+        P("Fast flashes, strobe and strong colour changes can trigger seizures in people with photosensitive epilepsy. Keep the flash rate low (at most three flashes per second), announce strobe effects where the venue requires it and follow the venue's rules. Do not aim bright projector beams through haze at the audience at eye level. Software can fail: keep a fallback ready for the show.",
+          "Schnelle Blitze, Strobe und starke Farbwechsel können bei Menschen mit fotosensitiver Epilepsie Anfälle auslösen. Halte die Blitzfrequenz niedrig (höchstens drei Blitze pro Sekunde), kündige Strobe-Effekte an, wenn der Veranstalter das verlangt, und beachte die Regeln des Veranstaltungsorts. Richte helle Projektorstrahlen im Nebel nicht in Augenhöhe auf das Publikum. Software kann ausfallen: Halte für die Show einen Plan B bereit."),
+        P("VJ-Link shows this notice once before the first output. **Settings → Safety → Safe flashes** (on by default) limits strobe, strobe white, layer strobe, colour strobe and beat invert to three flashes per second.",
+          "VJ-Link zeigt diesen Hinweis einmal vor dem ersten Ausgang. **Einstellungen → Sicherheit → Sichere Blitze** (Standard an) begrenzt Strobe, Strobe White, Ebenen-Strobe, Farb-Strobe und Beat-Invert auf drei Blitze pro Sekunde."),
+        H2("Network", "Netzwerk", "network"),
+        P("Art-Net, sACN, OSC and the LJ-Link input have no login – that is the industry standard. Keep the show network apart from guest Wi-Fi and allow VJ-Link in the firewall only for the private show network.",
+          "Art-Net, sACN, OSC und der LJ-Link-Eingang haben keine Anmeldung – das ist Branchenstandard. Trenne Show-Netz und Gäste-WLAN und erlaube VJ-Link in der Firewall nur für das private Show-Netz."),
         ADM("tip", ("Update at home, not at the gig. Without internet the check just says it could not reach GitHub.", "Zu Hause aktualisieren, nicht auf dem Gig. Ohne Internet meldet die Prüfung nur, dass GitHub nicht erreichbar ist.")),
     )
     return (("Install VJ-Link on Mac and Windows", "VJ-Link installieren auf Mac und Windows"),
@@ -233,7 +241,7 @@ def _():
         area("Outputs", "Ausgänge", [
             [("Screens", "Bildschirme"), ("any number of outputs, own resolution, one clock", "beliebig viele Ausgänge, eigene Auflösung, eine Uhr"), ("[Outputs](wiki-outputs.html)", "[Ausgänge](wiki-outputs.html)")],
             [("Canvas", "Leinwand"), ("one picture seamlessly across all screens", "ein Bild nahtlos über alle Bildschirme"), ("[Outputs](wiki-outputs.html#arrangement)", "[Ausgänge](wiki-outputs.html#arrangement)")],
-            [("Window output", "Fenster-Ausgang"), ("fixed-size window for OBS, NDI and Syphon tools", "Fenster mit fester Größe für OBS, NDI- und Syphon-Werkzeuge"), ("[Outputs](wiki-outputs.html#window-output)", "[Ausgänge](wiki-outputs.html#window-output)")],
+            [("Window output", "Fenster-Ausgang"), ("fixed-size window that OBS can capture (NDI/Syphon via add-ons, not built in)", "Fenster mit fester Größe, das OBS abgreifen kann (NDI/Syphon über Zusatzprogramme, nicht eingebaut)"), ("[Outputs](wiki-outputs.html#window-output)", "[Ausgänge](wiki-outputs.html#window-output)")],
             [("Test patterns", "Testbilder"), ("nine patterns with resolution and position per output", "neun Testbilder mit Auflösung und Lage je Ausgang"), ("[Outputs](wiki-outputs.html#test-patterns)", "[Ausgänge](wiki-outputs.html#test-patterns)")],
             [("Projection mapping", "Projektionsmapping"), ("canvases, corner pin, 3×3/5×5 grid, masks, stage photo, five pictures", "Leinwände, Eckpunkte, Raster 3×3/5×5, Masken, Bühnenfoto, fünf Bilder"), ("[Projection mapping](wiki-mapping-projection.html)", "[Projektionsmapping](wiki-mapping-projection.html)")],
         ]),

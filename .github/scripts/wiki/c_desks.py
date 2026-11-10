@@ -33,6 +33,9 @@ NOT_TESTED = ADM("beta", ("Not yet tried with this desk. The steps follow the ma
                           "Mit diesem Pult noch nicht ausprobiert. Die Schritte folgen dem Handbuch des Herstellers; Menünamen können je nach Software-Version abweichen. Sag uns bitte, ob es klappt: [Fehler melden](wiki-help.html#report) oder auf Discord."))
 
 
+ARTNET = P("Art-Net™ Designed by and Copyright Artistic Licence Holdings Ltd", "Art-Net™ Designed by and Copyright Artistic Licence Holdings Ltd", cls="small")
+
+
 def desk_page(file, name, tagline, intro, steps, extras=(), proto=("Art-Net / sACN", "Art-Net / sACN"), back=None, title=None, desc=None, schema_extra=None, schema_cap=None, name_de=None):
     nde = name_de or name
     @page(file, name, nde)
@@ -42,6 +45,7 @@ def desk_page(file, name, tagline, intro, steps, extras=(), proto=("Art-Net / sA
         if back:
             parts += [H2("From VJ-Link to the desk", "Von VJ-Link zum Pult"), P(*back)]
         parts += list(extras)
+        parts += [ARTNET]
         return ((title or (f"Control visuals from {name} with VJ-Link", f"{name}: Visuals steuern mit VJ-Link")),
                 desc or ((f"Control VJ-Link from {name}: network, Art-Net or sACN output, patching the 91-channel profile and what goes back – step by step.",
                           f"VJ-Link von {name} steuern: Netzwerk, Art-Net- oder sACN-Ausgang, das 91-Kanal-Profil patchen und was zurückgeht – Schritt für Schritt.")),
@@ -121,6 +125,7 @@ def _():
         H2("More than the profile", "Mehr als das Profil"),
         P("Layers 5–8 and every other control (laser position, slot hue, scenes 1–32, test patterns, timecode …) can be put on any DMX channel with **MAPPING → DMX / Art-Net**: click the element, move the channel on the desk.",
           "Ebenen 5–8 und jedes weitere Element (Laser-Lage, Farbton der Slots, Szenen 1–32, Testbilder, Timecode …) legst du mit **MAPPING → DMX / Art-Net** auf beliebige DMX-Kanäle: Element anklicken, Kanal am Pult bewegen."),
+        ARTNET,
     )
     return (("Connect a light desk: Art-Net, sACN, channels", "Lichtpult anbinden: Art-Net, sACN, Kanalliste"),
             ("Control VJ-Link from any desk over Art-Net or sACN: universe, start address, network ranges, the full 91-channel list and free DMX mapping.",
