@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-de="Audio-Eingang: Mikrofon und Line-In für audio-reaktive Visuals | VJ-Link">Audio input: microphone and line-in for audio-reactive visuals | VJ-Link</title>
+<meta name="description" content="How VJ-Link listens to the music: choose an input, set the level, audio visuals, drive Audio and audio modulations, with LJ-Link as fallback." data-de-content="Wie VJ-Link der Musik zuhört: Eingang wählen, Pegel einstellen, Audio-Visuals, Antrieb Audio und Audio-Modulationen, mit LJ-Link als Rückfall.">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+<meta name="author" content="SKYPLAYSER / NEXTPHILM">
+<link rel="canonical" href="https://skyplayser.github.io/VJ-LINK/wiki-audio.html" data-de-href="https://skyplayser.github.io/VJ-LINK/de/wiki-audio.html">
+<link rel="alternate" hreflang="en" href="https://skyplayser.github.io/VJ-LINK/wiki-audio.html">
+<link rel="alternate" hreflang="de" href="https://skyplayser.github.io/VJ-LINK/de/wiki-audio.html">
+<link rel="alternate" hreflang="x-default" href="https://skyplayser.github.io/VJ-LINK/wiki-audio.html">
+<link rel="icon" href="images/logo.png" type="image/png">
+<link rel="apple-touch-icon" href="images/logo.png">
+<meta name="theme-color" content="#07090c">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="VJ-Link">
+<meta property="og:locale" content="en_US" data-de-content="de_DE">
+<meta property="og:locale:alternate" content="de_DE" data-de-content="en_US">
+<meta property="og:title" content="VJ-Link Wiki – Audio input: microphone and line-in for audio-reactive visuals" data-de-content="VJ-Link Wiki – Audio-Eingang: Mikrofon und Line-In für audio-reaktive Visuals">
+<meta property="og:description" content="How VJ-Link listens to the music: choose an input, set the level, audio visuals, drive Audio and audio modulations, with LJ-Link as fallback." data-de-content="Wie VJ-Link der Musik zuhört: Eingang wählen, Pegel einstellen, Audio-Visuals, Antrieb Audio und Audio-Modulationen, mit LJ-Link als Rückfall.">
+<meta property="og:image" content="https://skyplayser.github.io/VJ-LINK/images/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://skyplayser.github.io/VJ-LINK/wiki-audio.html" data-de-content="https://skyplayser.github.io/VJ-LINK/de/wiki-audio.html">
+<meta name="twitter:card" content="summary_large_image">
+<!-- structured-data -->
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="docs-page">
+<header class="top">
+  <div class="wrap dwrap">
+    <a href="./" class="brand" style="display:flex;align-items:center;gap:10px"><img src="images/logo.png" alt="" width="32" height="32"><span>VJ-Link</span><span class="brand-sub">Wiki</span></a>
+    <button class="menu-btn" id="menu" aria-label="Menu" aria-expanded="false">&#9776;</button>
+    <nav id="nav">
+      <a href="./#features" data-de="Funktionen">Features</a>
+      <a href="./#download">Download</a>
+      <a href="wiki.html">Wiki</a>
+      <a href="wiki-help.html" data-de="Hilfe">Help</a>
+      <a href="https://discord.gg/N6DMca4Bjk" rel="noopener">Discord</a>
+      <a href="https://github.com/skyplayser/VJ-LINK">GitHub</a>
+      <a class="lang" id="lang" href="de/wiki-audio.html" hreflang="de" lang="de" title="Deutsch" data-de-href="../wiki-audio.html" data-de-hreflang="en" data-de-lang="en" data-de-title="English" data-de="EN" style="text-decoration:none">DE</a>
+    </nav>
+  </div>
+</header>
+<nav class="dtabs" aria-label="Wiki sections" data-de-aria-label="Wiki-Bereiche"><div class="dwrap"><a class="dtab" href="wiki.html" data-de="Start">Start</a><a class="dtab" href="wiki-layers.html" data-de="Visuals">Visuals</a><a class="dtab on" href="wiki-mapping.html" data-de="Steuerung">Control</a><a class="dtab" href="wiki-desks.html" data-de="Lichtpulte">Light desks</a><a class="dtab" href="wiki-ljlink.html" data-de="LJ-Link">LJ-Link</a><a class="dtab" href="wiki-outputs.html" data-de="Ausgänge">Outputs</a><a class="dtab" href="wiki-scenes.html" data-de="Show">Show</a><a class="dtab" href="wiki-help.html" data-de="Hilfe">Help</a></div></nav>
+<div class="docs dwrap">
+  <button class="dside-btn" id="dside-btn" aria-controls="dside" aria-expanded="false"><span aria-hidden="true">&#9776;</span> <span data-de="Inhalt des Wikis">Wiki contents</span></button>
+  <aside class="dside" id="dside"><nav aria-label="Wiki pages" data-de-aria-label="Wiki-Seiten"><p class="dgroup">Start</p><a class="dlink" href="wiki.html" data-de="Übersicht">Overview</a><a class="dlink" href="wiki-quickstart.html" data-de="Schnellstart">Quick start</a><a class="dlink" href="wiki-install.html" data-de="Installieren und aktualisieren">Install and update</a><a class="dlink" href="wiki-interface.html" data-de="Die Oberfläche">The interface</a><a class="dlink" href="wiki-use-cases.html" data-de="Anwendungsfälle">Use cases</a><a class="dlink" href="wiki-features.html" data-de="Alle Funktionen">All features</a><p class="dgroup">Visuals</p><a class="dlink" href="wiki-layers.html" data-de="Ebenen und Clips">Layers and clips</a><a class="dlink" href="wiki-visuals.html" data-de="Die 150 Visuals">The 150 visuals</a><a class="dlink" href="wiki-effects.html" data-de="Effekte">Effects</a><a class="dlink" href="wiki-media.html" data-de="Logos, Videos und Text">Logos, videos and text</a><a class="dlink" href="wiki-camera.html" data-de="Kameras und Personen-Erkennung">Cameras and person detection</a><p class="dgroup" data-de="Steuerung">Control</p><a class="dlink" href="wiki-mapping.html" data-de="Mapping: Tastatur, MIDI, DMX, OSC">Mapping: keyboard, MIDI, DMX, OSC</a><a class="dlink" href="wiki-modulation.html" data-de="Modulation: LFO und Audio">Modulation: LFO and audio</a><a class="dlink" href="wiki-tempo.html" data-de="Tempo und Takt">Tempo and beat</a><a class="dlink" href="wiki-connections.html" data-de="Verbindungen (Tab VERBINDEN)">Connections (CONNECT tab)</a><a class="dlink on" href="wiki-audio.html" aria-current="page" data-de="Audio-Eingang">Audio input</a><div class="dsub"><a href="#choose-an-input" data-de="Einen Eingang wählen">Choose an input</a><a href="#which-input-is-best" data-de="Welcher Eingang am besten ist">Which input is best</a><a href="#audio-output" data-de="Audio-Ausgang">Audio output</a></div><p class="dgroup" data-de="Lichtpulte">Light desks</p><a class="dlink" href="wiki-desks.html" data-de="Alle Pulte">All desks</a><a class="dlink" href="wiki-desk.html" data-de="Grundlagen und Kanalliste">Basics and channel list</a><a class="dlink" href="wiki-desk-grandma2.html" data-de="grandMA2">grandMA2</a><a class="dlink" href="wiki-desk-grandma3.html" data-de="grandMA3">grandMA3</a><a class="dlink" href="wiki-desk-dot2.html" data-de="dot2">dot2</a><a class="dlink" href="wiki-desk-chamsys.html" data-de="ChamSys MagicQ">ChamSys MagicQ</a><a class="dlink" href="wiki-desk-avolites.html" data-de="Avolites">Avolites</a><a class="dlink" href="wiki-desk-hog.html" data-de="Hog 4">Hog 4</a><a class="dlink" href="wiki-desk-etc.html" data-de="ETC Eos">ETC Eos</a><a class="dlink" href="wiki-desk-onyx.html" data-de="Onyx">Onyx</a><a class="dlink" href="wiki-desk-daslight.html" data-de="Daslight">Daslight</a><a class="dlink" href="wiki-desk-lightkey.html" data-de="Lightkey">Lightkey</a><a class="dlink" href="wiki-desk-qlc.html" data-de="QLC+">QLC+</a><a class="dlink" href="wiki-desk-lightshark.html" data-de="LightShark">LightShark</a><a class="dlink" href="wiki-desk-zero88.html" data-de="Zero 88 FLX">Zero 88 FLX</a><a class="dlink" href="wiki-desk-freestyler.html" data-de="FreeStyler">FreeStyler</a><a class="dlink" href="wiki-desk-dmx-only.html" data-de="Ohne Netzwerk">Without network</a><p class="dgroup">LJ-Link</p><a class="dlink" href="wiki-ljlink.html" data-de="VJ-Link und LJ-Link">VJ-Link and LJ-Link</a><a class="dlink" href="wiki-ljlink-setups.html" data-de="Aufbauten mit LJ-Link">Setups with LJ-Link</a><p class="dgroup" data-de="Ausgänge">Outputs</p><a class="dlink" href="wiki-outputs.html" data-de="Bildschirme und Leinwand">Screens and canvas</a><a class="dlink" href="wiki-mapping-projection.html" data-de="Projektionsmapping">Projection mapping</a><p class="dgroup">Show</p><a class="dlink" href="wiki-scenes.html" data-de="Szenen und Übergänge">Scenes and transitions</a><a class="dlink" href="wiki-show.html" data-de="SHOW und Timeline">SHOW and timeline</a><a class="dlink" href="wiki-timecode.html" data-de="Timecode">Timecode</a><a class="dlink" href="wiki-projects.html" data-de="Projekte">Projects</a><p class="dgroup" data-de="Hilfe">Help</p><a class="dlink" href="wiki-help.html" data-de="Fehlersuche">Troubleshooting</a><a class="dlink" href="wiki-reference.html" data-de="Referenz">Reference</a><a class="dlink" href="wiki-glossary.html" data-de="Glossar">Glossary</a></nav></aside>
+  <main class="dbody article wiki">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="wiki.html">Wiki</a> › <span data-de="Steuerung">Control</span> › <span data-de="Audio-Eingang">Audio input</span></nav>
+    <h1><span class="kicker" data-de="Steuerung">Control</span><span data-de="Audio-Eingang">Audio input</span></h1>
+    <p class="tag" data-de="Visuals, die die Musik hören.">Visuals that hear the music.</p>
+    <p data-de="VJ-Link kann der Musik selbst zuhören: über ein Mikrofon, ein Line-In oder den Eingang eines Audio-Interfaces. Es teilt den Klang in acht Frequenzbänder vom tiefen Bass bis zu den Höhen und erkennt die Bass-Schläge.">VJ-Link can listen to the music itself: through a microphone, a line-in or the input of an audio interface. It splits the sound into eight frequency bands, from the deep bass to the highs, and finds the bass hits.</p><figure class="ddiag"><svg viewBox="0 0 880 250" role="img" aria-label="Diagram" data-de-aria-label="Diagramm" xmlns="http://www.w3.org/2000/svg"><line x1="200" y1="88" x2="295" y2="106" stroke="#fbbf24" stroke-width="2.5" stroke-dasharray="2 4"/><line x1="200" y1="162" x2="295" y2="144" stroke="#60a5fa" stroke-width="2.5"/><rect x="198" y="143" width="100" height="20" rx="6" fill="#07090c" stroke="#60a5fa"/><text x="248" y="157" text-anchor="middle" font-size="12" fill="#60a5fa" data-de="ohne Eingang">without input</text><line x1="485" y1="103" x2="623" y2="72" stroke="#9aa6b6" stroke-width="2.5" stroke-dasharray="1 5"/><line x1="485" y1="125" x2="600" y2="125" stroke="#9aa6b6" stroke-width="2.5" stroke-dasharray="1 5"/><line x1="485" y1="147" x2="623" y2="178" stroke="#9aa6b6" stroke-width="2.5" stroke-dasharray="1 5"/><rect x="20" y="45" width="180" height="50" rx="10" fill="#1b1b1b" stroke="#9aa6b6" stroke-width="1.5"/><text x="110" y="75" text-anchor="middle" font-size="14" font-weight="600" fill="#eef2f7" data-de="Mikrofon / Line-In">Microphone / line-in</text><rect x="20" y="155" width="180" height="50" rx="10" fill="#13233f" stroke="#3b82f6" stroke-width="1.5"/><text x="110" y="177" text-anchor="middle" font-size="14" font-weight="600" fill="#eef2f7" data-de="LJ-Link">LJ-Link</text><text x="110" y="194" text-anchor="middle" font-size="11.5" fill="#9aa6b6" data-de="Wellenform des Tracks">waveform of the track</text><rect x="295" y="93" width="190" height="64" rx="10" fill="#1a1530" stroke="#8b5cf6" stroke-width="1.5"/><text x="390" y="122" text-anchor="middle" font-size="14" font-weight="600" fill="#eef2f7" data-de="Analyse">Analysis</text><text x="390" y="139" text-anchor="middle" font-size="11.5" fill="#9aa6b6" data-de="8 Bänder · Bass-Schläge">8 bands · bass hits</text><rect x="600" y="28" width="240" height="44" rx="10" fill="#1b1b1b" stroke="#9aa6b6" stroke-width="1.5"/><text x="720" y="47" text-anchor="middle" font-size="14" font-weight="600" fill="#eef2f7" data-de="Audio-Visuals">Audio visuals</text><text x="720" y="64" text-anchor="middle" font-size="11.5" fill="#9aa6b6" data-de="Equalizer, Oszilloskop …">equalizer, oscilloscope …</text><rect x="600" y="103" width="240" height="44" rx="10" fill="#1b1b1b" stroke="#9aa6b6" stroke-width="1.5"/><text x="720" y="130" text-anchor="middle" font-size="14" font-weight="600" fill="#eef2f7" data-de="Ebenen mit Antrieb Audio">Layers with drive Audio</text><rect x="600" y="178" width="240" height="44" rx="10" fill="#1b1b1b" stroke="#9aa6b6" stroke-width="1.5"/><text x="720" y="197" text-anchor="middle" font-size="14" font-weight="600" fill="#eef2f7" data-de="Audio-Modulationen">Audio modulations</text><text x="720" y="214" text-anchor="middle" font-size="11.5" fill="#9aa6b6" data-de="Bass, Mitten, Höhen">bass, mids, highs</text></svg><figcaption data-de="Ohne Audio-Eingang nutzt VJ-Link, wo es geht, die Wellenform aus LJ-Link.">Without an audio input, VJ-Link uses the waveform from LJ-Link where it can.</figcaption></figure><figure class="dfig"><img class="pic" src="images/settings-audio-guide.png" alt="Settings, page Audio" data-de-alt="Einstellungen, Seite Audio" loading="lazy"></figure><ol class="dguide"><li><b data-de="Eingang">Input</b><span data-de=": aus oder einer der Audio-Eingänge des Rechners.">: off, or one of the audio inputs of the computer.</span></li><li><b data-de="Pegel">Level</b><span data-de=": 25–400 %. So weit anheben, dass die Anzeige gut ausschlägt, ohne rechts anzustoßen.">: 25–400 %. Raise it until the meter moves well, without staying at the right end.</span></li><li><b data-de="Anzeige">Meter</b><span data-de=": das gerade lauteste Band; rot heißt zu laut.">: the loudest band right now; red means too loud.</span></li><li><b data-de="Wirkt auf">Works on</b><span data-de=": nur die Audio-Visuals oder alle Visuals.">: only the audio visuals, or all visuals.</span></li><li><b data-de="Ausgang">Output</b><span data-de=": wo der Ton von Videos herauskommt.">: where the sound of videos comes out.</span></li></ol><h2 id="choose-an-input" data-de="Einen Eingang wählen">Choose an input</h2><ol class="dsteps"><li><p><span data-de="Oben auf ">Click </span><b>AUDIO</b><span data-de=" klicken oder Einstellungen → Audio."> at the top, or Settings → Audio.</span></p></li><li><p data-de="Den Eingang wählen. macOS fragt einmal nach dem Mikrofon-Zugriff: erlauben (Systemeinstellungen → Datenschutz &amp; Sicherheit → Mikrofon).">Pick the input. macOS asks once for microphone access: allow it (System Settings → Privacy &amp; Security → Microphone).</p></li><li><p data-de="Den Pegel so einstellen, dass die Anzeige mit der Musik gut ausschlägt.">Set the level so that the meter moves well with the music.</p></li><li><p><span data-de="">Choose </span><b data-de="Wirkt auf">Works on</b><span data-de=" wählen. Der AUDIO-Knopf oben zeigt den Eingang und acht kleine Pegelbalken.">. The AUDIO button at the top shows the input and eight small level bars.</span></p></li></ol><div class="table"><table><thead><tr><th data-de="Wirkt auf">Works on</th><th data-de="Was passiert">What happens</th></tr></thead><tbody><tr><td><b data-de="Audio-Visuals">Audio visuals</b></td><td><span data-de="nur Visuals, die für Audio gemacht sind (Equalizer, Oszilloskop, Spektrum-Kreis …), folgen dem Eingang; alles andere läuft weiter im Takt">only visuals that are made for audio (equalizers, oscilloscope, spectrum circle …) follow the input; everything else keeps running in time</span></td></tr><tr><td><b data-de="Alle Visuals">All visuals</b></td><td><span data-de="jedes Visual reagiert auf Bass, Mitten und Höhen">every visual reacts to bass, mids and highs</span></td></tr></tbody></table></div><p><span data-de="Clips im Raster, die gerade vom Eingang gesteuert werden, bekommen eine kleine Markierung. Pro Ebene kannst du außerdem den ">Clips in the grid that are driven by the input right now get a small mark. Per layer you can also set the </span><b data-de="Antrieb">drive</b><span data-de=" auf Audio stellen, dann pulsiert die Ebene mit dem Bass statt mit dem Beat, siehe "> to Audio, then the layer pulses with the bass instead of the beat, see </span><a href="wiki-layers.html" data-de="Ebenen">layers</a><span data-de=". Audio-">. Audio </span><a href="wiki-modulation.html" data-de="Modulationen">modulations</a><span data-de=" nutzen dieselben Bänder."> use the same bands.</span></p><h2 id="which-input-is-best" data-de="Welcher Eingang am besten ist">Which input is best</h2><div class="table"><table><thead><tr><th data-de="Eingang">Input</th><th data-de="Bewertung">Rating</th><th data-de="Hinweis">Note</th></tr></thead><tbody><tr><td><span data-de="Line-In vom DJ-Mixer (Booth- oder Rec-Out)">Line-in from the DJ mixer (booth or rec out)</span></td><td><span class="badge rec" data-de="Empfohlen">Recommended</span></td><td><span data-de="sauberes Signal, unabhängig vom Raum">clean signal, independent of the room</span></td></tr><tr><td><span data-de="Eingang eines Audio-Interfaces">Audio interface input</span></td><td><span class="badge rec" data-de="Empfohlen">Recommended</span></td><td><span data-de="wie Line-In, mit Pegelregler">like line-in, with a level knob</span></td></tr><tr><td><span data-de="Eingebautes Mikrofon">Built-in microphone</span></td><td><span class="badge ok" data-de="Geht">Works</span></td><td><span data-de="geht, reagiert aber auf Sprechen und den Raum">works, but reacts to talking and the room</span></td></tr><tr><td><span data-de="Kein Eingang, nur LJ-Link">No input, LJ-Link only</span></td><td><span class="badge ok" data-de="Geht">Works</span></td><td><span data-de="Bänder kommen aus der Wellenform des Master-Decks">bands come from the waveform of the master deck</span></td></tr></tbody></table></div><h2 id="audio-output" data-de="Audio-Ausgang">Audio output</h2><p><span data-de="Auf derselben Einstellungsseite wählt ">On the same settings page, </span><b data-de="Ausgang">Output</b><span data-de=", wo der Ton von Videos herauskommt (Cues und Video-Clips mit eingeschaltetem Ton)."> picks where the sound of videos comes out (cues and video clips with sound switched on).</span></p>
+    <div class="adm community"><p class="adm-t"><span class="adm-i" aria-hidden="true">💬</span><span data-de="Fehlt etwas oder stimmt etwas nicht?">Something missing or wrong?</span></p><p><span data-de="Frag auf unserem ">Ask in our </span><a href="https://discord.gg/N6DMca4Bjk" rel="noopener">Discord</a><span data-de=" oder "> or </span><a href="wiki-help.html#report" data-de="melde ein Problem">report a problem</a><span data-de=". Am meisten helfen Berichte von echten Geräten, auch wenn etwas nicht klappt.">. Reports from real gear help most, also when something does not work.</span></p></div>
+    <nav class="dpn"><a class="prev" href="wiki-connections.html"><small data-de="Zurück">Previous</small><span data-de="← Verbindungen (Tab VERBINDEN)">← Connections (CONNECT tab)</span></a><a class="next" href="wiki-desks.html"><small data-de="Weiter">Next</small><span data-de="Alle Pulte →">All desks →</span></a></nav>
+  </main>
+</div>
+<footer>
+  <div class="wrap">
+    <p data-de="Open Source unter der Eclipse Public License 2.0, ohne Gewährleistung. Die Personen-Erkennung nutzt MediaPipe (Apache-2.0). VJ-Link ist ein unabhängiges Projekt und kein offizielles Produkt der genannten Hersteller; alle Marken gehören ihren Inhabern und werden nur genannt, um die Kompatibilität zu beschreiben. Ableton und Link sind Marken der Ableton AG. Art-Net™ Designed by and Copyright Artistic Licence Holdings Ltd.">Open source under the Eclipse Public License 2.0, without warranty. Person detection uses MediaPipe (Apache-2.0). VJ-Link is an independent project and not an official product of, or endorsed by, any of the manufacturers named; all trademarks belong to their owners and are used only to describe compatibility. Ableton and Link are trademarks of Ableton AG. Art-Net™ Designed by and Copyright Artistic Licence Holdings Ltd.</p>
+    <p><a href="https://github.com/skyplayser/VJ-LINK">GitHub</a> · <a href="https://github.com/skyplayser/VJ-LINK/releases" data-de="Versionen">Releases</a> · <a href="wiki.html">Wiki</a> · <a href="wiki-help.html" data-de="Hilfe">Help</a> · <a href="https://discord.gg/N6DMca4Bjk" rel="noopener">Discord</a> · <a href="https://github.com/skyplayser/VJ-LINK/issues">Issues</a> · <a href="free-vj-software.html" data-de="Kostenlose VJ-Software">Free VJ software</a> · <a href="grandma-visuals.html" data-de="Visuals mit grandMA">Visuals with grandMA</a> · <a href="projection-mapping-software.html" data-de="Projektionsmapping">Projection mapping</a> · <a href="https://github.com/skyplayser/VJ-LInk-dev" data-de="Quellcode">Source code</a> · <a href="https://github.com/skyplayser/VJ-LINK/blob/main/LICENSE" data-de="Lizenz">License</a> · <a href="https://skyplayser.github.io/LJ-Link/" data-de-href="https://skyplayser.github.io/LJ-Link/de/" data-de="Probier auch: LJ-Link">Try also: LJ-Link</a> · <a href="impressum.html">Impressum</a> · <a href="datenschutz.html" data-de="Datenschutz">Privacy</a></p>
+    <p class="credit">Idea SKYPLAYSER/NEXTPHILM<br>Prompted with ❤️ made by Claude</p>
+  </div>
+</footer>
+
+<div class="viewer" id="viewer" role="dialog" aria-label="Picture"><img alt=""></div>
+
+<script>
+  (function () {
+    var b = document.getElementById("dside-btn"), s = document.getElementById("dside");
+    if (b && s) b.addEventListener("click", function () { var o = s.classList.toggle("open"); b.setAttribute("aria-expanded", o); });
+    // Keep the current page visible in the side navigation and the current section in the tabs.
+    var on = document.querySelector(".dlink.on"), side = document.getElementById("dside");
+    if (on && side && side.scrollHeight > side.clientHeight) side.scrollTop = on.offsetTop - side.clientHeight / 3;
+    var tab = document.querySelector(".dtab.on");
+    if (tab) tab.parentNode.scrollLeft = tab.offsetLeft - 16;
+    if (location.hash) { var d = document.querySelector(location.hash); if (d && d.tagName === "DETAILS") d.open = true; }
+  })();
+</script>
+<script>
+  (function () {
+    // Language: English at /, German at /de/ (built from data-de). A saved choice wins, otherwise a German
+    // browser goes from / to /de/ on the first visit. The button is a plain link, so search engines see both.
+    var langBtn = document.getElementById("lang");
+    var lang = document.documentElement.lang === "de" ? "de" : "en";
+    var saved = null;
+    try { saved = localStorage.getItem("vj-lang"); } catch (e) { /* private mode */ }
+    var want = saved || ((navigator.language || "en").toLowerCase().indexOf("de") === 0 ? "de" : "en");
+    if (langBtn && want !== lang && (saved || lang === "en")) { location.replace(langBtn.href + location.hash); return; }
+    if (langBtn) langBtn.addEventListener("click", function () {
+      try { localStorage.setItem("vj-lang", lang === "de" ? "en" : "de"); } catch (e) { /* private mode */ }
+    });
+
+    // The download that fits this computer is highlighted and used by the big button.
+    var ua = navigator.userAgent, os = /Windows/.test(ua) ? "win" : /Mac/.test(ua) ? "mac-arm" : null;
+    var card = os && document.querySelector('.dl .card[data-os="' + os + '"]');
+    if (card) {
+      card.classList.add("suggested");
+      var hero = document.getElementById("hero-download");
+      if (hero && os === "win") hero.href = card.querySelector("a").href;
+    }
+
+    // The newest version, from GitHub (only on pages that show it).
+    var heroV = document.getElementById("hero-version"), dlV = document.getElementById("dl-version");
+    if (heroV || dlV) fetch("https://api.github.com/repos/skyplayser/VJ-LINK/releases/latest")
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        if (!j || !j.tag_name) return;
+        var v = j.tag_name.replace(/^v/, ""), de = lang === "de";
+        if (heroV) heroV.textContent = "Version " + v + " · ";
+        if (dlV) dlV.textContent = de ? "Aktuelle Version: " + v + "." : "Current version: " + v + ".";
+      })
+      .catch(function () { /* offline: no version line */ });
+
+    // Phone menu.
+    var menu = document.getElementById("menu"), nav = document.getElementById("nav");
+    if (menu && nav) {
+      menu.onclick = function () { var open = nav.classList.toggle("open"); menu.setAttribute("aria-expanded", open); };
+      nav.addEventListener("click", function (e) { if (e.target.tagName === "A") nav.classList.remove("open"); });
+    }
+
+    // Pictures open large.
+    var viewer = document.getElementById("viewer");
+    if (viewer) {
+      document.querySelectorAll(".gallery img, .split img, .dfig img").forEach(function (img) {
+        img.addEventListener("click", function () { viewer.querySelector("img").src = img.src; viewer.classList.add("open"); });
+      });
+      viewer.onclick = function () { viewer.classList.remove("open"); };
+      document.addEventListener("keydown", function (e) { if (e.key === "Escape") viewer.classList.remove("open"); });
+    }
+  })();
+</script>
+</body>
+</html>

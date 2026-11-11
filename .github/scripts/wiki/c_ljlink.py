@@ -20,6 +20,9 @@ def _():
         P("Back to LJ-Link VJ-Link reports its scene, blackout, master, BPM and tempo source; **Open LJ-Link** under CONNECT opens LJ-Link's web interface.",
           "Zurück an LJ-Link meldet VJ-Link Szene, Blackout, Master, BPM und Tempo-Quelle; **LJ-Link öffnen** unter VERBINDEN öffnet die Weboberfläche von LJ-Link."),
         H2("Connecting", "Verbinden"),
+        IMG("connect-lj.png", "CONNECT → LJ-Link: connected, found in the network, decks", "VERBINDEN → LJ-Link: verbunden, im Netz gefunden, Decks",
+            ("CONNECT → LJ-Link shows where VJ-Link is connected, which LJ-Links it found and the decks. See [connections](wiki-connections.html#lj-link).",
+             "VERBINDEN → LJ-Link zeigt, wo VJ-Link verbunden ist, welche LJ-Links es gefunden hat, und die Decks. Siehe [Verbindungen](wiki-connections.html#lj-link).")),
         P("Nothing to set up: VJ-Link finds LJ-Link on the same computer and in the network by itself (Bonjour) and connects. The LJ-LINK pill at the top turns green, CONNECT shows the decks. Only if LJ-Link runs in another network, enter its address or `address:port` under CONNECT → LJ-Link.",
           "Nichts einzustellen: VJ-Link findet LJ-Link auf demselben Rechner und im Netz von selbst (Bonjour) und verbindet sich. Die LJ-LINK-Anzeige oben wird grün, VERBINDEN zeigt die Decks. Nur wenn LJ-Link in einem anderen Netz läuft, trag seine Adresse oder `Adresse:Port` unter VERBINDEN → LJ-Link ein."),
         TABLE([("LJ-Link", "LJ-Link"), ("What works", "Was geht"), ("Status", "Stand")], [

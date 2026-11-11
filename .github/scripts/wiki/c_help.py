@@ -62,7 +62,8 @@ def _():
         TABLE([("Id", "ID"), ("Control", "Element")], [
             ["<code>master</code>, <code>blackout</code>, <code>fx.master</code>", ("master, blackout, effect master", "Master, Blackout, Effekt-Master")],
             ["<code>strobe.on</code>, <code>strobe.flash</code>, <code>strobe.white</code>, <code>strobe.whiteFlash</code>, <code>blinder</code>, <code>strobe.sync</code>, <code>strobe.speed</code>, <code>strobe.intensity</code>", ("strobe buttons and faders", "Strobe-Tasten und -Fader")],
-            ["<code>tempo.tap</code>, <code>tempo.bpm</code>, <code>tempo.factor</code>, <code>transition.beats</code>", ("tempo and transition", "Tempo und Blende")],
+            ["<code>tempo.tap</code>, <code>tempo.bpm</code>, <code>tempo.factor</code>", ("tempo", "Tempo")],
+            ["<code>transition.beats</code>, <code>transition.style</code>, <code>transition.all</code>", ("fade length, transition type (0–1 steps through the 15 types), fade for all scenes", "Blende, Übergangsart (0–1 schaltet durch die 15 Arten), Blende für alle Szenen")],
             ["<code>layer.&lt;n&gt;.opacity</code>, <code>.color</code>, <code>.blend</code>, <code>.drive</code>, <code>.clear</code>, <code>.fx.1</code>–<code>.fx.3</code>, <code>.laser.x</code>, <code>.laser.y</code>, <code>.laser.size</code>, <code>.laser.rot</code>, <code>.laser.thick</code>, <code>.laser.xy</code>", ("per layer 1–8", "je Ebene 1–8")],
             ["<code>slot.&lt;A–E&gt;.hue</code>, <code>slot.&lt;A–E&gt;.r</code>, <code>.g</code>, <code>.b</code>", ("color slots", "Farbslots")],
             ["<code>scene.&lt;1–32&gt;</code>, <code>scene.next</code>, <code>scene.prev</code>, <code>scene.auto</code>", ("scenes", "Szenen")],

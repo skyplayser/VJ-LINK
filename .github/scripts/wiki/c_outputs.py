@@ -1,4 +1,5 @@
 from wikilib import *
+from figs import FIT
 
 group("Outputs", "Ausgänge")
 
@@ -22,6 +23,30 @@ def _():
             [("**Canvas**", "**Leinwand**"), ("arrange the screens freely (drag, snap, type values, side by side or stacked); each output shows its part, visuals and videos run seamlessly across all", "Bildschirme frei anordnen (ziehen, einrasten, Werte eintippen, nebeneinander oder untereinander); jeder Ausgang zeigt seinen Teil, Visuals und Videos laufen nahtlos über alle")],
             [("**Projection mapping**", "**Projektionsmapping**"), ("canvases with corner pin, grid warp and masks on the picture of each projector, see [projection mapping](wiki-mapping-projection.html)", "Leinwände mit Eckpunkten, Raster-Verzerrung und Masken auf dem Bild jedes Beamers, siehe [Projektionsmapping](wiki-mapping-projection.html)")],
         ]),
+        H2("Output resolution", "Auflösung des Ausgabebilds"),
+        P("Next to the preview in VISUALS, **Resolution** decides in which size the visuals are rendered. **Auto** fits almost always; a fixed size or aspect ratio helps with LED processors, recordings, portrait screens and slower computers.",
+          "Neben der Vorschau in VISUALS legt **Auflösung** fest, in welcher Größe die Visuals gerechnet werden. **Auto** passt fast immer; eine feste Größe oder ein festes Seitenverhältnis hilft bei LED-Prozessoren, Aufnahmen, Hochkant-Bildschirmen und schwächeren Rechnern."),
+        GUIDE("resolution-guide.png", "Resolution set to the aspect ratio 9:16", "Auflösung auf das Seitenverhältnis 9:16 gestellt", [
+            ("**Resolution** button: shows Auto, the pixel size or the aspect ratio.", "Knopf **Auflösung**: zeigt Auto, die Pixelgröße oder das Seitenverhältnis."),
+            ("**Auto**, **Pixels** or **Aspect**.", "**Auto**, **Pixel** oder **Format**."),
+            ("**Aspect ratios**: 16:9, 16:10, 4:3, 5:4, 1:1, 4:5, 9:16, 21:9, 32:9, 3:1, 4:1, 6:1.", "**Seitenverhältnisse**: 16:9, 16:10, 4:3, 5:4, 1:1, 4:5, 9:16, 21:9, 32:9, 3:1, 4:1, 6:1."),
+            ("**Your own** ratio, e.g. 5:2 or 2.35:1.", "**Eigenes** Verhältnis, z. B. 5:2 oder 2.35:1."),
+            ("**On outputs with a different aspect ratio**: fit, fill or stretch.", "**Auf Ausgängen mit anderem Seitenverhältnis**: ganz zeigen, füllen oder strecken."),
+            ("The **preview** takes the new shape at once.", "Die **Vorschau** nimmt sofort die neue Form an."),
+        ]),
+        TABLE([("Mode", "Modus"), ("What happens", "Was passiert"), ("Example", "Beispiel")], [
+            [("**Auto**", "**Auto**"), ("every output renders in its own full size", "jeder Ausgang rechnet in seiner eigenen vollen Größe"), ("projector and LED wall with different sizes", "Beamer und LED-Wand mit verschiedenen Größen")],
+            [("**Pixels**", "**Pixel**"), ("rendered in exactly width × height (16 to 8192), then fitted onto every output; presets from 1280 × 720 to 3840 × 2160, portrait and LED strips, ⇄ swaps portrait and landscape", "genau in Breite × Höhe gerechnet (16 bis 8192), dann auf jeden Ausgang eingepasst; Vorlagen von 1280 × 720 bis 3840 × 2160, hochkant und LED-Streifen, ⇄ tauscht Hoch- und Querformat"), ("an LED processor that wants 1920 × 1080, or a slow laptop at 1280 × 720", "ein LED-Prozessor, der 1920 × 1080 will, oder ein schwacher Laptop mit 1280 × 720")],
+            [("**Aspect**", "**Format**"), ("fixed aspect ratio, as large as fits each output", "festes Seitenverhältnis, so groß, wie es in jeden Ausgang passt"), ("9:16 for portrait steles, 32:9 for a wide stage", "9:16 für Hochkant-Stelen, 32:9 für eine breite Bühne")],
+        ]),
+        IMG("resolution-pixels.png", "Resolution in pixels with presets", "Auflösung in Pixeln mit Vorlagen",
+            ("Pixels: type width and height or pick a preset.", "Pixel: Breite und Höhe eintippen oder eine Vorlage wählen.")),
+        FIT(),
+        UL(("**Fit** shows the whole picture; where the shape differs, black bars remain.", "**Ganz zeigen** zeigt das ganze Bild; wo die Form abweicht, bleiben schwarze Ränder."),
+           ("**Fill** fills the output; what sticks out is cropped equally on both sides.", "**Füllen** füllt den Ausgang; was übersteht, wird auf beiden Seiten gleich abgeschnitten."),
+           ("**Stretch** pulls the picture onto the output and distorts it.", "**Strecken** zieht das Bild auf den Ausgang und verzerrt es.")),
+        ADM("note", ("With **Canvas** the arrangement of the screens sets the size, so this setting does not apply there. With **projection mapping** the picture is rendered in this size and then spread onto the canvases. The setting is saved with the project.",
+                     "Bei **Leinwand** bestimmt die Anordnung der Bildschirme die Größe, dort gilt diese Einstellung nicht. Beim **Projektionsmapping** wird das Bild in dieser Größe gerechnet und dann auf die Leinwände verteilt. Die Einstellung wird mit dem Projekt gespeichert.")),
         H2("Window output", "Fenster-Ausgang"),
         P("Instead of full screen, an output can be a normal window with a fixed picture size (720p up to 4K, also portrait). Capture it in OBS (NDI and Syphon via OBS plugins or other tools; not built in). It also works as a projector in canvas and projection mapping.",
           "Statt Vollbild kann ein Ausgang ein normales Fenster mit fester Bildgröße sein (720p bis 4K, auch hochkant). Greif es in OBS ab (NDI und Syphon über OBS-Plugins oder Zusatzprogramme, nicht eingebaut). Es funktioniert auch wie ein Beamer in Leinwand und Projektionsmapping."),
