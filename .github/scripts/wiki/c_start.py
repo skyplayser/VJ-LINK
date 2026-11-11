@@ -6,8 +6,8 @@ group("Start", "Start")
 @page("wiki.html", "Overview", "Übersicht")
 def _():
     body = SEC(
-        ADM("beta", ("This wiki describes the beta **0.1.4**. Many parts have not met real stage hardware yet; every page says what is tested and what is not.",
-                      "Dieses Wiki beschreibt die Beta **0.1.4**. Viele Teile haben noch keine echte Bühnentechnik gesehen; jede Seite sagt, was getestet ist und was nicht.")),
+        ADM("beta", ("This wiki describes the beta **0.1.5**. Many parts have not met real stage hardware yet; every page says what is tested and what is not.",
+                      "Dieses Wiki beschreibt die Beta **0.1.5**. Viele Teile haben noch keine echte Bühnentechnik gesehen; jede Seite sagt, was getestet ist und was nicht.")),
         H2("What VJ-Link does", "Was VJ-Link macht"),
         P("VJ-Link plays live visuals on screens, projectors and LED walls. The light desk leads: it recalls scenes, sets the colors, the brightness, the strobe and the blackout. The tempo comes from the music, best from [LJ-Link](wiki-ljlink.html), so everything moves in time without anybody tapping.",
           "VJ-Link spielt Live-Visuals auf Bildschirmen, Beamern und LED-Wänden. Das Lichtpult führt: Es ruft Szenen ab und setzt Farben, Helligkeit, Strobe und Blackout. Das Tempo kommt aus der Musik, am besten aus [LJ-Link](wiki-ljlink.html), sodass alles im Takt läuft, ohne dass jemand tappen muss."),
@@ -52,8 +52,8 @@ def _():
         H2("Five steps", "Fünf Schritte"),
         STEPS(("**Install.** Download the installer from the [download section](./#download). On the first start macOS and Windows warn once because the app is not signed yet: [how to open it anyway](wiki-install.html).",
                "**Installieren.** Den Installer im [Download-Bereich](./#download) laden. Beim ersten Start warnen macOS und Windows einmal, weil die App noch nicht signiert ist: [So öffnest du sie trotzdem](wiki-install.html)."),
-              ("**Open the demo.** On the start screen click **Open demo**. Eight layers and ten scenes are set up, and **Auto** plays the scenes one after another.",
-               "**Demo öffnen.** Im Startbildschirm auf **Demo öffnen** klicken. Acht Ebenen und zehn Szenen sind eingerichtet, und **Auto** spielt die Szenen nacheinander ab."),
+              ("**Open the demo.** On the start screen click **Open demo**. Eight layers and 14 scenes for pop house and techno are set up, and **Auto** plays the scenes one after another.",
+               "**Demo öffnen.** Im Startbildschirm auf **Demo öffnen** klicken. Acht Ebenen und 14 Szenen für Pop-House und Techno sind eingerichtet, und **Auto** spielt die Szenen nacheinander ab."),
               ("**Open an output.** Tab **OUTPUT**: click the projector or LED wall and open it as an output. The picture appears there in full screen.",
                "**Ausgang öffnen.** Tab **AUSGABE**: den Beamer oder die LED-Wand anklicken und als Ausgang öffnen. Dort erscheint das Bild im Vollbild."),
               ("**Bring in the tempo.** Is LJ-Link running in the same network? VJ-Link finds it by itself. Otherwise click **TAP** in the beat or type the BPM.",
@@ -102,8 +102,8 @@ def _():
         STEPS(("Start `VJ-Link-windows.exe`. In the SmartScreen window press **More info**, then **Run anyway**.", "`VJ-Link-windows.exe` starten. Im SmartScreen-Fenster **Weitere Informationen**, dann **Trotzdem ausführen** drücken."),
               ("Click through the installer.", "Den Installer durchklicken."),
               ("When the firewall asks, tick **Private networks** and allow access. Without it Art-Net, sACN, OSC and LJ-Link cannot reach VJ-Link.", "Fragt die Firewall, **Private Netzwerke** anhaken und zulassen. Ohne das erreichen Art-Net, sACN, OSC und LJ-Link VJ-Link nicht.")),
-        ADM("warn", ("Windows is built but **not tested yet** in this beta. Please tell us how it runs: [report a problem](wiki-help.html#report).",
-                     "Windows ist gebaut, in dieser Beta aber **noch nicht getestet**. Sag uns bitte, wie es läuft: [Fehler melden](wiki-help.html#report).")),
+        ADM("warn", ("Windows 11 is tested automatically in a virtual machine (every visual and effect, media, projects, outputs), but not yet on real stage computers. Please tell us how it runs: [report a problem](wiki-help.html#report).",
+                     "Windows 11 ist automatisch in einer virtuellen Maschine getestet (alle Visuals und Effekte, Medien, Projekte, Ausgänge), aber noch nicht auf echten Bühnenrechnern. Sag uns bitte, wie es läuft: [Fehler melden](wiki-help.html#report).")),
         H2("Updates", "Updates"),
         P("VJ-Link asks GitHub for a new version at start and then at most once an hour; **Settings → Update** does it on request and has the switch **Check for updates automatically**. GitHub sees the IP address of the computer and the program version, nothing else. **Download and install** loads the new version and compares it with the SHA-256 checksum GitHub publishes; if they differ, nothing is installed. Then on a Mac VJ-Link quits, replaces itself and starts again; on Windows the installer opens. The project is saved all the time, nothing is lost.",
           "VJ-Link fragt beim Start und danach höchstens einmal pro Stunde bei GitHub nach einer neuen Version; **Einstellungen → Update** fragt auf Wunsch und hat den Schalter **Automatisch nach Updates suchen**. GitHub sieht dabei die IP-Adresse des Rechners und die Programmversion, sonst nichts. **Herunterladen und installieren** lädt die neue Version und vergleicht sie mit der SHA-256-Prüfsumme, die GitHub veröffentlicht; passt sie nicht, wird nichts installiert. Dann beendet sich VJ-Link auf dem Mac, ersetzt sich und startet neu; unter Windows öffnet sich der Installer. Das Projekt wird laufend gesichert, nichts geht verloren."),

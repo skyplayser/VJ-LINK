@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <img alt="Status: beta 0.1.4" src="https://img.shields.io/badge/status-beta%200.1.4-FF5C93">
+  <img alt="Status: beta 0.1.5" src="https://img.shields.io/badge/status-beta%200.1.5-FF5C93">
   <img alt="macOS and Windows, free" src="https://img.shields.io/badge/macOS%20%7C%20Windows-free-3DDC84">
   <img alt="License: EPL-2.0" src="https://img.shields.io/badge/license-EPL--2.0-60a5fa">
 </p>
@@ -37,7 +37,7 @@ It runs locally. There is no account, no cloud and no telemetry. The only connec
 and a problem report, when you send one.
 
 > [!WARNING]
-> **This is the beta 0.1.4.** After a full test day (bugs, workflows, interface and a security test) it is a lot more robust
+> **This is the beta 0.1.5.** After a full test day (bugs, workflows, interface and a security test) it is a lot more robust
 > than the first alpha, but large parts have still not met real stage hardware. Please try it before an important show, and
 > tell us what you find: **Help → Report a problem** in the program.
 
@@ -128,7 +128,7 @@ VJ-Link needs a graphics card with WebGL 2, which almost every computer from the
 
 ## Quick start
 
-1. Start VJ-Link and click **Open demo** on the start screen. The ten scenes play by themselves.
+1. Start VJ-Link and click **Open demo** on the start screen. The 14 scenes play by themselves.
 2. Open **OUTPUT**, pick the projector or LED wall and open it as an output.
 3. Under **CONNECT** check that your desk arrives: set the Art-Net or sACN universe and the start address. Save the channel list
    as CSV and patch VJ-Link like a fixture.

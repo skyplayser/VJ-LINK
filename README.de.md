@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <img alt="Stand: Beta 0.1.4" src="https://img.shields.io/badge/Stand-Beta%200.1.4-FF5C93">
+  <img alt="Stand: Beta 0.1.5" src="https://img.shields.io/badge/Stand-Beta%200.1.5-FF5C93">
   <img alt="macOS und Windows, kostenlos" src="https://img.shields.io/badge/macOS%20%7C%20Windows-kostenlos-3DDC84">
   <img alt="Lizenz: EPL-2.0" src="https://img.shields.io/badge/Lizenz-EPL--2.0-60a5fa">
 </p>
@@ -37,7 +37,7 @@ und danach höchstens einmal pro Stunde bei GitHub nach der neuesten Version; ab
 Fehlermeldung, wenn du eine schickst.
 
 > [!WARNING]
-> **Das ist die Beta 0.1.4.** Nach einem kompletten Testtag (Fehler, Arbeitsabläufe, Oberfläche und Sicherheitstest) ist sie
+> **Das ist die Beta 0.1.5.** Nach einem kompletten Testtag (Fehler, Arbeitsabläufe, Oberfläche und Sicherheitstest) ist sie
 > deutlich robuster als die erste Alpha, aber große Teile haben noch keine echte Bühnentechnik gesehen. Probier sie bitte vor
 > einer wichtigen Show aus, und sag uns, was dir auffällt: **Hilfe → Fehler melden** im Programm.
 
@@ -131,7 +131,7 @@ VJ-Link braucht eine Grafikkarte mit WebGL 2. Die hat fast jeder Rechner der let
 
 ## Schnellstart
 
-1. VJ-Link starten und im Startbildschirm auf **Demo öffnen** klicken. Die zehn Szenen laufen von selbst.
+1. VJ-Link starten und im Startbildschirm auf **Demo öffnen** klicken. Die 14 Szenen laufen von selbst.
 2. **AUSGABE** öffnen, den Beamer oder die LED-Wand wählen und als Ausgang öffnen.
 3. Unter **VERBINDEN** prüfen, ob das Pult ankommt: Art-Net- oder sACN-Universe und Startadresse einstellen. Die Kanalliste als
    CSV speichern und VJ-Link wie ein Gerät patchen.
