@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <img alt="Status: beta 0.1.6" src="https://img.shields.io/badge/status-beta%200.1.6-FF5C93">
+  <img alt="Status: beta 0.1.7" src="https://img.shields.io/badge/status-beta%200.1.7-FF5C93">
   <img alt="macOS and Windows, free" src="https://img.shields.io/badge/macOS%20%7C%20Windows-free-3DDC84">
   <img alt="License: EPL-2.0" src="https://img.shields.io/badge/license-EPL--2.0-60a5fa">
 </p>
@@ -37,7 +37,7 @@ It runs locally. There is no account, no cloud and no telemetry. The only connec
 and a problem report, when you send one.
 
 > [!WARNING]
-> **This is the beta 0.1.6.** After a full test day (bugs, workflows, interface and a security test) it is a lot more robust
+> **This is the beta 0.1.7.** After a full test day (bugs, workflows, interface and a security test) it is a lot more robust
 > than the first alpha, but large parts have still not met real stage hardware. Please try it before an important show, and
 > tell us what you find: **Help → Report a problem** in the program.
 
@@ -208,7 +208,8 @@ low (at most three flashes per second), announce strobe effects where the venue 
 aim bright projector beams through haze at the audience at eye level. Software can fail: keep a fallback ready for the show.
 
 VJ-Link shows this notice before the first output and limits strobe, strobe white, layer strobe, colour strobe and beat invert to
-three flashes per second (*Safe flashes*, on by default, *Settings → Safety*).
+three flashes per second (*Safe flashes*, on by default, *Settings → Safety*). Next to the strobe faders you always see whether it is
+on and when it slows the strobe down.
 
 ## Problems?
 

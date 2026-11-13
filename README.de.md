@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <img alt="Stand: Beta 0.1.6" src="https://img.shields.io/badge/Stand-Beta%200.1.6-FF5C93">
+  <img alt="Stand: Beta 0.1.7" src="https://img.shields.io/badge/Stand-Beta%200.1.7-FF5C93">
   <img alt="macOS und Windows, kostenlos" src="https://img.shields.io/badge/macOS%20%7C%20Windows-kostenlos-3DDC84">
   <img alt="Lizenz: EPL-2.0" src="https://img.shields.io/badge/Lizenz-EPL--2.0-60a5fa">
 </p>
@@ -37,7 +37,7 @@ und danach höchstens einmal pro Stunde bei GitHub nach der neuesten Version; ab
 Fehlermeldung, wenn du eine schickst.
 
 > [!WARNING]
-> **Das ist die Beta 0.1.6.** Nach einem kompletten Testtag (Fehler, Arbeitsabläufe, Oberfläche und Sicherheitstest) ist sie
+> **Das ist die Beta 0.1.7.** Nach einem kompletten Testtag (Fehler, Arbeitsabläufe, Oberfläche und Sicherheitstest) ist sie
 > deutlich robuster als die erste Alpha, aber große Teile haben noch keine echte Bühnentechnik gesehen. Probier sie bitte vor
 > einer wichtigen Show aus, und sag uns, was dir auffällt: **Hilfe → Fehler melden** im Programm.
 
@@ -213,7 +213,8 @@ beachte die Regeln des Veranstaltungsorts. Richte helle Projektorstrahlen im Neb
 kann ausfallen: Halte für die Show einen Plan B bereit.
 
 VJ-Link zeigt diesen Hinweis vor dem ersten Ausgang und begrenzt Strobe, Strobe White, Ebenen-Strobe, Farb-Strobe und
-Beat-Invert auf drei Blitze pro Sekunde (*Sichere Blitze*, Standard an, *Einstellungen → Sicherheit*).
+Beat-Invert auf drei Blitze pro Sekunde (*Sichere Blitze*, Standard an, *Einstellungen → Sicherheit*). Neben den Strobe-Fadern
+siehst du immer, ob sie an sind und wann sie den Strobe bremsen.
 
 ## Probleme?
 

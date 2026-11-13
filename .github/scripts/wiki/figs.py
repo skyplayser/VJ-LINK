@@ -155,3 +155,47 @@ def CHASE_TIMELINE():
     out.append(T(20, yb, "A, B, C = the clips of the row (or the ones you picked). Here one step = 1 beat; with “visible 50 %” each clip only flashes for half the step.",
                  "A, B, C = die Clips der Zeile (oder die ausgewählten). Hier ein Schritt = 1 Beat; mit „sichtbar 50 %“ blitzt jeder Clip nur den halben Schritt auf.", 12, DIM, "start"))
     return FIG(x0 + 8 * cw + 30, yb + 20, out, label=("Chase over eight beats", "Chase über acht Beats"))
+
+
+def STROBE_HOLD():
+    """Großer Knopf (Halten) und Dauer-An über die Zeit: wann der Strobe läuft."""
+    out, x0, W = [], 200, 600
+    out.append(_panel(10, 10, x0 + W + 30, 236))
+    ts = lambda s: x0 + s / 10 * W  # 0–10 s
+    for s in range(0, 11, 2):
+        out.append('<line x1="%.0f" y1="40" x2="%.0f" y2="196" stroke="%s" stroke-dasharray="2 4"/>' % (ts(s), ts(s), LINE))
+        out.append(T(ts(s), 34, "%d s" % s, None, 11, DIM))
+    rows = [("Big button held", "Großer Knopf gehalten", [(1, 2.5), (7, 8)], "#ffb020"),
+            ("Latch", "Dauer-An", [(4, 6.5)], "#ffb020"),
+            ("Strobe runs", "Strobe läuft", [(1, 2.5), (4, 6.5), (7, 8)], PINK)]
+    for r, (en, de, spans, col) in enumerate(rows):
+        y = 52 + r * 46
+        out.append(T(x0 - 14, y + 22, en, de, 12.5, INK, "end", "600"))
+        out.append('<rect x="%d" y="%d" width="%d" height="32" rx="6" fill="%s" stroke="%s"/>' % (x0, y + 2, W, BG, LINE))
+        for a, b in spans:
+            out.append('<rect x="%.0f" y="%d" width="%.0f" height="32" rx="6" fill="%s" opacity=".9"/>' % (ts(a), y + 2, ts(b) - ts(a), col))
+    out.append(T(ts(4), 210, "click on", "Klick an", 11, DIM)); out.append(T(ts(6.5), 210, "click off", "Klick aus", 11, DIM))
+    out.append(T(20, 236, "Big button: only while held. Latch: on until clicked again. It runs while either is on.",
+                 "Großer Knopf: nur solange gehalten. Dauer-An: an, bis wieder geklickt. Es läuft, solange einer an ist.", 12, DIM, "start"))
+    return FIG(x0 + W + 40, 250, out, label=("Hold and latch over time", "Halten und Dauer-An über die Zeit"))
+
+
+def STROBE_RATE():
+    """Wie schnell ×16 bei 126 BPM wirklich blitzt: gewünscht, ohne und mit „Sichere Blitze“."""
+    out, x0, W, mx = [], 260, 520, 36.0
+    out.append(_panel(10, 10, x0 + W + 30, 214))
+    hz = lambda v: x0 + v / mx * W
+    for v in (0, 3, 10, 20, 30):
+        out.append('<line x1="%.0f" y1="40" x2="%.0f" y2="176" stroke="%s" stroke-dasharray="2 4"/>' % (hz(v), hz(v), LINE))
+        out.append(T(hz(v), 34, "%d Hz" % v, None, 11, DIM))
+    rows = [("16× asked (126 BPM)", "16× gewünscht (126 BPM)", 33.6, DIM, "33.6 Hz", "33,6 Hz"),
+            ("Safe flashes off: max 20 Hz", "Sichere Blitze aus: max 20 Hz", 16.8, "#ffb020", "16.8 Hz = 8×", "16,8 Hz = 8×"),
+            ("Safe flashes on: max 3 Hz", "Sichere Blitze an: max 3 Hz", 2.1, PINK, "2.1 Hz = 1×", "2,1 Hz = 1×")]
+    for r, (en, de, v, col, ven, vde) in enumerate(rows):
+        y = 50 + r * 44
+        out.append(T(x0 - 14, y + 21, en, de, 12.5, INK, "end", "600"))
+        out.append('<rect x="%d" y="%d" width="%.0f" height="30" rx="6" fill="%s" opacity=".85"/>' % (x0, y + 2, hz(v) - x0, col))
+        out.append(T(hz(v) + 8, y + 22, ven, vde, 12, INK, "start", "700"))
+    out.append(T(20, 200, "Halved per beat until the limit fits, so it stays on the beat. Next to the faders you see the real value.",
+                 "Pro Beat halbiert, bis das Limit passt; so bleibt es im Takt. Neben den Fadern steht der echte Wert.", 12, DIM, "start"))
+    return FIG(x0 + W + 40, 222, out, label=("How fast 16× really flashes", "Wie schnell 16× wirklich blitzt"))
