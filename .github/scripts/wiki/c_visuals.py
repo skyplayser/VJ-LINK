@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 from wikilib import *
+from figs import CHASE_TIMELINE
 
 CAT = json.loads((Path(__file__).parent / "catalog.json").read_text(encoding="utf-8"))
 
@@ -52,6 +53,39 @@ def _():
         ]),
         P("Below the layer panel follow the effects of the layer, see [effects](wiki-effects.html). A double click on a slider resets it.",
           "Unter dem Ebenen-Panel folgen die Effekte der Ebene, siehe [Effekte](wiki-effects.html). Ein Doppelklick auf einen Regler setzt ihn zurück."),
+        H2("Chase", "Chase"),
+        P("With **Chase** a layer steps through the clips of its row by itself, in time with the music: for example different flash pictures taking turns on every beat, or a new tunnel every bar. It runs on the common beat clock, so the preview, the clip grid and every output show the same clip at the same moment.",
+          "Mit **Chase** schaltet eine Ebene von selbst im Takt durch die Clips ihrer Zeile: zum Beispiel verschiedene Blitzbilder abwechselnd auf jeden Beat oder jeden Takt ein neuer Tunnel. Er läuft auf der gemeinsamen Beat-Uhr; Vorschau, Clip-Raster und jeder Ausgang zeigen im selben Moment denselben Clip."),
+        ADM("tip", ("Community function, thanks to Harald! Want to contribute to VJ-Link too? Send us your wish with a rating in the program (Help → Give feedback) or on our [Discord server](%s)." % DISCORD,
+                    "Community-Funktion, danke an Harald! Du willst auch zu VJ-Link beitragen? Melde uns deinen Wunsch per Bewertung im Programm (Hilfe → Feedback geben) oder auf unserem [Discord-Server](%s)." % DISCORD),
+            title=("Community function", "Community-Funktion")),
+        STEPS(("Put the clips into the row of a layer (**+ Clips**), e.g. three flash pictures.", "Die Clips in die Zeile einer Ebene legen (**+ Clips**), z. B. drei Blitzbilder."),
+              ("Click the layer name and switch **Chase** on in the panel on the right.", "Auf den Ebenen-Namen klicken und im Panel rechts **Chase** einschalten."),
+              ("Choose the **step** (¼ to 8 beats per clip) and the **order**.", "Den **Schritt** (¼ bis 8 Beats pro Clip) und die **Reihenfolge** wählen."),
+              ("Optional: **Visible** below 100 % lets each clip only flash, and tapping clips limits the chase to them.", "Optional: **Sichtbar** unter 100 % lässt jeden Clip nur aufblitzen, und Antippen von Clips beschränkt den Chase auf diese.")),
+        GUIDE("chase-panel-guide.png", "Chase settings in the panel of the beat layer", "Chase-Einstellungen im Panel der Beat-Ebene", [
+            ("**Chase on / off** for this layer.", "**Chase an / aus** für diese Ebene."),
+            ("**Step**: ¼, ½, 1, 2, 4 or 8 beats per clip.", "**Schritt**: ¼, ½, 1, 2, 4 oder 8 Beats pro Clip."),
+            ("**Order**: forward, back and forth, or random (every clip once per round, never twice in a row).", "**Reihenfolge**: vorwärts, hin und her oder Zufall (jeder Clip einmal pro Runde, nie zweimal hintereinander)."),
+            ("**Visible**: part of each step in which the clip shows; 100 % = always, 25 % = short flash. Double click = 100 %.", "**Sichtbar**: Anteil jedes Schritts, in dem der Clip zu sehen ist; 100 % = immer, 25 % = kurzer Blitz. Doppelklick = 100 %."),
+            ("**Clips**: none picked = all clips of the row; tap to pick single ones. The running one has a pink frame.", "**Clips**: keiner gewählt = alle Clips der Zeile; antippen wählt einzelne aus. Der laufende hat einen pinken Rahmen."),
+            ("**Note**: in sync on all outputs, and with safe flashes the step that really applies.", "**Hinweis**: synchron auf allen Ausgängen, bei sicheren Blitzen der Schritt, der wirklich gilt."),
+        ]),
+        CHASE_TIMELINE(),
+        GUIDE("chase-row-guide.png", "The beat layer with chase in the clip grid", "Die Beat-Ebene mit Chase im Clip-Raster", [
+            ("**⟳** after the layer name: the chase is on.", "**⟳** hinter dem Ebenen-Namen: der Chase ist an."),
+            ("The **running clip** lights up and moves on with every step.", "Der **laufende Clip** leuchtet und wandert mit jedem Schritt weiter."),
+        ]),
+        ADM("warn", ("**Safe flashes** (Settings → Safety, on by default) allow at most 3 changes per second. If the step is shorter at the current tempo, VJ-Link takes the next longer step and says so in the panel, e.g. ¼ beat at 128 BPM becomes 1 beat.",
+                     "**Sichere Blitze** (Einstellungen → Sicherheit, ab Werk an) erlauben höchstens 3 Wechsel pro Sekunde. Ist der Schritt beim aktuellen Tempo kürzer, nimmt VJ-Link die nächstlängere Stufe und sagt das im Panel, z. B. wird ¼ Beat bei 128 BPM zu 1 Beat.")),
+        TABLE([("Control", "Bedienelement"), ("ID for mapping and OSC", "ID für Mapping und OSC"), ("Values", "Werte")], [
+            [("Chase on/off", "Chase an/aus"), "<code>layer.N.chase</code>", ("switch", "Schalter")],
+            [("Step", "Schritt"), "<code>layer.N.chase.step</code>", ("0–1 steps through ¼ … 8 beats", "0–1 schaltet durch ¼ … 8 Beats")],
+            [("Order", "Reihenfolge"), "<code>layer.N.chase.order</code>", ("0–1: forward, back and forth, random", "0–1: vorwärts, hin und her, Zufall")],
+            [("Visible", "Sichtbar"), "<code>layer.N.chase.gate</code>", ("fader 5–100 %, can be modulated", "Regler 5–100 %, modulierbar")],
+        ]),
+        P("Chase settings are saved with the project and in scenes, so a scene can switch a chase on and the next one off.",
+          "Die Chase-Einstellungen werden mit dem Projekt und in Szenen gespeichert; eine Szene kann einen Chase also ein- und die nächste wieder ausschalten."),
         H2("Color slots", "Farbslots"),
         P("Five color slots A–E sit on the right. They are the colors of the show: the desk sets them over DMX (dimmer and RGB per slot), MIDI or OSC, and every layer that uses a slot changes with them. With several slots, laser looks give each beam its own color and move them on every eight beats.",
           "Rechts stehen fünf Farbslots A–E. Sie sind die Farben der Show: Das Pult setzt sie über DMX (Dimmer und RGB je Slot), MIDI oder OSC, und jede Ebene, die einen Slot nutzt, wechselt mit. Bei mehreren Slots bekommt bei Laser-Looks jeder Strahl eine eigene Farbe, alle acht Beats rücken sie weiter."),

@@ -133,3 +133,25 @@ def FIT():
     out.append(T(12, 262, "Example: output picture 9:16 (portrait) on a 16:9 projector. Grey frame = the output, pink = the picture.",
                  "Beispiel: Ausgabebild 9:16 (Hochformat) auf einem 16:9-Beamer. Grauer Rahmen = der Ausgang, Pink = das Bild.", 12, DIM, "start"))
     return FIG(888, 276, out, label=("Fitting the output picture", "Ausgabebild einpassen"))
+
+
+def CHASE_TIMELINE():
+    """Chase über 8 Beats: vorwärts, hin und her, Zufall (Schritt 1 Beat, Clips A B C) und „Sichtbar 50 %“."""
+    cols = {"A": "#ff5c93", "B": "#22c8f0", "C": "#ffb020"}
+    rows = [("Forward", "Vorwärts", "ABCABCAB", 1.0), ("Back and forth", "Hin und her", "ABCBABCB", 1.0),
+            ("Random (rounds)", "Zufall (Runden)", "BCACABCA", 1.0), ("Forward, visible 50 %", "Vorwärts, sichtbar 50 %", "ABCABCAB", 0.5)]
+    out, x0, cw, rh = [], 230, 76, 44
+    out.append(_panel(10, 10, x0 + 8 * cw + 20, 40 + len(rows) * (rh + 10) + 36))
+    for b in range(8):
+        out.append(T(x0 + b * cw + cw / 2, 36, "Beat %d" % (b + 1), None, 11.5, DIM))
+    for r, (en, de, seq, gate) in enumerate(rows):
+        y = 50 + r * (rh + 10)
+        out.append(T(x0 - 14, y + rh / 2 + 5, en, de, 12.5, INK, "end", "600"))
+        for b, ch in enumerate(seq):
+            w = (cw - 6) * gate
+            out.append('<rect x="%.0f" y="%d" width="%.0f" height="%d" rx="6" fill="%s" opacity=".9"/>' % (x0 + b * cw + 3, y, w, rh, cols[ch]))
+            out.append(T(x0 + b * cw + 3 + w / 2, y + rh / 2 + 5, ch, None, 14, "#07090c", weight="700"))
+    yb = 50 + len(rows) * (rh + 10) + 18
+    out.append(T(20, yb, "A, B, C = the clips of the row (or the ones you picked). Here one step = 1 beat; with “visible 50 %” each clip only flashes for half the step.",
+                 "A, B, C = die Clips der Zeile (oder die ausgewählten). Hier ein Schritt = 1 Beat; mit „sichtbar 50 %“ blitzt jeder Clip nur den halben Schritt auf.", 12, DIM, "start"))
+    return FIG(x0 + 8 * cw + 30, yb + 20, out, label=("Chase over eight beats", "Chase über acht Beats"))

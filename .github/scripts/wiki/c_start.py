@@ -6,8 +6,8 @@ group("Start", "Start")
 @page("wiki.html", "Overview", "Übersicht")
 def _():
     body = SEC(
-        ADM("beta", ("This wiki describes the beta **0.1.5**. Many parts have not met real stage hardware yet; every page says what is tested and what is not.",
-                      "Dieses Wiki beschreibt die Beta **0.1.5**. Viele Teile haben noch keine echte Bühnentechnik gesehen; jede Seite sagt, was getestet ist und was nicht.")),
+        ADM("beta", ("This wiki describes the beta **0.1.6**. Many parts have not met real stage hardware yet; every page says what is tested and what is not.",
+                      "Dieses Wiki beschreibt die Beta **0.1.6**. Viele Teile haben noch keine echte Bühnentechnik gesehen; jede Seite sagt, was getestet ist und was nicht.")),
         H2("What VJ-Link does", "Was VJ-Link macht"),
         P("VJ-Link plays live visuals on screens, projectors and LED walls. The light desk leads: it recalls scenes, sets the colors, the brightness, the strobe and the blackout. The tempo comes from the music, best from [LJ-Link](wiki-ljlink.html), so everything moves in time without anybody tapping.",
           "VJ-Link spielt Live-Visuals auf Bildschirmen, Beamern und LED-Wänden. Das Lichtpult führt: Es ruft Szenen ab und setzt Farben, Helligkeit, Strobe und Blackout. Das Tempo kommt aus der Musik, am besten aus [LJ-Link](wiki-ljlink.html), sodass alles im Takt läuft, ohne dass jemand tappen muss."),
@@ -237,6 +237,7 @@ def _():
             [("Videos", "Videos"), ("seamless loops, loop locked to 4–32 beats, sound", "nahtlose Loops, Loop auf 4–32 Beats, Ton"), ("[Media](wiki-media.html#videos)", "[Medien](wiki-media.html#videos)")],
             [("Text clips", "Text-Clips"), ("font, glow, outline, box, editable later", "Schrift, Leuchten, Kontur, Kasten, später bearbeitbar"), ("[Media](wiki-media.html#text-clips)", "[Medien](wiki-media.html#text-clips)")],
             [("Cameras", "Kameras"), ("webcam, capture card, OBS; ten looks; local person detection", "Webcam, Capture-Karte, OBS; zehn Looks; lokale Personen-Erkennung"), ("[Cameras](wiki-camera.html)", "[Kameras](wiki-camera.html)")],
+            [("Chase", "Chase"), ("a layer steps through its clips in time: forward, back and forth or random, flash mode, safe flashes", "eine Ebene schaltet im Takt durch ihre Clips: vorwärts, hin und her oder zufällig, Blitz-Modus, sichere Blitze"), ("[Layers](wiki-layers.html#chase)", "[Ebenen](wiki-layers.html#chase)")],
             [("Gallery", "Galerie"), ("browse visuals, effects and media with live preview", "Visuals, Effekte und Medien mit Live-Vorschau durchsehen"), ("[Visuals](wiki-visuals.html)", "[Visuals](wiki-visuals.html)")],
         ]),
         area("Control", "Steuerung", [
