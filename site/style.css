@@ -130,6 +130,13 @@ pre { background: var(--panel); border: 1px solid var(--line); border-radius: 10
 .guides .card a { color: var(--text); text-decoration: none; }
 .guides .card a:hover { color: var(--accent-2); }
 .guides .card .more { display: inline-block; margin-top: 10px; color: var(--accent-2); font-size: 15px; }
+.review { display: flex; flex-direction: column; gap: 12px; }
+.review .stars { color: var(--accent); font-size: 22px; letter-spacing: .12em; line-height: 1; }
+.review blockquote { margin: 0; }
+.review blockquote p { color: var(--text); font-size: 19px; line-height: 1.5; }
+.review figcaption { margin-top: auto; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+.review .rv-note { font-size: 13px; color: var(--muted); opacity: .8; }
+.review .rv-note::before { content: "· "; }
 
 /* Help page */
 .help details { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 18px; margin-bottom: 10px; }
