@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <img alt="Stand: Beta 0.1.7" src="https://img.shields.io/badge/Stand-Beta%200.1.7-FF5C93">
+  <img alt="Stand: Beta 0.1.8" src="https://img.shields.io/badge/Stand-Beta%200.1.8-FF5C93">
   <img alt="macOS und Windows, kostenlos" src="https://img.shields.io/badge/macOS%20%7C%20Windows-kostenlos-3DDC84">
   <img alt="Lizenz: EPL-2.0" src="https://img.shields.io/badge/Lizenz-EPL--2.0-60a5fa">
 </p>
@@ -37,7 +37,7 @@ und danach höchstens einmal pro Stunde bei GitHub nach der neuesten Version; ab
 Fehlermeldung, wenn du eine schickst.
 
 > [!WARNING]
-> **Das ist die Beta 0.1.7.** Nach einem kompletten Testtag (Fehler, Arbeitsabläufe, Oberfläche und Sicherheitstest) ist sie
+> **Das ist die Beta 0.1.8.** Nach einem kompletten Testtag (Fehler, Arbeitsabläufe, Oberfläche und Sicherheitstest) ist sie
 > deutlich robuster als die erste Alpha, aber große Teile haben noch keine echte Bühnentechnik gesehen. Probier sie bitte vor
 > einer wichtigen Show aus, und sag uns, was dir auffällt: **Hilfe → Fehler melden** im Programm.
 
@@ -73,6 +73,11 @@ Fehlermeldung, wenn du eine schickst.
 - **Medien und Text:** Logos und Bilder mit automatischem Freistellen, Videos mit einem Loop im Takt und Text-Clips mit Schrift,
   Leuchten, Kontur und Kasten.
 - **Aus LJ-Link:** Tempo, Beat-Phase, Phrasen und Trackwechsel, eine *Now-Playing*-Bauchbinde und die DJ-Waveform als Clips.
+- **Suite-Chat (Alpha, neu in 0.1.8):** ein Chatraum mit LJ Link und [LJL Link](https://github.com/skyplayser/LJL-Link) (den DJs) im selben Netzwerk, ohne Server. Ein
+  **EMERGENCY**-Knopf zeigt bei allen anderen sofort ein Popup mit gelb blinkendem Rand. Nur im Bedienfenster, nie auf den
+  Ausgängen; abschaltbar unter *Einstellungen → Suite-Chat*. [Protokoll](https://github.com/skyplayser/LJ-Link/blob/main/docs/suite-chat.md).
+  Getestet auf einem Mac mit LJ Link, LJL Link und VJ-Link; noch nicht zwischen zwei Rechnern, nicht unter Windows, nicht im Club.
+  EMERGENCY ist ein Hinweis-Popup fürs Team, keine Alarm- oder Sicherheitsanlage. Es ist eine Alpha, kann ausfallen oder verspätet ankommen, und jeder im selben Netzwerk kann es auslösen. Es ersetzt keine Durchsagen, Funkgeräte oder das Sicherheitskonzept der Veranstaltung.
 - **Leicht zu starten:** ein Startbildschirm, eine **Demo-Show**, die von selbst läuft, eine Galerie mit Live-Vorschau für jedes
   Visual und jeden Effekt, ein Sperrmodus für die Show, Projektdateien (`.vjlink`) mit ihren Medien, Updates von GitHub und
   **Deutsch und Englisch**.
@@ -201,6 +206,14 @@ Sag uns bitte, was du getestet hast: **Hilfe → Fehler melden** oder auf [Disco
   nicht passt.
 - **Netzwerk:** Art-Net, sACN, OSC und der LJ-Link-Eingang haben keine Anmeldung – das ist Branchenstandard. Trenne Show-Netz und
   Gäste-WLAN und erlaube VJ-Link in der Firewall nur für das private Show-Netz.
+- **Suite-Chat:** Auch er hat keine Anmeldung, ist unverschlüsselt und ab Werk an. Jeder im selben Netzwerk – mit einem
+  Suite-Programm oder einem beliebigen Netzwerkwerkzeug – kann mitlesen, schreiben und Notfall-Popups im Bedienfenster auslösen
+  (höchstens 3 je Programm in 60 Sekunden, höchstens 20 offen; auf den Ausgängen erscheint nie etwas). Ausschalten unter
+  *Einstellungen → Suite-Chat*; dann sendet und liest VJ-Link keine Chat-Nachrichten. Netzwerke, die Multicast sperren
+  (Gäste-WLAN mit Client-Isolation), haben keinen Chat. Die Texte liegen nur im Arbeitsspeicher, nie in einer Datei oder einem
+  Fehlerbericht, aber die anderen Programme im Raum behalten deine Nachrichten und geben die letzten 20 an Neue weiter; Name und
+  Position stehen in `chat.json`. Mehr in der [Datenschutzerklärung](https://skyplayser.github.io/VJ-LINK/datenschutz.html).
+  EMERGENCY ist ein Hinweis-Popup fürs Team, keine Alarm- oder Sicherheitsanlage. Es ist eine Alpha, kann ausfallen oder verspätet ankommen, und jeder im selben Netzwerk kann es auslösen. Es ersetzt keine Durchsagen, Funkgeräte oder das Sicherheitskonzept der Veranstaltung.
 - **Titel und Cover öffentlich zeigen:** Wenn du Titel, Interpret oder Cover auf Leinwände oder Bildschirme bringst, die das
   Publikum sieht (z. B. mit dem Clip „Now Playing“), brauchst du dafür unter Umständen die Erlaubnis der Rechteinhaber oder des
   Veranstalters. Mit dem Privatsphäre-Modus von LJ-Link bleiben Titel und Cover verborgen.

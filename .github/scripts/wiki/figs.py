@@ -199,3 +199,49 @@ def STROBE_RATE():
     out.append(T(20, 200, "Halved per beat until the limit fits, so it stays on the beat. Next to the faders you see the real value.",
                  "Pro Beat halbiert, bis das Limit passt; so bleibt es im Takt. Neben den Fadern steht der echte Wert.", 12, DIM, "start"))
     return FIG(x0 + W + 40, 222, out, label=("How fast 16× really flashes", "Wie schnell 16× wirklich blitzt"))
+
+
+def _box(x, y, w, h, fill, stroke):
+    return '<rect x="%.0f" y="%.0f" width="%.0f" height="%.0f" rx="8" fill="%s" stroke="%s" stroke-width="1.5"/>' % (x, y, w, h, fill, stroke)
+
+
+def CHAT_ROOM():
+    """Suite-Chat: drei Programme, ein Raum, kein Server – alle senden an eine Multicast-Gruppe."""
+    out = [_panel(10, 10, 760, 300)]
+    cx, cy = 390, 150
+    out.append('<ellipse cx="%d" cy="%d" rx="150" ry="46" fill="#0f2219" stroke="#22c55e" stroke-width="1.5"/>' % (cx, cy))
+    out.append(T(cx, cy - 8, "One room in this network", "Ein Raum in diesem Netzwerk", 13, INK, "middle", "700"))
+    out.append(T(cx, cy + 12, "multicast 239.255.76.76 : 47676", "Multicast 239.255.76.76 : 47676", 11.5, DIM))
+    out.append(T(cx, cy + 28, "no server", "kein Server", 11.5, "#22c55e", "middle", "600"))
+    progs = [(40, 40, "LJ Link", "Lena · FOH", "Lena · FOH", "#3b82f6"),
+             (540, 40, "LJL Link", "DJ David · DJ Booth", "DJ David · DJ Booth", "#8b5cf6"),
+             (290, 236, "VJ-Link", "VJ Anna · VJ desk", "VJ Anna · VJ-Pult", PINK)]
+    for x, y, name, en, de, col in progs:
+        out.append(_box(x, y, 200, 54, BG, col))
+        out.append(T(x + 100, y + 22, name, None, 13.5, INK, "middle", "700"))
+        out.append(T(x + 100, y + 41, en, de, 11.5, DIM))
+    for x1, y1, x2, y2 in ((240, 76, 270, 124), (540, 76, 510, 124), (390, 236, 390, 196)):
+        out.append('<line x1="%d" y1="%d" x2="%d" y2="%d" stroke="#22c55e" stroke-width="2" stroke-dasharray="5 4"/>' % (x1, y1, x2, y2))
+    out.append(T(24, 300, "Each program sends to the group and hears everyone in it. TTL 1: nothing leaves this network.",
+                 "Jedes Programm sendet an die Gruppe und hört alle darin. TTL 1: nichts verlässt dieses Netzwerk.", 12, DIM, "start"))
+    return FIG(780, 316, out, label=("Suite chat: one room without a server", "Suite-Chat: ein Raum ohne Server"))
+
+
+def CHAT_EMERGENCY():
+    """Was ein EMERGENCY bei VJ-Link auslöst."""
+    out = [_panel(10, 10, 780, 262)]
+    out.append(_box(30, 100, 190, 70, BG, "#FFD60A"))
+    out.append(T(125, 128, "EMERGENCY", None, 14, "#FFD60A", "middle", "800"))
+    out.append(T(125, 150, "pressed in LJ Link", "in LJ Link gedrückt", 11.5, DIM))
+    out.append('<line x1="220" y1="135" x2="276" y2="135" stroke="#FFD60A" stroke-width="2.5"/><path d="M276 129 L288 135 L276 141 Z" fill="#FFD60A"/>')
+    rows = [("Pop-up at the bottom right, yellow blinking border – stays until OK", "Popup unten rechts, gelb blinkender Rand – bleibt bis OK"),
+            ("Chat button blinks yellow until you open the chat", "Chat-Knopf blinkt gelb, bis du den Chat öffnest"),
+            ("Background: Dock bounces / taskbar flashes (untested) – no sound", "Im Hintergrund: Dock hüpft / Taskleiste blinkt (ungetestet) – ohne Ton"),
+            ("Never on the outputs: projectors and LED walls show nothing", "Nie auf den Ausgängen: Beamer und LED-Wände zeigen nichts")]
+    for i, (en, de) in enumerate(rows):
+        y = 34 + i * 52
+        out.append(_box(300, y, 470, 40, BG, "#FFD60A" if i < 3 else LINE))
+        out.append(T(316, y + 25, en, de, 12, INK if i < 3 else DIM, "start", "600" if i < 3 else "400"))
+    out.append(T(24, 262, "At most 3 per program in 60 s and 20 open pop-ups; more arrive as normal messages.",
+                 "Höchstens 3 je Programm in 60 s und 20 offene Popups; weitere kommen als normale Nachricht.", 12, DIM, "start"))
+    return FIG(800, 278, out, label=("What an EMERGENCY does in VJ-Link", "Was ein EMERGENCY in VJ-Link auslöst"))
