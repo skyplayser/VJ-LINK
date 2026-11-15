@@ -23,6 +23,7 @@
   <img alt="Status: beta 0.1.8" src="https://img.shields.io/badge/status-beta%200.1.8-FF5C93">
   <img alt="macOS and Windows, free" src="https://img.shields.io/badge/macOS%20%7C%20Windows-free-3DDC84">
   <img alt="License: EPL-2.0" src="https://img.shields.io/badge/license-EPL--2.0-60a5fa">
+  <a href="https://github.com/skyplayser/VJ-LINK/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/skyplayser/VJ-LINK/total?label=downloads&color=a78bfa"></a>
 </p>
 
 ![VJ-Link with eight layers, the clip grid, color slots and scenes](docs/images/visuals.png)
