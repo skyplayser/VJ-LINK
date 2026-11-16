@@ -11,7 +11,7 @@
 
 <p align="center">
   <a href="https://skyplayser.github.io/VJ-LINK/de/">Website</a> &nbsp;·&nbsp;
-  <a href="https://github.com/skyplayser/VJ-LINK/releases/latest">Download</a> &nbsp;·&nbsp;
+  <a href="https://skyplayser.github.io/Link-Suite/">Download</a> &nbsp;·&nbsp;
   <a href="#schnellstart">Schnellstart</a> &nbsp;·&nbsp;
   <a href="README.md">English</a> &nbsp;·&nbsp;
   <a href="https://skyplayser.github.io/VJ-LINK/de/wiki.html">Wiki</a> &nbsp;·&nbsp;
@@ -114,20 +114,22 @@ live auf dem Beamer. Runde Flächen biegst du mit einem Raster 3×3 oder 5×5, M
 
 ## Installieren
 
-Lade den Installer für deinen Rechner aus der [neuesten Version](https://github.com/skyplayser/VJ-LINK/releases/latest).
+> **Neu: Installieren und Aktualisieren über den [Link-Suite Launcher](https://skyplayser.github.io/Link-Suite/).** Launcher laden ([macOS Apple-Chip](https://github.com/skyplayser/Link-Suite/releases/latest/download/Link-Suite-macos-arm64.dmg) · [macOS Intel](https://github.com/skyplayser/Link-Suite/releases/latest/download/Link-Suite-macos-intel.dmg) · [Windows](https://github.com/skyplayser/Link-Suite/releases/latest/download/Link-Suite-windows.exe)), öffnen und bei VJ-Link auf *Installieren* klicken. Der Launcher lädt VJ-Link direkt aus den Releases dieses Repos, prüft die Datei und hält VJ-Link und alle anderen Programme der Link-Suite aktuell. Die einzelnen Installer von VJ-Link bleiben in den Releases dieses Repos.
+
+Lade den Link-Suite Launcher für deinen Rechner und installiere VJ-Link darüber.
 
 | System | Datei |
 |---|---|
-| macOS, Apple-Chip (M1 und neuer) | `VJ-Link-macos-arm64.dmg` |
-| macOS, Intel | `VJ-Link-macos-intel.dmg` |
-| Windows 10 / 11, 64 Bit | `VJ-Link-windows.exe` |
+| macOS, Apple-Chip (M1 und neuer) | [`Link-Suite-macos-arm64.dmg`](https://github.com/skyplayser/Link-Suite/releases/latest/download/Link-Suite-macos-arm64.dmg) |
+| macOS, Intel | [`Link-Suite-macos-intel.dmg`](https://github.com/skyplayser/Link-Suite/releases/latest/download/Link-Suite-macos-intel.dmg) |
+| Windows 10 / 11, 64 Bit | [`Link-Suite-windows.exe`](https://github.com/skyplayser/Link-Suite/releases/latest/download/Link-Suite-windows.exe) |
 
-Die Installer sind noch nicht signiert. Deshalb warnen beide Systeme einmal beim ersten Start:
+Der Launcher ist noch nicht signiert. Deshalb warnen beide Systeme einmal bei seinem ersten Start:
 
-- **macOS** („VJ-Link“ nicht geöffnet): App in *Programme* ziehen und einmal starten, auf *Fertig* klicken. *Systemeinstellungen
-  → Datenschutz & Sicherheit* öffnen, nach unten scrollen, bei VJ-Link auf **Dennoch öffnen** klicken, mit Passwort bestätigen,
+- **macOS** („Link-Suite“ nicht geöffnet): Link-Suite in *Programme* ziehen und einmal starten, auf *Fertig* klicken. *Systemeinstellungen
+  → Datenschutz & Sicherheit* öffnen, nach unten scrollen, bei Link-Suite auf **Dennoch öffnen** klicken, mit Passwort bestätigen,
   dann *Öffnen*. Kamera, Mikrofon und lokales Netzwerk erlauben, wenn macOS fragt und du sie brauchst. Im Terminal geht auch:
-  `xattr -dr com.apple.quarantine "/Applications/VJ-Link.app"`. Das schaltet die Download-Prüfung von macOS für diese App ab;
+  `xattr -dr com.apple.quarantine "/Applications/Link-Suite.app"`. Das schaltet die Download-Prüfung von macOS für diese App ab;
   nutze es nur für eine Kopie, die du von dieser GitHub-Seite oder der offiziellen Website geladen hast.
 - **Windows** („Der Computer wurde durch Windows geschützt“): auf **Weitere Informationen**, dann auf **Trotzdem ausführen**
   klicken. Fragt die Firewall, *Private Netzwerke* anhaken und zulassen – sonst erreichen Art-Net, sACN, OSC und LJ-Link

@@ -11,7 +11,7 @@
 
 <p align="center">
   <a href="https://skyplayser.github.io/VJ-LINK/">Website</a> &nbsp;·&nbsp;
-  <a href="https://github.com/skyplayser/VJ-LINK/releases/latest">Download</a> &nbsp;·&nbsp;
+  <a href="https://skyplayser.github.io/Link-Suite/">Download</a> &nbsp;·&nbsp;
   <a href="#quick-start">Quick start</a> &nbsp;·&nbsp;
   <a href="README.de.md">Deutsch</a> &nbsp;·&nbsp;
   <a href="https://skyplayser.github.io/VJ-LINK/wiki.html">Wiki</a> &nbsp;·&nbsp;
@@ -112,20 +112,22 @@ Round surfaces bend with a 3×3 or 5×5 grid, masks black out doors and people.
 
 ## Install
 
-Download the installer for your computer from the [latest release](https://github.com/skyplayser/VJ-LINK/releases/latest).
+> **New: install and update through the [Link-Suite launcher](https://skyplayser.github.io/Link-Suite/).** Download the launcher ([macOS Apple Silicon](https://github.com/skyplayser/Link-Suite/releases/latest/download/Link-Suite-macos-arm64.dmg) · [macOS Intel](https://github.com/skyplayser/Link-Suite/releases/latest/download/Link-Suite-macos-intel.dmg) · [Windows](https://github.com/skyplayser/Link-Suite/releases/latest/download/Link-Suite-windows.exe)), open it and click *Install* next to VJ-Link. The launcher downloads VJ-Link straight from this repository's releases, checks the file and keeps VJ-Link and every other program of the Link-Suite up to date. The single installers of VJ-Link stay in this repository's releases.
+
+Download the Link-Suite launcher for your computer and install VJ-Link from it.
 
 | System | File |
 |---|---|
-| macOS, Apple Silicon (M1 and newer) | `VJ-Link-macos-arm64.dmg` |
-| macOS, Intel | `VJ-Link-macos-intel.dmg` |
-| Windows 10 / 11, 64 bit | `VJ-Link-windows.exe` |
+| macOS, Apple Silicon (M1 and newer) | [`Link-Suite-macos-arm64.dmg`](https://github.com/skyplayser/Link-Suite/releases/latest/download/Link-Suite-macos-arm64.dmg) |
+| macOS, Intel | [`Link-Suite-macos-intel.dmg`](https://github.com/skyplayser/Link-Suite/releases/latest/download/Link-Suite-macos-intel.dmg) |
+| Windows 10 / 11, 64 bit | [`Link-Suite-windows.exe`](https://github.com/skyplayser/Link-Suite/releases/latest/download/Link-Suite-windows.exe) |
 
-The installers are not signed yet, so both systems warn once on the first start:
+The launcher is not signed yet, so both systems warn once on its first start:
 
-- **macOS** (“VJ-Link” Not Opened): drag the app to *Applications* and start it once, click *Done*. Open *System Settings →
-  Privacy & Security*, scroll down, click **Open Anyway** next to VJ-Link and confirm with your password, then *Open*. Allow the
+- **macOS** (“Link-Suite” Not Opened): drag Link-Suite to *Applications* and start it once, click *Done*. Open *System Settings →
+  Privacy & Security*, scroll down, click **Open Anyway** next to Link-Suite and confirm with your password, then *Open*. Allow the
   camera, the microphone and the local network when asked and you need them. Terminal alternative:
-  `xattr -dr com.apple.quarantine "/Applications/VJ-Link.app"`. This switches off macOS’s download check for this app, so only
+  `xattr -dr com.apple.quarantine "/Applications/Link-Suite.app"`. This switches off macOS’s download check for this app, so only
   use it for a copy you downloaded from this GitHub page or the official website.
 - **Windows** (“Windows protected your PC”): click **More info**, then **Run anyway**. When the firewall asks, tick *Private
   networks* and allow access, otherwise Art-Net, sACN, OSC and LJ-Link cannot reach VJ-Link.

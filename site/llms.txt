@@ -33,7 +33,7 @@
 
 - [Website (English)](https://skyplayser.github.io/VJ-LINK/)
 - [Website (Deutsch)](https://skyplayser.github.io/VJ-LINK/de/)
-- [Download (latest release)](https://github.com/skyplayser/VJ-LINK/releases/latest)
+- [Download via the Link-Suite launcher](https://skyplayser.github.io/Link-Suite/)
 - [Source code](https://github.com/skyplayser/VJ-LInk-dev)
 - [Discord community](https://discord.gg/N6DMca4Bjk)
 - Sister project: [LJ-Link](https://skyplayser.github.io/LJ-Link/) shows the lighting jockey every DJ deck and sends the BPM to the light desk.
