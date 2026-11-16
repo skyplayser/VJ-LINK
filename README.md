@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <img alt="Status: beta 0.1.8" src="https://img.shields.io/badge/status-beta%200.1.8-FF5C93">
+  <img alt="Status: beta 0.1.9" src="https://img.shields.io/badge/status-beta%200.1.9-FF5C93">
   <img alt="macOS and Windows, free" src="https://img.shields.io/badge/macOS%20%7C%20Windows-free-3DDC84">
   <img alt="License: EPL-2.0" src="https://img.shields.io/badge/license-EPL--2.0-60a5fa">
   <a href="https://github.com/skyplayser/VJ-LINK/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/skyplayser/VJ-LINK/total?label=downloads&color=a78bfa"></a>
@@ -38,7 +38,7 @@ It runs locally. There is no account, no cloud and no telemetry. The only connec
 and a problem report, when you send one.
 
 > [!WARNING]
-> **This is the beta 0.1.8.** After a full test day (bugs, workflows, interface and a security test) it is a lot more robust
+> **This is the beta 0.1.9.** After a full test day (bugs, workflows, interface and a security test) it is a lot more robust
 > than the first alpha, but large parts have still not met real stage hardware. Please try it before an important show, and
 > tell us what you find: **Help → Report a problem** in the program.
 
@@ -73,6 +73,7 @@ and a problem report, when you send one.
 - **Media and text:** logos and images with automatic background removal, videos with a loop locked to the beat, and text clips
   with font, glow, outline and box.
 - **From LJ-Link:** tempo, beat phase, phrases and track changes, a *Now Playing* lower third and the DJ waveform as clips.
+- **Start animation and Link-Suite (new in 0.1.9):** the short animation every program of the [Link-Suite](https://skyplayser.github.io/Link-Suite/) shares, at most 2.5 s, any key skips it. If the launcher is missing, the start screen shows a small card *Get Link-Suite*. [Wiki](https://skyplayser.github.io/VJ-LINK/wiki-projects.html#start-animation)
 - **Suite chat (Alpha, new in 0.1.8):** one chat room with LJ Link and [LJL Link](https://github.com/skyplayser/LJL-Link) (the DJs) in the same network, no server needed. An
   **EMERGENCY** button shows a pop-up with a yellow blinking border at everyone else at once. Only in the control window,
   never on the outputs; switch it off in *Settings → Suite chat*. [Protocol](https://github.com/skyplayser/LJ-Link/blob/main/docs/suite-chat.md).

@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <img alt="Stand: Beta 0.1.8" src="https://img.shields.io/badge/Stand-Beta%200.1.8-FF5C93">
+  <img alt="Stand: Beta 0.1.9" src="https://img.shields.io/badge/Stand-Beta%200.1.9-FF5C93">
   <img alt="macOS und Windows, kostenlos" src="https://img.shields.io/badge/macOS%20%7C%20Windows-kostenlos-3DDC84">
   <img alt="Lizenz: EPL-2.0" src="https://img.shields.io/badge/Lizenz-EPL--2.0-60a5fa">
   <a href="https://github.com/skyplayser/VJ-LINK/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/skyplayser/VJ-LINK/total?label=Downloads&color=a78bfa"></a>
@@ -38,7 +38,7 @@ und danach höchstens einmal pro Stunde bei GitHub nach der neuesten Version; ab
 Fehlermeldung, wenn du eine schickst.
 
 > [!WARNING]
-> **Das ist die Beta 0.1.8.** Nach einem kompletten Testtag (Fehler, Arbeitsabläufe, Oberfläche und Sicherheitstest) ist sie
+> **Das ist die Beta 0.1.9.** Nach einem kompletten Testtag (Fehler, Arbeitsabläufe, Oberfläche und Sicherheitstest) ist sie
 > deutlich robuster als die erste Alpha, aber große Teile haben noch keine echte Bühnentechnik gesehen. Probier sie bitte vor
 > einer wichtigen Show aus, und sag uns, was dir auffällt: **Hilfe → Fehler melden** im Programm.
 
@@ -74,6 +74,7 @@ Fehlermeldung, wenn du eine schickst.
 - **Medien und Text:** Logos und Bilder mit automatischem Freistellen, Videos mit einem Loop im Takt und Text-Clips mit Schrift,
   Leuchten, Kontur und Kasten.
 - **Aus LJ-Link:** Tempo, Beat-Phase, Phrasen und Trackwechsel, eine *Now-Playing*-Bauchbinde und die DJ-Waveform als Clips.
+- **Startanimation und Link-Suite (neu in 0.1.9):** die kurze Animation, die alle Programme der [Link-Suite](https://skyplayser.github.io/Link-Suite/) teilen, höchstens 2,5 s, jede Taste überspringt sie. Fehlt der Launcher, zeigt der Startbildschirm eine kleine Karte *Link-Suite laden*. [Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-projects.html#start-animation)
 - **Suite-Chat (Alpha, neu in 0.1.8):** ein Chatraum mit LJ Link und [LJL Link](https://github.com/skyplayser/LJL-Link) (den DJs) im selben Netzwerk, ohne Server. Ein
   **EMERGENCY**-Knopf zeigt bei allen anderen sofort ein Popup mit gelb blinkendem Rand. Nur im Bedienfenster, nie auf den
   Ausgängen; abschaltbar unter *Einstellungen → Suite-Chat*. [Protokoll](https://github.com/skyplayser/LJ-Link/blob/main/docs/suite-chat.md).

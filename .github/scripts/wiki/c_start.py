@@ -7,8 +7,8 @@ group("Start", "Start")
 @page("wiki.html", "Overview", "Übersicht")
 def _():
     body = SEC(
-        ADM("beta", ("This wiki describes the beta **0.1.8**. Many parts have not met real stage hardware yet; every page says what is tested and what is not.",
-                      "Dieses Wiki beschreibt die Beta **0.1.8**. Viele Teile haben noch keine echte Bühnentechnik gesehen; jede Seite sagt, was getestet ist und was nicht.")),
+        ADM("beta", ("This wiki describes the beta **0.1.9**. Many parts have not met real stage hardware yet; every page says what is tested and what is not.",
+                      "Dieses Wiki beschreibt die Beta **0.1.9**. Viele Teile haben noch keine echte Bühnentechnik gesehen; jede Seite sagt, was getestet ist und was nicht.")),
         H2("What VJ-Link does", "Was VJ-Link macht"),
         P("VJ-Link plays live visuals on screens, projectors and LED walls. The light desk leads: it recalls scenes, sets the colors, the brightness, the strobe and the blackout. The tempo comes from the music, best from [LJ-Link](wiki-ljlink.html), so everything moves in time without anybody tapping.",
           "VJ-Link spielt Live-Visuals auf Bildschirmen, Beamern und LED-Wänden. Das Lichtpult führt: Es ruft Szenen ab und setzt Farben, Helligkeit, Strobe und Blackout. Das Tempo kommt aus der Musik, am besten aus [LJ-Link](wiki-ljlink.html), sodass alles im Takt läuft, ohne dass jemand tappen muss."),
@@ -86,10 +86,12 @@ def _():
 def _():
     body = SEC(
         H2("Which file", "Welche Datei"),
+        P("VJ-Link is installed and updated through the Link-Suite launcher. Download the launcher for your computer, open it and click “Install” next to VJ-Link. The single installers stay in the releases on GitHub. [To the launcher →](https://skyplayser.github.io/Link-Suite/)",
+          "VJ-Link wird über den Link-Suite Launcher installiert und aktualisiert. Lade den Launcher für deinen Rechner, öffne ihn und klicke bei VJ-Link auf „Installieren“. Die einzelnen Installer liegen weiter in den Releases auf GitHub. [Zum Launcher →](https://skyplayser.github.io/Link-Suite/)"),
         TABLE([("Computer", "Computer"), ("File", "Datei")], [
-            [("Mac with Apple chip (M1 and newer)", "Mac mit Apple-Chip (M1 und neuer)"), "<code>VJ-Link-macos-arm64.dmg</code>"],
-            [("Mac with Intel processor", "Mac mit Intel-Prozessor"), "<code>VJ-Link-macos-intel.dmg</code>"],
-            ["Windows 10 / 11, 64 bit", "<code>VJ-Link-windows.exe</code>"],
+            [("Mac with Apple chip (M1 and newer)", "Mac mit Apple-Chip (M1 und neuer)"), "<code>Link-Suite-macos-arm64.dmg</code>"],
+            [("Mac with Intel processor", "Mac mit Intel-Prozessor"), "<code>Link-Suite-macos-intel.dmg</code>"],
+            ["Windows 10 / 11, 64 bit", "<code>Link-Suite-windows.exe</code>"],
         ]),
         H2("macOS", "macOS"),
         STEPS(("Open the `.dmg` and drag **VJ-Link** into **Applications**.", "Die `.dmg` öffnen und **VJ-Link** in **Programme** ziehen."),
@@ -100,7 +102,7 @@ def _():
                      "Kamera gesperrt? Systemeinstellungen → **Datenschutz & Sicherheit** → **Kamera** → VJ-Link einschalten und VJ-Link neu starten. Das Programm bietet dafür auch einen Knopf an."),
             ("For experts, this removes the warning for good. It switches off macOS's download check for this app, so only use it for a copy from the official GitHub page or website:", "Für Profis, damit verschwindet die Warnung dauerhaft. Das schaltet die Download-Prüfung von macOS für diese App ab; nutze es nur für eine Kopie von der offiziellen GitHub-Seite oder Website:"), PRE('xattr -dr com.apple.quarantine "/Applications/VJ-Link.app"')),
         H2("Windows", "Windows"),
-        STEPS(("Start `VJ-Link-windows.exe`. In the SmartScreen window press **More info**, then **Run anyway**.", "`VJ-Link-windows.exe` starten. Im SmartScreen-Fenster **Weitere Informationen**, dann **Trotzdem ausführen** drücken."),
+        STEPS(("Start `Link-Suite-windows.exe`. In the SmartScreen window press **More info**, then **Run anyway**.", "`Link-Suite-windows.exe` starten. Im SmartScreen-Fenster **Weitere Informationen**, dann **Trotzdem ausführen** drücken."),
               ("Click through the installer.", "Den Installer durchklicken."),
               ("When the firewall asks, tick **Private networks** and allow access. Without it Art-Net, sACN, OSC and LJ-Link cannot reach VJ-Link.", "Fragt die Firewall, **Private Netzwerke** anhaken und zulassen. Ohne das erreichen Art-Net, sACN, OSC und LJ-Link VJ-Link nicht.")),
         ADM("warn", ("Windows 11 is tested automatically in a virtual machine (every visual and effect, media, projects, outputs), but not yet on real stage computers. Please tell us how it runs: [report a problem](wiki-help.html#report).",
@@ -379,6 +381,7 @@ def _():
         area("Program", "Programm", [
             [("Suite chat (Alpha)", "Suite-Chat (Alpha)"), ("new in 0.1.8: chat room with LJ Link and LJL Link in the same network, no server; EMERGENCY pop-up at everyone else; only in the control window; can be switched off", "neu in 0.1.8: Chatraum mit LJ Link und LJL Link im selben Netzwerk, ohne Server; EMERGENCY-Popup bei allen anderen; nur im Bedienfenster; abschaltbar"), ("[Suite chat](wiki-interface.html#chat)", "[Suite-Chat](wiki-interface.html#chat)")],
             [("Projects", "Projekte"), ("auto-save, .vjlink files with media folder, recent files", "automatisches Sichern, .vjlink-Dateien mit Medienordner, zuletzt geöffnet"), ("[Projects](wiki-projects.html)", "[Projekte](wiki-projects.html)")],
+            [("Start animation and Link-Suite", "Startanimation und Link-Suite"), ("new in 0.1.9: the Link-Suite animation on start; the card “Get Link-Suite” when the launcher is missing", "neu in 0.1.9: die Animation der Link-Suite beim Start; die Karte „Link-Suite laden“, wenn der Launcher fehlt"), ("[Projects](wiki-projects.html#start-animation)", "[Projekte](wiki-projects.html#start-animation)")],
             [("Start screen and demo", "Startbildschirm und Demo"), ("new, open, demo show, language, updates", "neu, öffnen, Demo-Show, Sprache, Updates"), ("[Projects](wiki-projects.html#start-screen-and-demo)", "[Projekte](wiki-projects.html#start-screen-and-demo)")],
             [("Updates", "Updates"), ("check, download and install from GitHub", "von GitHub prüfen, laden und installieren"), ("[Install](wiki-install.html#updates)", "[Installieren](wiki-install.html#updates)")],
             [("Report a problem", "Fehler melden"), ("description plus diagnostic data by email or GitHub", "Beschreibung plus Diagnosedaten per E-Mail oder GitHub"), ("[Help](wiki-help.html#report)", "[Hilfe](wiki-help.html#report)")],

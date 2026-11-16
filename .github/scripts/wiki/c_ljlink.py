@@ -41,8 +41,8 @@ def _():
         P("VJ-Link, LJ Link and [LJL Link](%s) share a chat room in the same network, with an EMERGENCY button that pops up at everyone else at once. See [suite chat](wiki-interface.html#chat)." % "https://github.com/skyplayser/LJL-Link",
           "VJ-Link, LJ Link und [LJL Link](%s) teilen sich im selben Netzwerk einen Chatraum, mit einem EMERGENCY-Knopf, der bei allen anderen sofort aufpoppt. Siehe [Suite-Chat](wiki-interface.html#chat)." % "https://github.com/skyplayser/LJL-Link"),
         H2("Try also: LJ-Link", "Probier auch: LJ-Link"),
-        P("Free for macOS and Windows: [LJ-Link website](https://skyplayser.github.io/LJ-Link/) · [download](https://github.com/skyplayser/LJ-Link/releases/latest) · [LJ-Link wiki](https://skyplayser.github.io/LJ-Link/wiki.html).",
-          "Kostenlos für macOS und Windows: [LJ-Link-Website](https://skyplayser.github.io/LJ-Link/) · [Download](https://github.com/skyplayser/LJ-Link/releases/latest) · [LJ-Link-Wiki](https://skyplayser.github.io/LJ-Link/wiki.html)."),
+        P("Free for macOS and Windows: [LJ-Link website](https://skyplayser.github.io/LJ-Link/) · [download](https://skyplayser.github.io/LJ-Link/#download) · [LJ-Link wiki](https://skyplayser.github.io/LJ-Link/wiki.html).",
+          "Kostenlos für macOS und Windows: [LJ-Link-Website](https://skyplayser.github.io/LJ-Link/) · [Download](https://skyplayser.github.io/LJ-Link/#download) · [LJ-Link-Wiki](https://skyplayser.github.io/LJ-Link/wiki.html)."),
     )
     return (("VJ-Link and LJ-Link together", "VJ-Link und LJ-Link zusammen"),
             ("VJ-Link with LJ-Link: tempo and beat phase from Pioneer and Denon, scene changes on phrases, Now Playing and the DJ waveform as clips, found automatically.",
