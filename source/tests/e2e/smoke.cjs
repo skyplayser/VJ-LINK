@@ -292,6 +292,19 @@ async function main() {
       await c.eval("(()=>{ const s = window.__vj.ctx.show; s.master = 1; s.blinderOn = false; window.__vj.setDeviceEffects(-1, null); return true })()");
       log("Blinder je Gerät (Beamer ohne Blinder bleibt schwarz)", on > 200 && off < 5, `Bildschirm ${on.toFixed(0)}, Beamer ${off.toFixed(0)}`);
     }
+    // 10d) Modus „Getrennt“: Der Ausgang zeigt das gewählte Bild (Bild 1 dunkel geregelt, Bild 2 hell), über die echte Oberfläche
+    {
+      const shotBright = async () => { const sh = await o.send("Page.captureScreenshot", { format: "png", clip: { x: 0, y: 0, width: 400, height: 300, scale: 0.5 } }); return sh.result?.data ? pngBrightness(Buffer.from(sh.result.data, "base64")) : -1; };
+      const pick = v => c.eval(`(()=>{ const s = document.querySelector('#canvas-pick select'); if (!s) return false; s.value = '${v}'; s.dispatchEvent(new Event('change')); return true })()`);
+      await c.eval("(()=>{ document.querySelector('#out-mode [data-mode=separate]').click(); return true })()"); await wait(400);
+      const added = await c.eval("(()=>{ const b = document.querySelector('#img-tiles .img-add'); if (!b) return ''; b.click(); return window.__vj.ctx.show.canvas })()");
+      await c.eval("(()=>{ const s = window.__vj.ctx.show; s.stackGain = { main: 0, [s.canvas]: 1 }; return true })()"); await wait(400);
+      const picked = await pick(added);
+      await wait(1000); const two = await shotBright();
+      await pick("main"); await wait(1000); const one = await shotBright();
+      await c.eval("(()=>{ window.__vj.ctx.show.stackGain = {}; document.querySelector('#out-mode [data-mode=mirror]').click(); return true })()"); await wait(400);
+      log("Getrennt: Ausgang zeigt das gewählte Bild", !!added && picked === true && two > 20 && one < 3, `${added || "kein Bild angelegt"} · Bild 2 ${two.toFixed(0)}, Bild 1 ${one.toFixed(0)}`);
+    }
     try { o.ws.close(); } catch { /* egal */ }
     await c.eval("window.vj.toggleOutput(-1)"); await wait(1500);
     const left = (await getJson()).filter(p => /output\.html/.test(p.url)).length;

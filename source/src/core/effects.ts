@@ -207,6 +207,12 @@ export const EFFECTS: readonly EffectDef[] = [
   e(156, "neon-triangles", "Neon-Dreiecke", "geometry", "generator", "ready", "Dreiecke wachsen drehend aus der Mitte.", ["beat"]),
   e(157, "kaleido-burst", "Kaleido-Explosion", "geometry", "generator", "ready", "Zwölffaches Kaleidoskop mit Strahlen.", ["beat"]),
   e(158, "infinity-loop", "Unendlich-Schleife", "geometry", "generator", "ready", "Lichtkomet läuft eine liegende Acht.", ["beat"]),
+  // Partikel-Objekte: 3D-Körper aus Stäbchen, die auf den Beat auseinanderfliegen (eigene Modelle über die Bibliothek)
+  e(159, "pobj-cross", "Partikel-Kreuz", "space3d", "generator", "ready", "3D-Kreuz aus Tausenden Stäbchen, die auf den Beat auseinanderfliegen und zurückkehren. Braucht eine starke Grafikkarte (ab Apple M2 oder vergleichbar).", ["beat"]),
+  e(160, "pobj-cube", "Partikel-Würfel", "space3d", "generator", "ready", "Würfel aus Stäbchen, explodiert im Takt und setzt sich wieder zusammen. Braucht eine starke Grafikkarte (ab Apple M2 oder vergleichbar).", ["beat"]),
+  e(161, "pobj-sphere", "Partikel-Kugel", "space3d", "generator", "ready", "Kugel aus Stäbchen, die auf den Beat auseinanderfliegen. Braucht eine starke Grafikkarte (ab Apple M2 oder vergleichbar).", ["beat"]),
+  e(162, "pobj-torus", "Partikel-Torus", "space3d", "generator", "ready", "Ring (Torus) aus Stäbchen, explodiert im Takt. Braucht eine starke Grafikkarte (ab Apple M2 oder vergleichbar).", ["beat"]),
+  e(163, "pobj-star", "Partikel-Stern", "space3d", "generator", "ready", "Fünfzackiger 3D-Stern aus Stäbchen, fliegt auf den Beat auseinander. Braucht eine starke Grafikkarte (ab Apple M2 oder vergleichbar).", ["beat"]),
 ];
 
 export const EFFECT_BY_ID: ReadonlyMap<string, EffectDef> = new Map(EFFECTS.map(x => [x.id, x]));

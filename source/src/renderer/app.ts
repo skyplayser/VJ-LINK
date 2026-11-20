@@ -32,11 +32,13 @@ import { presetRgb, remotePairingUrl, type RemoteCommand, type RemoteEffect, typ
 import { editDeviceOutput } from "./deviceoutput";
 import { OutputTab } from "./outputtab";
 import { ResPanel } from "./respanel";
-import { canvasBounds, defaultLayout, resAspect, type DeviceEffects, type DeviceOutput, type OutputLayout, type OutputRes } from "../core/layout";
+import { assignSeparate, canvasBounds, defaultLayout, imageForScreen, resAspect, type DeviceEffects, type DeviceOutput, type OutputLayout, type OutputRes } from "../core/layout";
 import { TimecodeClock, MtcDecoder, formatFrames, parseTc, tcToFrames } from "../core/timecode";
 import { TcPanel, defaultTcSettings, type TcSettings } from "./tcpanel";
 import { cueRenders, cueTick, isVideoClip, newCueState, videoClip, videoIdOf, type CueEnv } from "../core/video";
 import { VideoLibrary, isVideoFile } from "./videolib";
+import { ModelLibrary, isModelFile, modelClip } from "./modellib";
+import { isModelClip, modelIdOf } from "../core/particles";
 import { VideoPool } from "./videopool";
 import { VideoPanel } from "./videopanel";
 import { ShowTab } from "./showtab";
@@ -59,11 +61,11 @@ import type { ProjectFileCmd } from "../core/frame";
 import { stepScene } from "../core/control";
 import { FxPanel } from "./fxpanel";
 import { LayerPanel } from "./layerpanel";
-import { MAIN_STACK, MAX_IMAGES, addImage, addLayer as addShowLayer, dropCanvas, imageList, layerName, removeImage, selectCanvas, syncStacks, type ShowState } from "../core/show";
+import { MAIN_STACK, MAX_IMAGES, addImage, addLayer as addShowLayer, dropCanvas, imageList, layerName, removeImage, selectCanvas, showForImage as imageShow, syncStacks, type ShowState } from "../core/show";
 import { ShowLock } from "./lock";
 import vjlinkLogo from "../../assets/logo-for-dark.png";
 import { applyDemo, DEMO_NAME } from "../core/demo";
-import { applyStarter } from "../core/starter";
+import { applyEmpty, applyStarter } from "../core/starter";
 import { drawText } from "./texteditor";
 import { defaultText } from "../core/text";
 import { TextEditor } from "./texteditor";
@@ -325,6 +327,7 @@ function layerClips(l: number): { id: string; name: string }[] {
   for (const id of ctx.show.layers[l]?.clips ?? []) {
     if (id.startsWith("img:")) { const m = library.items.find(i => mediaClip(i.id) === id); if (m) out.push({ id, name: m.name }); }
     else if (isVideoClip(id)) { const v = videoLib.find(videoIdOf(id)); if (v) out.push({ id, name: v.name }); }
+    else if (isModelClip(id)) { const m = modelLib.find(modelIdOf(id)); if (m) out.push({ id, name: m.name }); }
     else if (isCamClip(id)) { const c = ctx.show.cameras.find(k => k.id === camIdOf(id)); if (c) out.push({ id, name: c.label || t("Kamera") }); }
     else { const g = READY_GENERATORS.find(x => x.id === id); if (g) out.push({ id, name: g.name }); }
   }
@@ -332,6 +335,8 @@ function layerClips(l: number): { id: string; name: string }[] {
 }
 // ---- Videos --------------------------------------------------------------------------
 const videoLib = new VideoLibrary();
+/** Eigene 3D-Modelle (Partikel-Objekt). */
+const modelLib = new ModelLibrary();
 /** Abspieler für die Vorschau im Hauptfenster (darf Ton ausgeben). */
 const previewPool = new VideoPool(id => videoLib.url(id), true);
 // Kameras: ein gemeinsamer Pool für Vorschau und Raster; die Liste kommt aus dem Show-Zustand
@@ -357,6 +362,7 @@ const cueEnv: CueEnv = {
 ctx.cueEnv = cueEnv;
 
 const libraryPanel = new LibraryPanel(ctx, library, videoLib, () => rebuildGrid(), l => { importTarget = l; $<HTMLInputElement>("file-input").click(); }, l => { libraryPanel.close(); addText(l); });
+libraryPanel.models = modelLib;
 
 // ---- Text-Clips: gestalten, als Grafik ablegen, später bearbeiten ---------------------
 const textEditor = new TextEditor();
@@ -480,6 +486,7 @@ function rebuildGrid(): void {
       const b = el("button", clip.id.startsWith("img:") || isVideoClip(clip.id) ? "cell media" : "cell");
       b.append(el("span", "cell-name", clip.name));
       if (isVideoClip(clip.id)) b.append(el("span", "vbadge", "VIDEO"));
+      if (isModelClip(clip.id)) b.append(el("span", "vbadge", "3D"));
       if (isCamClip(clip.id)) b.append(el("span", "vbadge cam", t("LIVE-KAMERA")));
       b.dataset.ctl = `clip.${l + 1}.${clip.id}`;
       b.dataset.clip = clip.id;
@@ -551,7 +558,12 @@ const modMode = new ModMode(ctx, () => ctx.tempo.beatAt(Date.now()), () => liveB
 async function importToLibrary(files: FileList | File[]): Promise<{ id: string; name: string }[]> {
   const out: { id: string; name: string }[] = [];
   for (const f of Array.from(files)) {
-    if (isVideoFile(f)) {
+    if (isModelFile(f)) {
+      toast(t("3D-Modell „{name}“ wird umgewandelt …", { name: f.name }));
+      const r = await modelLib.importFile(f);
+      if (typeof r === "string") { toast(r); continue; }
+      out.push({ id: modelClip(r.id), name: r.name });
+    } else if (isVideoFile(f)) {
       toast(t("„{name}“ wird übernommen …", { name: f.name }));
       const r = await videoLib.importFile(f);
       if (typeof r === "string") { toast(r); continue; }
@@ -582,7 +594,7 @@ async function importFiles(files: FileList | File[], layer: number): Promise<voi
     const where = t("Ebene {n}", { n: layer + 1 });
     // Eine Meldung statt zwei (die zweite hat die erste sofort überschrieben)
     toast(bg ? `${where}: ${bg === "white" ? t("Logo auf weißem Hintergrund erkannt – der Hintergrund wird ausgeblendet (Grafik → Freistellen).") : t("Logo auf schwarzem Hintergrund erkannt – der Hintergrund wird ausgeblendet (Grafik → Freistellen).")}`
-      : `${where}: ${isVideoClip(first) ? t("Video geladen. Loop und Takt stellst du rechts unter „Video“ ein.") : t("Grafik geladen. Position und Animation stellst du rechts unter „Grafik“ ein.")}`);
+      : `${where}: ${isModelClip(first) ? t("3D-Modell geladen. Explosion, Drehung und Stäbchen stellst du rechts unter „Partikel-Objekt“ ein.") : isVideoClip(first) ? t("Video geladen. Loop und Takt stellst du rechts unter „Video“ ein.") : t("Grafik geladen. Position und Animation stellst du rechts unter „Grafik“ ein.")}`);
   }
 }
 $<HTMLInputElement>("file-input").addEventListener("change", e => {
@@ -1012,7 +1024,7 @@ $("proj-pkg-export").hidden = !bridge?.exportShowPackage;
 $("proj-pkg-check").hidden = !bridge?.verifyShowPackage;
 
 const resPanel = new ResPanel($<HTMLButtonElement>("res-btn"), () => outLayout, () => fitPreview());
-const outputTab = new OutputTab(() => outLayout, l => { outLayout = l; }, () => displays, () => fitPreview(), {
+const outputTab = new OutputTab(() => outLayout, l => { const was = outLayout.mode; outLayout = l; if (l.mode === "separate" && was !== "separate") prepareSeparate(); }, () => displays, () => fitPreview(), {
   // Projektionsmapping: Raster-Testbild auf die Leinwände
   on: () => ctx.show.testCard && ctx.show.testPattern === "grid",
   toggle: () => { const on = !(ctx.show.testCard && ctx.show.testPattern === "grid"); ctx.show.testPattern = "grid"; ctx.show.testCard = on; syncTestUi(); },
@@ -1475,7 +1487,9 @@ function previewAspect(): number {
     const open = outLayout.screens.filter(sc => displays.some(d => d.open && d.id === sc.id));
     if (open.length) { const b = canvasBounds(open); return b.w / b.h; }
   }
-  const d = displays.find(x => x.open);
+  // Getrennt: wie der erste Ausgang, der das gerade bearbeitete Bild zeigt
+  const mine = outLayout.mode === "separate" ? openOutputs().find(x => imageForScreen(outLayout, x.id) === (ctx.show.canvas ?? MAIN_STACK)) : undefined;
+  const d = mine ?? displays.find(x => x.open);
   return d && d.height > 0 ? d.width / d.height : 16 / 9;
 }
 /** Vorschau so groß wie möglich in ihren Bereich einpassen, ohne zu verzerren. */
@@ -1688,7 +1702,7 @@ function frame(rafTime: number = performance.now()): void {
   const cv = shown.canvas ?? MAIN_STACK;
   const renderMonitor = draw && (!!preview.offsetParent || videoLib.items.length > 0); // Der Monitor spielt Videoton ab.
   if (draw) renderTurn++;
-  if (engine && renderMonitor && mappingOn() && tileCanvases.size > 1 && renderTurn % 4 === 0) {
+  if (engine && renderMonitor && imagesOn() && tileCanvases.size > 1 && renderTurn % 4 === 0) {
     const ids = [...tileCanvases.keys()].filter(id => id !== cv);
     const id = ids[tileTurn++ % Math.max(1, ids.length)];
     if (id) {
@@ -1699,7 +1713,7 @@ function frame(rafTime: number = performance.now()): void {
   if (draw) {
     if (renderMonitor) {
       engine?.render(showForImage(shown, cv), beat, now, ctx.tempo.bpm, null, lt);
-      if (mappingOn() && renderTurn % 2 === 0) { const c = tileCanvases.get(cv); c?.getContext("2d")?.drawImage(preview, 0, 0, c.width, c.height); }
+      if (imagesOn() && renderTurn % 2 === 0) { const c = tileCanvases.get(cv); c?.getContext("2d")?.drawImage(preview, 0, 0, c.width, c.height); }
     }
     thumbs.draw(now);
     gallery.tick(now);
@@ -1831,7 +1845,7 @@ fxPanel.select(0);
 const thumbs = new ThumbView($("grid"), () => ({ cells: clipCells, clips: rowClips }), ctx, () => displays.some(d => d.open));
 // GALERIE: Visuals, Effekte und Medien verwalten
 const gallery = new Gallery({
-  ctx, images: library, videos: videoLib, importFiles: f => importToLibrary(f), toast,
+  ctx, images: library, videos: videoLib, models: modelLib, importFiles: f => importToLibrary(f), toast,
   changed: () => rebuildGrid(), currentLayer: () => fxPanel.layer, selectLayer: l => fxPanel.select(l),
   live: () => displays.some(d => d.open),
 }, $("gallery"));
@@ -1849,7 +1863,7 @@ if (thumbs.gl) {
 let lastSaved = "", lastSaveCheck = 0, loaded = false;
 /** Projektdatei: Name, Fingerabdruck des gespeicherten Stands, ungespeicherte Änderungen. */
 let projName = t("Unbenannt"), baseline = "", projDirty = false, projRecent: string[] = [];
-const currentJson = () => serializeProject(ctx, library.items, mappings.list, videoLib.items, outLayout);
+const currentJson = () => serializeProject(ctx, library.items, mappings.list, videoLib.items, outLayout, modelLib.items);
 function setDirty(d: boolean): void {
   if (d === projDirty) return;
   projDirty = d; $("proj-dirty").hidden = !d;
@@ -1866,12 +1880,50 @@ function showProjName(): void {
     list.append(b);
   }
 }
+/** „Neues Projekt“: mit Start-Aufbau oder leer? null = abgebrochen. */
+function chooseNewProject(): Promise<"starter" | "empty" | null> {
+  document.querySelector(".new-proj")?.remove();
+  return new Promise(resolve => {
+    const wrap = el("div", "report new-proj"); wrap.setAttribute("role", "dialog"); wrap.setAttribute("aria-modal", "true");
+    const box = el("div", "report-box");
+    const head = el("div", "report-head"); head.append(el("h2", "", t("Neues Projekt")));
+    const close = (v: "starter" | "empty" | null) => { wrap.remove(); window.removeEventListener("keydown", key, true); resolve(v); };
+    const key = (e: KeyboardEvent) => { if (e.key === "Escape") { e.stopPropagation(); close(null); } };
+    const opts = el("div", "new-proj-opts");
+    const opt = (v: "starter" | "empty", title: string, sub: string) => {
+      const b = el("button", "start-btn"); b.type = "button"; b.dataset.kind = v;
+      const tx = el("span", "start-btxt"); tx.append(el("b", "", title), el("small", "", sub)); b.append(tx);
+      b.onclick = () => close(v);
+      opts.append(b);
+    };
+    opt("starter", t("Mit Start-Aufbau"), t("Sechs Ebenen mit passenden Clips und Effekten, acht Szenen. Sofort spielbereit."));
+    opt("empty", t("Leeres Projekt"), t("Vier leere Ebenen, keine Clips, keine Szenen. Du stellst alles selbst aus der GALERIE zusammen."));
+    const cancel = el("button", "btn", t("Abbrechen")); cancel.onclick = () => close(null);
+    const btns = el("div", "report-btns"); btns.append(cancel);
+    box.append(head, opts, btns);
+    wrap.append(box);
+    wrap.addEventListener("pointerdown", e => { if (e.target === wrap) close(null); });
+    window.addEventListener("keydown", key, true);
+    document.body.append(wrap);
+    (opts.firstElementChild as HTMLElement | null)?.focus();
+  });
+}
+const EMPTY_FLAG = "vjlink.empty";
+
 async function runFileCmd(cmd: ProjectFileCmd, filePath?: string): Promise<void> {
   if (!bridge) { toast(t("Projektdateien gibt es nur in der App.")); return; }
   // Gesperrt: speichern ja, aber kein anderes Projekt laden
   if (showLock.locked && cmd !== "save" && cmd !== "saveAs") { showLock.hint(); return; }
+  let empty = false;
+  if (cmd === "new") {
+    const kind = await chooseNewProject();
+    if (!kind) return;
+    empty = kind === "empty";
+    if (empty) try { sessionStorage.setItem(EMPTY_FLAG, "1"); } catch { /* egal */ }
+  }
   const json = currentJson();
   const r = await bridge.projectFile(cmd, json, filePath);
+  if (empty && !r.ok) try { sessionStorage.removeItem(EMPTY_FLAG); } catch { /* egal */ }
   if (r.ok && (cmd === "save" || cmd === "saveAs")) {
     baseline = projectHash(json); projName = r.name ?? projName;
     setDirty(false); showProjName(); toast(t("Gespeichert: {name}", { name: projName }));
@@ -2048,6 +2100,28 @@ let canvasSig = "", tilesSig = "", tileTurn = 0, cueImgSig = "";
 const tileCanvases = new Map<string, HTMLCanvasElement>();
 let armedImageDelete = "";
 const mappingOn = () => outLayout.mode === "mapping";
+/** Mehrere Bilder gibt es im Projektionsmapping und im Modus „Getrennt“ (jeder Ausgang zeigt ein eigenes Bild). */
+const imagesOn = () => outLayout.mode === "mapping" || outLayout.mode === "separate";
+const separateOn = () => outLayout.mode === "separate";
+/** Offene Ausgänge in der Reihenfolge des AUSGABE-Tabs (Nummer 1, 2, …). */
+function openOutputs(): DisplayInfo[] {
+  const order = outLayout.screens.map(s => s.id);
+  return displays.filter(d => d.open).sort((a, b) => (order.indexOf(a.id) + 1 || 999) - (order.indexOf(b.id) + 1 || 999));
+}
+/** Wechsel auf „Getrennt“: jeder weitere Ausgang bekommt ein eigenes Bild (fehlende als Kopie von Bild 1). */
+function prepareSeparate(): void {
+  const r = assignSeparate(outLayout, openOutputs().map(d => d.id), imageList(ctx.show).map(im => im.id), () => addImage(ctx.show));
+  outLayout = r.layout;
+  tilesSig = ""; canvasSig = ""; cueImgSig = "";
+  if (r.created) toast(r.created === 1 ? t("Neues Bild angelegt (Kopie von Bild 1). Jeder Ausgang zeigt jetzt sein eigenes Bild.")
+    : t("{n} neue Bilder angelegt (Kopien von Bild 1). Jeder Ausgang zeigt jetzt sein eigenes Bild.", { n: r.created }));
+}
+/** Modus „Getrennt“: welches Bild ein Ausgang zeigt. */
+function setScreenImage(id: number, image: string): void {
+  outLayout = { ...outLayout, screenImages: { ...outLayout.screenImages, [id]: image } };
+  canvasSig = ""; cueImgSig = ""; syncCanvases();
+  if ($("tab-output").classList.contains("on")) outputTab.render();
+}
 
 /** Live-Vorschauen der Bilder unter „Ausgang“ (Klick = bearbeiten) und rechts die Leinwände mit Bild-Auswahl. */
 function syncCanvases(): void {
@@ -2055,22 +2129,22 @@ function syncCanvases(): void {
   const images = imageList(s);
   // Stapel ohne Bild aufräumen (z. B. nach dem Laden alter Projekte)
   for (const id of Object.keys(st)) if (id !== MAIN_STACK && !images.some(im => im.id === id)) { dropCanvas(s, id); rebuildGrid(); rebuildDeck(); }
-  if (!mappingOn() && s.canvas !== MAIN_STACK) { selectCanvas(s, MAIN_STACK); rebuildGrid(); rebuildDeck(); fxPanel.select(0); }
+  if (!imagesOn() && s.canvas !== MAIN_STACK) { selectCanvas(s, MAIN_STACK); rebuildGrid(); rebuildDeck(); fxPanel.select(0); }
   // Bearbeitetes Bild von außen gewechselt (MIDI/OSC „bild.N.bearbeiten“): Oberfläche nachziehen
   if ((s.canvas ?? MAIN_STACK) !== uiCanvas) { uiCanvas = s.canvas ?? MAIN_STACK; editImage(uiCanvas); return; }
   const surfaces = outLayout.surfaces ?? [];
   // Bild-Vorschauen
   // Kacheln im Seitenverhältnis der Vorschau (= Ausgang), sonst würde das Bild gestaucht oder gestreckt
   const ta = preview.height > 0 ? preview.width / preview.height : 16 / 9;
-  const tsig = `${mappingOn()}|${ta.toFixed(3)}|${s.canvas}|${images.map(im => `${im.id}:${im.name}`).join(",")}|${armedImageDelete}`;
+  const tsig = `${outLayout.mode}|${ta.toFixed(3)}|${s.canvas}|${images.map(im => `${im.id}:${im.name}`).join(",")}|${armedImageDelete}`;
   if (tsig !== tilesSig) {
     tilesSig = tsig;
     const box = $("img-tiles");
-    box.hidden = !mappingOn();
-    // Im Mapping-Modus sind die Bilder die Ausgangs-Anzeige; die Einzelvorschau rechnet unsichtbar für die Kacheln
-    monHome.classList.toggle("mapping", mappingOn());
+    box.hidden = !imagesOn();
+    // Im Mapping und bei „Getrennt“ sind die Bilder die Ausgangs-Anzeige; die Einzelvorschau rechnet unsichtbar für die Kacheln
+    monHome.classList.toggle("mapping", imagesOn());
     box.replaceChildren(); tileCanvases.clear();
-    if (mappingOn()) {
+    if (imagesOn()) {
       for (const im of images) {
         const tile = el("div", `img-tile${s.canvas === im.id ? " on" : ""}`);
         tile.dataset.img = im.id;
@@ -2106,6 +2180,7 @@ function syncCanvases(): void {
             if (armedImageDelete !== im.id) { armedImageDelete = im.id; syncCanvases(); setTimeout(() => { if (armedImageDelete === im.id) { armedImageDelete = ""; syncCanvases(); } }, 2500); return; }
             armedImageDelete = "";
             for (const sf of surfaces) if (sf.image === im.id) sf.image = MAIN_STACK;
+            if (outLayout.screenImages) outLayout = { ...outLayout, screenImages: Object.fromEntries(Object.entries(outLayout.screenImages).map(([k, v]) => [k, v === im.id ? MAIN_STACK : v])) };
             removeImage(s, im.id); rebuildGrid(); rebuildDeck(); fxPanel.select(0); syncCanvases();
           });
           tile.append(x);
@@ -2115,7 +2190,7 @@ function syncCanvases(): void {
       if (images.length < MAX_IMAGES) {
         const add = el("button", "img-add", t("+ Bild"));
         add.title = t("Weiteres Bild mit eigenen Ebenen (bis {n})", { n: MAX_IMAGES });
-        add.addEventListener("click", () => { const id = addImage(s); if (id) { editImage(id); toast(t("Neues Bild (Kopie von Bild 1). Weise es rechts einer Leinwand zu.")); } });
+        add.addEventListener("click", () => { const id = addImage(s); if (id) { editImage(id); toast(separateOn() ? t("Neues Bild (Kopie von Bild 1). Weise es rechts einem Ausgang zu.") : t("Neues Bild (Kopie von Bild 1). Weise es rechts einer Leinwand zu.")); } });
         box.append(add);
       }
     }
@@ -2127,28 +2202,49 @@ function syncCanvases(): void {
     if (g.value !== v && document.activeElement !== g) g.value = v;
   });
   // SHOW: auf welchem Bild der Ablauf läuft (nur im Mapping-Modus mit mehreren Bildern)
-  const cueSig = `${mappingOn()}|${ctx.show.cueImage}|${images.map(im => `${im.id}:${im.name}`).join(",")}|${surfaces.map(sf => `${sf.name}:${sf.image}`).join(",")}`;
+  const outs = separateOn() ? openOutputs() : [];
+  const outSig = outs.map(d => `${d.id}:${d.label}:${imageForScreen(outLayout, d.id)}`).join(",");
+  const cueSig = `${outLayout.mode}|${ctx.show.cueImage}|${images.map(im => `${im.id}:${im.name}`).join(",")}|${surfaces.map(sf => `${sf.name}:${sf.image}`).join(",")}|${outSig}`;
   if (cueSig !== cueImgSig) {
     cueImgSig = cueSig;
     const wrap = $("cue-img-wrap"), sel = $<HTMLSelectElement>("cue-image");
-    wrap.hidden = !mappingOn() || images.length < 2;
+    wrap.hidden = !imagesOn() || images.length < 2;
     sel.replaceChildren();
     for (const im of images) {
-      const on = surfaces.filter(sf => (sf.image ?? MAIN_STACK) === im.id).map(sf => sf.name);
-      sel.append(new Option(`${im.name}${on.length ? ` (${on.join(", ")})` : t(" (auf keiner Leinwand)")}`, im.id));
+      const on = separateOn() ? outs.filter(d => imageForScreen(outLayout, d.id) === im.id).map(d => d.label)
+        : surfaces.filter(sf => (sf.image ?? MAIN_STACK) === im.id).map(sf => sf.name);
+      sel.append(new Option(`${im.name}${on.length ? ` (${on.join(", ")})` : separateOn() ? t(" (auf keinem Ausgang)") : t(" (auf keiner Leinwand)")}`, im.id));
     }
     sel.value = showImage();
   }
   // Rechts: Leinwände → Bild
-  const sig = `${mappingOn()}|${images.map(im => `${im.id}:${im.name}`).join(",")}|${surfaces.map(sf => `${sf.id}:${sf.name}:${sf.image}:${sf.screen}`).join(",")}|${displays.map(d => d.label).join(",")}`;
+  const sig = `${outLayout.mode}|${outSig}|${images.map(im => `${im.id}:${im.name}`).join(",")}|${surfaces.map(sf => `${sf.id}:${sf.name}:${sf.image}:${sf.screen}`).join(",")}|${displays.map(d => d.label).join(",")}`;
   const gc = $("grid-canvas");
-  const curName = s.canvas === MAIN_STACK && !mappingOn() ? "" : images.find(im => im.id === s.canvas)?.name ?? "";
+  const curName = s.canvas === MAIN_STACK && !imagesOn() ? "" : images.find(im => im.id === s.canvas)?.name ?? "";
   gc.hidden = !curName; gc.textContent = curName ? `· ${curName}` : "";
   if (sig === canvasSig) return;
   canvasSig = sig;
   const box = $("canvas-pick");
-  box.hidden = !mappingOn();
+  box.hidden = !imagesOn();
   box.replaceChildren();
+  if (separateOn()) {
+    // Getrennt: Ausgänge → Bild
+    box.append(el("div", "cp-head", t("Ausgänge")));
+    if (!outs.length) box.append(el("p", "muted small", t("Noch kein Ausgang offen. Öffne einen im Tab AUSGABE.")));
+    outs.forEach((d, i) => {
+      const row = el("div", "cp-row");
+      const cell = el("div", "cp-name");
+      cell.append(el("span", "cp-top", `${i + 1} · ${d.label}`), el("small", "", d.ndi ? "NDI®" : d.window ? t("Fenster") : `${d.width} × ${d.height}`));
+      const sel = el("select"); sel.setAttribute("aria-label", t("Bild für {name}", { name: d.label }));
+      for (const im of images) sel.append(new Option(im.name, im.id));
+      sel.value = imageForScreen(outLayout, d.id, images.map(im => im.id));
+      sel.addEventListener("change", () => setScreenImage(d.id, sel.value));
+      row.append(cell, sel);
+      box.append(row);
+    });
+    box.append(el("p", "muted small", t("Hier legst du fest, welches Bild jeder Ausgang zeigt. Zum Bearbeiten links auf die Vorschau eines Bildes klicken. Szenen speichern alle Bilder mit.")));
+    return;
+  }
   if (!mappingOn()) return;
   box.append(el("div", "cp-head", t("Leinwände")));
   if (!surfaces.length) box.append(el("p", "muted small", t("Noch keine Leinwand. Leg eine im Tab AUSGABE unter Projektionsmapping an.")));
@@ -2205,25 +2301,17 @@ function editImage(id: string): void {
   syncCanvases();
 }
 
-/** Gibt es mehrere Bilder (Projektionsmapping)? Nur dann bedeutet „nur andere Bilder“ etwas. */
-function multiImage(): boolean { return mappingOn() && imageList(ctx.show).length > 1; }
+/** Gibt es mehrere Bilder (Projektionsmapping, Getrennt)? Nur dann bedeutet „nur andere Bilder“ etwas. */
+function multiImage(): boolean { return imagesOn() && imageList(ctx.show).length > 1; }
 
-/** Bild, auf dem der SHOW-Ablauf läuft (nur im Mapping-Modus wählbar). */
+/** Bild, auf dem der SHOW-Ablauf läuft (nur im Mapping-Modus und bei „Getrennt“ wählbar). */
 function showImage(): string {
   const id = ctx.show.cueImage ?? MAIN_STACK;
-  return mappingOn() && imageList(ctx.show).some(im => im.id === id) ? id : MAIN_STACK;
+  return imagesOn() && imageList(ctx.show).some(im => im.id === id) ? id : MAIN_STACK;
 }
 
 /** Bild-Zustand für eine Vorschau: dessen Ebenen als Hauptbild; Cues nur auf dem Bild des SHOW-Ablaufs. */
-function showForImage(sh: ShowState, id: string): ShowState {
-  const cues = showImage() === id ? sh.cues : [];
-  const stackGain = { [MAIN_STACK]: sh.stackGain?.[id] ?? 1 };
-  if (id === MAIN_STACK) return { ...sh, cues, stackGain, layers: sh.stacks?.[MAIN_STACK] ?? sh.layers };
-  const layers = sh.stacks?.[id];
-  if (!layers) return sh;
-  return { ...sh, cues, stackGain, layers, stacks: { ...sh.stacks, [MAIN_STACK]: layers },
-    transition: sh.transition ? { ...sh.transition, from: sh.transition.fromStacks?.[id] ?? sh.transition.from } : null };
-}
+const showForImage = (sh: ShowState, id: string): ShowState => imageShow(sh, id, showImage());
 
 let fresh = false;
 async function loadProject(): Promise<void> {
@@ -2250,17 +2338,19 @@ async function loadProject(): Promise<void> {
       p = json ? parseProject(json) : null;
     }
     // Leeres bzw. neues Projekt: Start-Aufbau mit sechs Ebenen, Text und Logo
-    let demo = false;
+    let demo = false, empty = false;
     try { demo = sessionStorage.getItem(DEMO_FLAG) === "1"; sessionStorage.removeItem(DEMO_FLAG); } catch { /* egal */ }
-    if (!p) { if (demo) await setupDemoProject(); else await setupStarterProject(); }
+    try { empty = sessionStorage.getItem(EMPTY_FLAG) === "1"; sessionStorage.removeItem(EMPTY_FLAG); } catch { /* egal */ }
+    if (!p) { if (demo) await setupDemoProject(); else if (empty) applyEmpty(ctx); else await setupStarterProject(); }
     if (!p && demo) toast(t("Demo geladen – die 14 Szenen laufen automatisch durch. Im Tab SHOW startest du die Timeline-Show mit WEITER."));
     if (p) {
       applyProject(ctx, p);
+      modelLib.restore(p.models ?? []);
       outLayout = p.outputs;
       if (p.mappings) mappings.replace(p.mappings);
       // Grafiken, deren Datei fehlt, nicht als Clip stehen lassen
-      const known = new Set([...library.items.map(i => mediaClip(i.id)), ...videoLib.items.map(v => videoClip(v.id))]);
-      for (const l of ctx.show.layers) if ((l.clip?.startsWith("img:") || isVideoClip(l.clip)) && !known.has(l.clip!)) l.clip = null;
+      const known = new Set([...library.items.map(i => mediaClip(i.id)), ...videoLib.items.map(v => videoClip(v.id)), ...modelLib.items.map(m => modelClip(m.id))]);
+      for (const l of ctx.show.layers) if ((l.clip?.startsWith("img:") || isVideoClip(l.clip) || isModelClip(l.clip)) && !known.has(l.clip!)) l.clip = null;
       lastSaved = json!;
     }
   } finally {

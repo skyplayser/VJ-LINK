@@ -2,9 +2,10 @@ import type { StageProfile } from "./stageprofile";
 import { t } from "./i18n";
 // Ausgänge: entweder zeigt jeder Bildschirm dasselbe Bild („Gleiches Bild“), oder die Bildschirme liegen
 // auf einer gemeinsamen Leinwand und jeder zeigt seinen Ausschnitt („Leinwand“), z. B. zwei Beamer
-// nebeneinander oder LED-Wand über Bühnenbeamer.
+// nebeneinander oder LED-Wand über Bühnenbeamer. „Getrennt“: jeder Ausgang zeigt ein eigenes Bild (Bild 1–5)
+// ganz, z. B. zwei gleiche Bildschirme mit verschiedenen Visuals. Dazu Projektionsmapping.
 
-export type OutputMode = "mirror" | "canvas" | "mapping";
+export type OutputMode = "mirror" | "canvas" | "separate" | "mapping";
 
 /** Lage eines Bildschirms auf der Leinwand, in Leinwand-Pixeln (Ursprung oben links). */
 export interface ScreenRect {
@@ -48,7 +49,39 @@ export interface Mask {
   on: boolean;
 }
 
-export interface OutputLayout { mode: OutputMode; screens: ScreenRect[]; surfaces?: Surface[]; masks?: Mask[]; res?: OutputRes; devices?: Record<number, DeviceOutput>; deviceEffects?: Record<number, DeviceEffects>; stage?: StageProfile }
+export interface OutputLayout {
+  mode: OutputMode; screens: ScreenRect[]; surfaces?: Surface[]; masks?: Mask[]; res?: OutputRes; devices?: Record<number, DeviceOutput>; deviceEffects?: Record<number, DeviceEffects>; stage?: StageProfile;
+  /** Modus „Getrennt“: welches Bild (ID, „main“ = Bild 1) jeder Ausgang zeigt. Fehlt ein Ausgang, zeigt er Bild 1. */
+  screenImages?: Record<number, string>;
+}
+
+/** Bild, das ein Ausgang im Modus „Getrennt“ zeigt („main“ = Bild 1); in allen anderen Modi Bild 1. */
+export function imageForScreen(layout: OutputLayout | undefined, screen: number, images?: readonly string[]): string {
+  if (layout?.mode !== "separate") return "main";
+  const id = layout.screenImages?.[screen] ?? "main";
+  return !images || images.includes(id) ? id : "main";
+}
+
+/**
+ * Beim Wechsel auf „Getrennt“: Der erste Ausgang zeigt Bild 1, jeder weitere ohne eigene Wahl ein noch freies Bild.
+ * Fehlt eins, legt `add` ein neues an (Kopie von Bild 1, höchstens 5 Bilder). Ausgänge mit gültiger Wahl bleiben.
+ * Gibt das neue Layout und die Zahl der neu angelegten Bilder zurück.
+ */
+export function assignSeparate(layout: OutputLayout, openIds: readonly number[], images: readonly string[], add: () => string | null): { layout: OutputLayout; created: number } {
+  const known = [...images];
+  const map: Record<number, string> = {};
+  for (const [k, v] of Object.entries(layout.screenImages ?? {})) if (known.includes(v)) map[Number(k)] = v;
+  let created = 0;
+  openIds.forEach((id, i) => {
+    if (map[id] !== undefined) return;
+    if (i === 0) { map[id] = "main"; return; }
+    const used = new Set(openIds.map(o => map[o]).filter((x): x is string => !!x));
+    let free = known.find(im => !used.has(im));
+    if (!free) { const n = add(); if (n) { known.push(n); free = n; created++; } }
+    map[id] = free ?? "main";
+  });
+  return { layout: { ...layout, screenImages: map }, created };
+}
 
 // ---- Auflösung des Ausgabebilds ------------------------------------------------------------
 

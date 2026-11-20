@@ -3,7 +3,7 @@
 // → mit Deckkraft und Mischmodus in die Komposition. Während einer Überblendung gibt es zwei
 // Kompositionen (alt und neu), die der letzte Schritt mischt und mit Master und Strobe versieht.
 import { CAM_LOOKS, camIdOf, isCamClip, isMaskLook, usesFigure } from "../core/camera";
-import { SAFE_FLASH_HZ, WAVE_POINTS, flashMax, bandsFrom, beatPulse, layerDrive, strobeGain, strobeGate, strobeWhite } from "../core/audio";
+import { SAFE_FLASH_HZ, WAVE_POINTS, flashMax, bandsFrom, beatPulse, layerDrive, liveBands, strobeGain, strobeGate, strobeWhite } from "../core/audio";
 import { TEST_IDS, defaultLaser, layerPalette, mainLayers,
   MAX_LAYERS, TRANSITION_IDS, isMediaClip, mediaIdOf, transitionProgress, type BlendMode, type ColorSource, type LayerState, type Rgb, type ShowState,
 } from "../core/show";
@@ -13,6 +13,8 @@ import { devicePlacement, fitRect, renderSize, type DeviceEffects, type DeviceOu
 import { clipVideoTime, isVideoClip, loopRange, videoIdOf, type CueRender, type Fit } from "../core/video";
 import { HISTORY_FX, COMPOSITE_FRAG, FINAL_FRAG, GEN_IDS, genFrag, postFrag, IMAGE_FRAG, MASK_FRAG, MESH_FRAG, MESH_VERT, POST_FRAG, POST_IDS, SOLID_FRAG, VERT, WARP_FRAG, DJWAVE_FRAG } from "./shaders";
 import { t } from "../core/i18n";
+import { isParticleClip } from "../core/particles";
+import { ParticleRenderer } from "./particles";
 
 const COLOR_MODE: Record<ColorSource, number> = {
   original: 0, A: 1, B: 1, C: 1, D: 1, E: 1, gradient: 2, rainbow: 3, multi: 4,
@@ -222,6 +224,7 @@ export class Engine {
   private postProg(n: number): Program | null { return this.lazy(this.postP, n, () => postFrag(n)); }
   /** Ist das Visual dieses Clips übersetzt? Startet die Übersetzung, falls nötig. Medien und Kameras: immer true. */
   clipReady(clip: string | null): boolean {
+    if (isParticleClip(clip)) return this.baseReady() && this.particles.objectReady(clip!);
     const gen = clip ? GEN_IDS.indexOf(clip as typeof GEN_IDS[number]) : -1;
     if (!this.baseReady()) return false;
     return gen < 0 || this.genProg(gen) !== null || this.genP.get(gen)?.state === "failed";
@@ -319,6 +322,8 @@ export class Engine {
     let isVideo = false;
     // LJ-Link: DJ-Wellenform und Now-Playing-Bauchbinde
     if (l.clip === "dj-waveform") return this.renderDjWave(l, fbKey, time, w, h, show, beat);
+    // Partikel-Objekt (eingebauter Körper oder eigenes Modell): eigener Zeichenweg mit Tiefe
+    if (isParticleClip(l.clip)) return this.renderParticles(l, fbKey, time, w, h, show, beat, key);
     let fade = 1;
     if (l.clip === "now-playing") {
       const np = show.nowPlaying;
@@ -438,6 +443,36 @@ export class Engine {
     if (wave) gl.uniform1fv(this.loc(g, "uWave"), new Float32Array(wave));
     this.bindTarget(this.work[0]);
     this.draw();
+    return this.applyEffects(l, fbKey, time, w, h, show, drv.pulse, ca, cb, drv.beat);
+  }
+
+  /** Zeichnet Partikel-Objekte (erst bei Bedarf angelegt). */
+  private particleR: ParticleRenderer | null = null;
+  /** Für eigene Modelle: wird aufgerufen, sobald eins geladen ist. */
+  onModelLoaded: () => void = () => {};
+  get particles(): ParticleRenderer {
+    if (!this.particleR) { this.particleR = new ParticleRenderer(this.gl); this.particleR.onLoaded = () => this.onModelLoaded(); }
+    return this.particleR;
+  }
+
+  private renderParticles(l: LayerState, fbKey: string, time: number, w: number, h: number, show: ShowState, beat: number, key: boolean): Target | null {
+    const gl = this.gl;
+    this.work[0] = this.target(this.work[0], w, h);
+    this.work[1] = this.target(this.work[1], w, h);
+    const drv = layerDrive(l.drive, show.audio, l.clip, beat, this.nowMs / 1000, time);
+    const [ca, cb] = colors(l.colorSource, show.slots, l);
+    const lz = l.laser ?? defaultLaser();
+    const ok = this.particles.render(this.work[0], l.clip!, fbKey, l.particles, {
+      time, beat: drv.beat, colorMode: COLOR_MODE[l.colorSource], colA: ca, colB: cb, pal: layerPalette(l, show.slots), key,
+      x: lz.x, y: lz.y, size: lz.size, rot: lz.rot ?? 0,
+      // Bass nur aus echtem Audio (Eingang oder LJ-Link): ohne Audio bleibt die Form geschlossen
+      bass: l.particles?.trigger === "bass" ? Math.max(...liveBands(show.audio, beat, this.nowMs / 1000).slice(0, 2), 0) : 0,
+      bpm: this.bpm,
+    });
+    // Zustand für die übrigen Zeichenwege wiederherstellen
+    gl.bindVertexArray(this.vao);
+    gl.disable(gl.BLEND);
+    if (!ok) return null;
     return this.applyEffects(l, fbKey, time, w, h, show, drv.pulse, ca, cb, drv.beat);
   }
 

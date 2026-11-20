@@ -13,7 +13,9 @@ export const GEN_IDS = ["bar-spectrum", "radial-eq", "oscilloscope", "pulse-ring
   "sphere-field", "box-field", "torus-ring", "ring-tunnel", "hex-tunnel", "wormhole", "infinite-squares", "dna-helix", "lava-lamp", "caustics", "flow-lines", "domain-warp", "bubbles", "electric", "cells", "tentacles", "marble", "hyperspace", "fireflies", "confetti", "rain-lines", "galaxy", "vortex", "fireworks", "particle-ring", "dust-storm",
   // Paket 3: Retro, Op-Art, Audio, Minimal, Daten
   "outrun-sun", "vhs-tape", "pixel-space", "c64-load", "op-waves", "bulge-grid", "concentric-shift", "vasarely", "zebra-twist", "spectrum-circle", "wave-ribbon", "eq-tower", "bass-ring", "audio-mesh", "single-line", "dot-pulse", "crosshair", "bars-3", "frame-zoom", "radar", "matrix-grid", "world-map",
-  "neon-triangles", "kaleido-burst", "infinity-loop"] as const;
+  "neon-triangles", "kaleido-burst", "infinity-loop",
+  // Eigener Weg in der Engine (src/engine/particles.ts): Partikel-Objekte, kein Generator-Shader
+  "pobj-cross", "pobj-cube", "pobj-sphere", "pobj-torus", "pobj-star"] as const;
 export type GenId = typeof GEN_IDS[number];
 
 export const VERT = `#version 300 es

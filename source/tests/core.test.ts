@@ -174,9 +174,9 @@ describe("Steuerung", () => {
 
 describe("Effekt-Katalog", () => {
   it("enthält Wunschliste, Laser, LJ-Link, moderne Visuals und die großen Pakete mit eindeutigen IDs", () => {
-    expect(EFFECTS.length).toBe(158);
-    expect(new Set(EFFECTS.map(e => e.id)).size).toBe(158);
-    expect(EFFECTS.map(e => e.no)).toEqual(Array.from({ length: 158 }, (_, i) => i + 1));
+    expect(EFFECTS.length).toBe(163);
+    expect(new Set(EFFECTS.map(e => e.id)).size).toBe(163);
+    expect(EFFECTS.map(e => e.no)).toEqual(Array.from({ length: 163 }, (_, i) => i + 1));
     for (const c of ["minimal", "space3d", "data", "opart", "organic", "fractal", "demo", "sacred", "retro", "particles"]) expect(EFFECTS.filter(e => e.category === c).length).toBeGreaterThanOrEqual(5);
     expect(EFFECTS.filter(e => e.category === "lj").map(e => e.id)).toEqual(["now-playing", "dj-waveform"]);
     expect(EFFECTS.filter(e => e.category === "laser").length).toBe(16);
@@ -755,7 +755,7 @@ describe("Bibliothek der Visuals", () => {
   it("jeder fertige Generator existiert im Shader, Start-Clips stehen vorn", () => {
     for (const g of READY_GENERATORS) expect(GEN_IDS as readonly string[]).toContain(g.id);
     expect(READY_GENERATORS.slice(0, 8).map(g => g.id)).toEqual([...STARTER_CLIP_IDS]);
-    expect(READY_GENERATORS.length).toBe(150);
+    expect(READY_GENERATORS.length).toBe(155);
     expect(EFFECTS.filter(e => e.status === "planned").map(e => e.id)).toEqual([]);
   });
 });
@@ -1603,7 +1603,8 @@ import { FRAG, POST_FRAG } from "../src/engine/shaders";
 describe("Shader-Zweige", () => {
   it("jedes Visual hat einen eigenen Fall im Generator-Shader (außer den Overlays Now Playing und DJ-Wellenform)", () => {
     GEN_IDS.forEach((id, i) => {
-      if (id === "now-playing" || id === "dj-waveform") return;
+      // Eigene Wege in der Engine: Overlays aus LJ-Link und Partikel-Objekte
+      if (id === "now-playing" || id === "dj-waveform" || id.startsWith("pobj-")) return;
       expect(FRAG, id).toContain(`case ${i}: c = `);
     });
   });
@@ -1936,7 +1937,7 @@ describe("Ein Shader je Visual (Windows-Start)", async () => {
   const { FRAG, GEN_IDS, POST_IDS, genFrag, postFrag } = await import("../src/engine/shaders");
   it("jedes Visual hat genau einen Fall, der switch ist weg", () => {
     // „now-playing“ und „dj-waveform“ zeichnet die Engine selbst, ohne Fall im Shader
-    const own = new Set(["now-playing", "dj-waveform"]);
+    const own = new Set<string>(["now-playing", "dj-waveform", ...GEN_IDS.filter(id => id.startsWith("pobj-"))]);
     expect(FRAG.match(/case \d+:/g)?.length).toBe(GEN_IDS.length - own.size);
     GEN_IDS.forEach((id, n) => {
       if (own.has(id)) return;

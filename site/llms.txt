@@ -1,6 +1,6 @@
 # VJ-Link
 
-> Free, open-source VJ software (Eclipse Public License 2.0) for macOS and Windows, built for lighting jockeys and event technicians. It plays 150 live-generated visuals and 50 effects on any number of screens, projectors and LED walls, and is run by a light desk over Art-Net, sACN, MIDI or OSC. The tempo comes from the music: LJ-Link (Pioneer and Denon players), Ableton Link, MIDI clock, audio input or tap. Includes projection mapping, shows with a timeline and timecode, and camera looks with local person detection. Current version: beta.
+> Free, open-source VJ software (Eclipse Public License 2.0) for macOS and Windows, built for lighting jockeys and event technicians. It plays 155 live-generated visuals and 50 effects on any number of screens, projectors and LED walls, and is run by a light desk over Art-Net, sACN, MIDI or OSC. The tempo comes from the music: LJ-Link (Pioneer and Denon players), Ableton Link, MIDI clock, audio input or tap. Includes projection mapping, shows with a timeline and timecode, and camera looks with local person detection. Current version: beta.
 
 - Visuals: fractals, 3D tunnels, demoscene, sacred geometry, particles, retro, op art, audio equalizers and laser looks for a projector in haze. Up to eight layers with blend modes and five color slots set by the desk.
 - Light desk: a fixed 91-channel Art-Net/sACN profile (channel list as CSV) plus free mapping of every control to keyboard, MIDI, DMX and OSC. Guides for grandMA2, grandMA3, dot2, ChamSys MagicQ, Avolites, Hog 4, ETC Eos, Onyx, Daslight, Lightkey, QLC+, LightShark, Zero 88 and FreeStyler; built from the manuals, not yet confirmed on every real desk.
@@ -21,7 +21,7 @@
 - [Wiki overview](https://skyplayser.github.io/VJ-LINK/wiki.html) – German: https://skyplayser.github.io/VJ-LINK/de/wiki.html
 - [Quick start](https://skyplayser.github.io/VJ-LINK/wiki-quickstart.html): from download to the first picture in five minutes.
 - [All features](https://skyplayser.github.io/VJ-LINK/wiki-features.html)
-- [The 150 visuals](https://skyplayser.github.io/VJ-LINK/wiki-visuals.html) and [the 50 effects](https://skyplayser.github.io/VJ-LINK/wiki-effects.html)
+- [The 155 visuals](https://skyplayser.github.io/VJ-LINK/wiki-visuals.html) and [the 50 effects](https://skyplayser.github.io/VJ-LINK/wiki-effects.html)
 - [Light desks](https://skyplayser.github.io/VJ-LINK/wiki-desks.html) and [connecting a desk](https://skyplayser.github.io/VJ-LINK/wiki-desk.html) with the full channel list
 - [VJ-Link and LJ-Link](https://skyplayser.github.io/VJ-LINK/wiki-ljlink.html): tempo, phrases, Now Playing and DJ waveforms from the DJ players.
 - [Outputs](https://skyplayser.github.io/VJ-LINK/wiki-outputs.html) and [projection mapping](https://skyplayser.github.io/VJ-LINK/wiki-mapping-projection.html)

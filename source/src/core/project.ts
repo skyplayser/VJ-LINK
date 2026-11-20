@@ -1,4 +1,6 @@
 // Projektdatei: Szenen, Ebenen, Farben, Grafik-Liste. Wird automatisch gespeichert und beim Start geladen.
+import { MODEL_CLIP_PREFIX, parseParticles } from "./particles";
+import type { ModelItem } from "./meshfile";
 import { CAM_LOOKS, defaultCam, isValidCamId, type CamSettings, type CameraSource } from "./camera";
 import type { ControlContext } from "./control";
 import { POST_BY_ID } from "./effects";
@@ -34,6 +36,8 @@ export interface ProjectFile {
   strobe: { speed: number; intensity: number; sync: boolean };
   media: MediaItem[];
   videos: VideoItem[];
+  /** Eigene 3D-Modelle (Partikel-Objekt); die Punktwolken liegen im Ordner „models“. */
+  models?: ModelItem[];
   /** SHOW-Ablauf */
   cues: Cue[];
   /** Kameras und Video-Eingänge */
@@ -48,7 +52,7 @@ export interface ProjectFile {
   photos?: Record<string, { url: string; opacity: number }>;
 }
 
-export function serializeProject(c: ControlContext, media: readonly MediaItem[], mappings: readonly Mapping[] = [], videos: readonly VideoItem[] = [], outputs: OutputLayout = defaultLayout()): string {
+export function serializeProject(c: ControlContext, media: readonly MediaItem[], mappings: readonly Mapping[] = [], videos: readonly VideoItem[] = [], outputs: OutputLayout = defaultLayout(), models: readonly ModelItem[] = []): string {
   const s = c.show;
   const p: ProjectFile = {
     version: PROJECT_VERSION,
@@ -57,6 +61,7 @@ export function serializeProject(c: ControlContext, media: readonly MediaItem[],
     strobe: { speed: s.strobe.speed, intensity: s.strobe.intensity, sync: s.strobe.sync },
     media: [...media],
     videos: [...videos],
+    ...(models.length ? { models: models.map(m => ({ ...m })) } : {}),
     cues: c.cues.list,
     cameras: s.cameras,
     outputs,
@@ -77,7 +82,7 @@ const str = (v: unknown, d: string, max = 80): string => (typeof v === "string" 
 
 function clip(v: unknown): string | null {
   if (typeof v !== "string") return null;
-  if (v.startsWith("img:") || v.startsWith("vid:")) return isValidMediaId(v.slice(4)) ? v : null;
+  if (v.startsWith("img:") || v.startsWith("vid:") || v.startsWith(MODEL_CLIP_PREFIX)) return isValidMediaId(v.slice(4)) ? v : null;
   if (v.startsWith("cam:")) return isValidCamId(v.slice(4)) ? v : null;
   return /^[a-z0-9-]{1,40}$/.test(v) ? v : null;
 }
@@ -213,7 +218,13 @@ function layout(v: unknown): OutputLayout {
     const name = str(o.name, "", 60).trim();
     if (name && !roles.has(o.display)) roles.set(o.display, name);
   }
-  return { mode: oneOf(v.mode, ["mirror", "canvas", "mapping"] as const, "mirror"), screens, surfaces, masks,
+  const screenImages: Record<number, string> = {};
+  if (isObj(v.screenImages)) for (const [id, im] of Object.entries(v.screenImages).slice(0, 64)) {
+    if (!/^-?[0-9]+$/.test(id) || !Number.isSafeInteger(Number(id)) || typeof im !== "string" || !(im === "main" || okStackId(im))) continue;
+    screenImages[Number(id)] = im;
+  }
+  return { mode: oneOf(v.mode, ["mirror", "canvas", "separate", "mapping"] as const, "mirror"), screens, surfaces, masks,
+    ...(Object.keys(screenImages).length ? { screenImages } : {}),
     ...(res ? { res } : {}), ...(Object.keys(devices).length ? { devices } : {}),
     ...(Object.keys(deviceEffects).length ? { deviceEffects } : {}),
     ...(stage ? { stage: { name: str(stage.name, "", 60).trim(), outputs: [...roles].map(([display, name]) => ({ display, name })) } } : {}) };
@@ -255,6 +266,7 @@ function partialLayer(v: unknown): Partial<LayerState> | null {
   }
   if ("speed" in v) out.speed = num(v.speed, 1, -4, 4);
   if ("strobe" in v) out.strobe = num(v.strobe, 0, 0, 8);
+  const pt = parseParticles(v.particles); if (pt) out.particles = pt;
   const fx = effects(v.effects); if (fx) out.effects = fx;
   const md = media(v.media); if (md) out.media = md;
   const vd = video(v.video); if (vd) out.video = vd;
@@ -328,6 +340,8 @@ export function parseProject(json: string): ProjectFile | null {
       id: m.id as string, name: str(m.name, "Video", 80), ext: oneOf(m.ext, ["mp4", "m4v", "mov", "webm"] as const, "mp4"),
       duration: num(m.duration, 0, 0, 86400), width: num(m.width, 0, 0, 16384), height: num(m.height, 0, 0, 16384),
     })),
+    ...(Array.isArray(raw.models) ? { models: raw.models.filter(isObj).filter(m => isValidMediaId(m.id)).slice(0, 500)
+      .map(m => ({ id: m.id as string, name: str(m.name, "3D-Modell", 80), colors: m.colors === true })) } : {}),
     cues: (Array.isArray(raw.cues) ? raw.cues : []).map(cue).filter((x): x is Cue => !!x).slice(0, 500),
     cameras: (Array.isArray(raw.cameras) ? raw.cameras : []).filter(isObj).filter(m => isValidCamId(m.id) && typeof m.deviceId === "string")
       .slice(0, 16).map(m => ({ id: m.id as string, deviceId: (m.deviceId as string).slice(0, 200), label: str(m.label, "", 120) })),

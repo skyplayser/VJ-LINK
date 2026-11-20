@@ -32,3 +32,30 @@ describe("Video-Speicher und Streaming", () => {
     expect((await st2.serveVideo(new Request(`vjmedia://video/${r.id}`))).status).toBe(404);
   });
 });
+
+describe("3D-Modelle (Punktwolken) im Speicher", () => {
+  it("legt ab, liefert aus, übernimmt aus Projektdateien und weist Fremdes ab", async () => {
+    const { encodePointCloud, meshToPointCloud, parseObj, decodePointCloud } = await import("../src/core/meshfile");
+    const dir = mkdtempSync(path.join(tmpdir(), "vjlink-"));
+    const st = new Storage(path.join(dir, "data"));
+    await st.init();
+    const pc = meshToPointCloud(parseObj("v 0 0 0\nv 1 0 0\nv 0 1 0\nf 1 2 3\n"), [], new Map(), 50);
+    const r = await st.addModel(encodePointCloud(pc), "Dreieck");
+    const res = await st.serveModel(new Request(`vjmedia://model/${r.id}`));
+    expect(res.status).toBe(200);
+    expect(decodePointCloud(await res.arrayBuffer())?.n).toBe(50);
+    expect((await st.serveModel(new Request("vjmedia://model/../../etc"))).status).toBe(404);
+    // nach Neustart bekannt, Datei für die Projektdatei auffindbar
+    const st2 = new Storage(path.join(dir, "data")); await st2.init();
+    expect(st2.hasModel(r.id)).toBe(true);
+    const f = st2.modelFile(r.id)!;
+    // Aus einer Projektdatei: nur echte Punktwolken
+    const other = new Storage(path.join(dir, "data2")); await other.init();
+    expect(await other.importModel(f.path, "abcdef1234567890", "Kopie")).toBe(true);
+    expect(other.hasModel("abcdef1234567890")).toBe(true);
+    const fake = path.join(dir, "fake.vjpc"); writeFileSync(fake, Buffer.alloc(100, 1));
+    expect(await other.importModel(fake, "1234567890abcdef", "X")).toBe(false);
+    expect(await st2.removeModel(r.id)).toBe(true);
+    expect((await st2.serveModel(new Request(`vjmedia://model/${r.id}`))).status).toBe(404);
+  });
+});

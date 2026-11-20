@@ -1,5 +1,6 @@
 // GALERIE: alle Visuals, Effekte und Medien an einem Ort. Ansehen (Live-Vorschau), einer Ebene zuweisen,
 // Medien umbenennen und löschen.
+import { modelClip, type ModelLibrary } from "./modellib";
 import type { ControlContext } from "../core/control";
 import { CATEGORY_LABEL, EFFECTS, POST_EFFECTS, READY_GENERATORS, type EffectCategory, type EffectDef } from "../core/effects";
 import { mediaClip } from "../core/media";
@@ -21,6 +22,8 @@ export interface GalleryDeps {
   ctx: ControlContext;
   images: MediaLibrary;
   videos: VideoLibrary;
+  /** Eigene 3D-Modelle (Partikel-Objekt). */
+  models?: ModelLibrary;
   importFiles: (f: File[]) => Promise<{ id: string; name: string }[]>;
   changed: () => void;
   toast: (m: string) => void;
@@ -317,6 +320,10 @@ export class Gallery {
       id: v.id, clip: videoClip(v.id), name: v.name, kind: "Video",
       rename: (n: string) => { v.name = n; }, remove: () => { forget(videoClip(v.id)); this.d.videos.remove(v.id); },
     })), t("Noch keine Videos."));
+    if (this.d.models) section(t("3D-Modelle"), this.d.models.items.map(m => ({
+      id: m.id, clip: modelClip(m.id), name: m.name, kind: "3D-Modell",
+      rename: (n: string) => { m.name = n; }, remove: () => { forget(modelClip(m.id)); this.d.models!.remove(m.id); },
+    })), t("Noch keine 3D-Modelle. Zieh eine OBJ- oder STL-Datei hinein (OBJ mit Material und Texturen im selben Ordner)."));
     section(t("Kameras"), this.d.ctx.show.cameras.map(k => ({
       id: k.id, clip: camClip(k.id), name: k.label || t("Kamera"), kind: "Kamera",
       rename: (n: string) => { k.label = n; },

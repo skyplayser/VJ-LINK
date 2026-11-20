@@ -26,7 +26,7 @@ const D: Record<string, Entry> = {
   "start.tag": { de: "Live-Visuals, gesteuert von deinem Lichtpult.", en: "Visuals your lighting desk controls." },
   "start.continue": { de: "Weiterarbeiten", en: "Continue" },
   "start.new": { de: "Neues Projekt", en: "New project" },
-  "start.new.sub": { de: "Minimal: sechs Ebenen, acht Szenen", en: "Minimal: six layers, eight scenes" },
+  "start.new.sub": { de: "Mit Start-Aufbau oder leer", en: "With starter setup or empty" },
   "start.open": { de: "Projekt laden", en: "Open project" },
   "start.open.sub": { de: ".vjlink-Datei öffnen", en: "Open a .vjlink file" },
   "start.demo": { de: "Demo öffnen", en: "Open demo" },

@@ -1,4 +1,5 @@
 // Bibliothek: Clips für eine Ebene an- und abwählen (Visuals nach Kategorie, eigene Grafiken).
+import { modelClip, type ModelLibrary } from "./modellib";
 import { CAM_LOOKS, CAM_LOOK_INFO, CAM_LOOK_LABEL, camClip, ensureCamera, isCamClip } from "../core/camera";
 import { cameraDevices, cameraHelp } from "./camchooser";
 import type { CamDevice } from "./campool";
@@ -25,6 +26,8 @@ export class LibraryPanel {
   private camSearched = false;
   private armedDelete = "";
 
+  /** Eigene 3D-Modelle (setzt die Oberfläche). */
+  models: ModelLibrary | null = null;
   constructor(private ctx: ControlContext, private lib: MediaLibrary, private videos: VideoLibrary, private onChange: () => void, private onImport: (layer: number) => void, private onText: (layer: number) => void = () => {}) {
     navigator.mediaDevices?.addEventListener("devicechange", () => { if (this.camDevices.length) void cameraDevices().then(d => { this.camDevices = d; this.render(); }); });
     this.panel.setAttribute("role", "dialog");
@@ -128,6 +131,35 @@ export class LibraryPanel {
         lg.append(b);
       }
       body.append(lg);
+    }
+
+    if (this.models) {
+      const models = this.models;
+      body.append(el("h4", "", t("Eigene 3D-Modelle")));
+      const og = el("div", "lib-grid");
+      for (const m of models.items) {
+        const id = modelClip(m.id);
+        const on = l.clips.includes(id);
+        const wrap = el("div", "lib-media");
+        const b = el("button", `lib-chip${on ? " on" : ""}`, m.name);
+        b.setAttribute("aria-pressed", String(on));
+        b.addEventListener("click", () => { if (on) removeClip(l, id); else addClip(l, id); this.onChange(); this.render(); });
+        const del = el("button", "icon danger", this.armedDelete === m.id ? t("Löschen?") : "×");
+        del.title = t("3D-Modell komplett aus der Bibliothek löschen (aus allen Ebenen, Szenen und Cues)");
+        del.classList.toggle("wide", this.armedDelete === m.id);
+        del.addEventListener("click", () => {
+          if (this.armedDelete !== m.id) { this.armedDelete = m.id; this.render(); return; }
+          forgetClip(this.ctx.show, this.ctx.scenes, id);
+          for (const c of this.ctx.cues.list) if (c.media === id) c.media = null;
+          models.remove(m.id);
+          this.armedDelete = "";
+          this.onChange(); this.render();
+        });
+        wrap.append(b, del);
+        og.append(wrap);
+      }
+      if (!models.items.length) og.append(el("p", "lib-hint", t("Noch keine 3D-Modelle. Zieh eine OBJ- oder STL-Datei hinein; daraus wird ein Partikel-Objekt.")));
+      body.append(og);
     }
 
     body.append(el("h4", "", t("Eigene Videos")));

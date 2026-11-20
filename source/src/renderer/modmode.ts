@@ -4,7 +4,7 @@ import { CONTROL_BY_ID } from "../core/controls";
 import type { ControlContext } from "../core/control";
 import { t } from "../core/i18n";
 import {
-  MAX_MODS, MOD_BEATS, MOD_LFO, MOD_SOURCES, MOD_SOURCE_LABEL, modSignal, modulatable, newModulation, type Modulation, type ModSource,
+  MAX_MODS, MOD_BEATS, MOD_LFO, MOD_SOURCES, MOD_SOURCE_LABEL, modActive, modSignal, modulatable, newModulation, type Modulation, type ModSource,
 } from "../core/modulation";
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls = "", text = ""): HTMLElementTagNameMap[K] {
@@ -26,6 +26,7 @@ export class ModMode {
     private toast: (m: string) => void) {
     this.panel.hidden = true;
     document.body.append(this.panel);
+    this.restorePlace();
     // Im Modus wählt ein Klick den Regler, statt ihn zu bewegen
     const block = (e: Event) => {
       if (!this.on) return;
@@ -49,6 +50,8 @@ export class ModMode {
     document.body.classList.add("modding");
     this.panel.hidden = false;
     this.render(); this.mark();
+    // Gemerkte Lage passt evtl. nicht mehr (kleineres Fenster): Kopfzeile sichtbar halten
+    if (this.panel.style.left) this.keepInside();
     clearInterval(this.timer);
     this.timer = window.setInterval(() => this.tick(), 50);
   }
@@ -66,7 +69,8 @@ export class ModMode {
     this.target = id;
     if (!this.mods.some(m => m.target === id)) {
       if (this.mods.length >= MAX_MODS) { this.toast(t("Höchstens {n} Modulationen.", { n: MAX_MODS })); return; }
-      this.mods.push(newModulation(id));
+      // Neu: sanfter Rahmen um die jetzige Stellung (statt Vollausschlag)
+      this.mods.push(newModulation(id, CONTROL_BY_ID.get(id)?.get(this.ctx)));
     }
     this.render(); this.mark();
   }
@@ -79,13 +83,67 @@ export class ModMode {
   }
 
   private mark(): void {
-    const modded = new Set(this.mods.filter(m => m.on && m.depth > 0).map(m => m.target));
+    const modded = new Set(this.mods.filter(modActive).map(m => m.target));
     document.querySelectorAll<HTMLElement>("[data-ctl]").forEach(e => {
       const id = e.dataset.ctl!;
       e.toggleAttribute("data-mod", modded.has(id));
       e.toggleAttribute("data-mod-sel", this.on && id === this.target);
       e.toggleAttribute("data-modable", this.on && modulatable(id));
     });
+  }
+
+  /** Reglerwert (0–1) lesbar machen: in Einheiten des Reglers, wenn er eine Anzeige hat, sonst in Prozent. */
+  private fmt(id: string, v: number): string {
+    const d = CONTROL_BY_ID.get(id);
+    if (d?.format) {
+      try {
+        const view: ControlContext = { ...this.ctx, show: structuredClone(this.ctx.show) };
+        d.set(view, v);
+        return d.format(view);
+      } catch { /* dann Prozent */ }
+    }
+    return `${Math.round(v * 100)} %`;
+  }
+
+  // ---- Fenster verschieben und Lage merken (wie „Zuweisungen“) ----------------------
+  private dragBy(handle: HTMLElement): void {
+    handle.addEventListener("pointerdown", e => {
+      if ((e.target as HTMLElement).closest("button")) return;
+      e.preventDefault();
+      const r = this.panel.getBoundingClientRect();
+      const dx = e.clientX - r.left, dy = e.clientY - r.top;
+      handle.setPointerCapture(e.pointerId);
+      const move = (ev: PointerEvent) => {
+        this.panel.style.right = "auto";
+        this.panel.style.left = `${ev.clientX - dx}px`;
+        this.panel.style.top = `${ev.clientY - dy}px`;
+        this.keepInside();
+      };
+      const up = () => {
+        handle.removeEventListener("pointermove", move);
+        handle.removeEventListener("pointerup", up);
+        try { localStorage.setItem("vjlink.modPanel", JSON.stringify({ x: this.panel.offsetLeft, y: this.panel.offsetTop })); } catch { /* egal */ }
+      };
+      handle.addEventListener("pointermove", move);
+      handle.addEventListener("pointerup", up);
+    });
+  }
+
+  /** Kopfzeile bleibt immer im sichtbaren Bereich. */
+  private keepInside(): void {
+    const r = this.panel.getBoundingClientRect();
+    const x = Math.min(Math.max(0, r.left), window.innerWidth - Math.min(r.width, 120));
+    const y = Math.min(Math.max(0, r.top), window.innerHeight - 40);
+    this.panel.style.left = `${x}px`; this.panel.style.top = `${y}px`;
+  }
+
+  private restorePlace(): void {
+    try {
+      const p = JSON.parse(localStorage.getItem("vjlink.modPanel") ?? "null") as { x: number; y: number } | null;
+      if (p && Number.isFinite(p.x) && Number.isFinite(p.y)) {
+        this.panel.style.right = "auto"; this.panel.style.left = `${p.x}px`; this.panel.style.top = `${p.y}px`;
+      }
+    } catch { /* ohne gemerkte Lage */ }
   }
 
   private render(): void {
@@ -97,6 +155,7 @@ export class ModMode {
     const done = el("button", "btn small-btn", t("Fertig")); done.title = t("Beenden (Esc)");
     done.addEventListener("click", () => this.close());
     head.append(done);
+    this.dragBy(head);
     box.append(head);
     const m = this.mods.find(x => x.target === this.target);
     if (!m) {
@@ -125,11 +184,43 @@ export class ModMode {
         this.noAudio = el("p", "map-hint warn", t("Gerade kommt kein Audio an. Wähl in den Einstellungen unter Audio einen Eingang oder verbinde LJ-Link."));
         ed.append(this.noAudio);
       }
-      const r = el("label", "mrow"); r.append(el("span", "", t("Stärke")));
-      const depth = el("input"); depth.type = "range"; depth.min = "0"; depth.max = "100"; depth.value = String(Math.round(m.depth * 100));
-      const val = el("span", "mval", `${Math.round(m.depth * 100)} %`);
-      depth.addEventListener("input", () => { m.depth = Number(depth.value) / 100; val.textContent = `${depth.value} %`; });
-      r.append(depth, val); ed.append(r);
+      // Bewegung: im Rahmen von–bis oder mit „Stärke“ um den Grundwert
+      const mode = el("div", "seg2 lp-seg mod-mode");
+      for (const [isRange, txt] of [[true, t("Bereich von–bis")], [false, t("Um Grundwert")]] as const) {
+        const b = el("button", !!m.range === isRange ? "on" : "", txt);
+        b.addEventListener("click", () => {
+          if (isRange && !m.range) { const base = CONTROL_BY_ID.get(m.target)?.get(this.ctx) ?? 0.5; m.range = { lo: Math.max(0, base - m.depth / 2), hi: Math.min(1, base + m.depth / 2) }; }
+          if (!isRange) delete m.range;
+          this.render(); this.mark();
+        });
+        mode.append(b);
+      }
+      ed.append(mode);
+      if (m.range) {
+        const rg = m.range;
+        for (const [key, txt] of [["lo", t("Von")], ["hi", t("Bis")]] as const) {
+          const r = el("label", "mrow"); r.append(el("span", "", txt));
+          const inp = el("input"); inp.type = "range"; inp.min = "0"; inp.max = "1000"; inp.value = String(Math.round(rg[key] * 1000));
+          const val = el("span", "mval", this.fmt(m.target, rg[key]));
+          inp.addEventListener("input", () => { rg[key] = Number(inp.value) / 1000; val.textContent = this.fmt(m.target, rg[key]); });
+          r.append(inp, val); ed.append(r);
+        }
+        const now = el("button", "btn small-btn", t("Rahmen um jetzige Stellung"));
+        now.title = t("Setzt von–bis auf ±10 % um die Stellung, die der Regler gerade hat");
+        now.addEventListener("click", () => {
+          const base = CONTROL_BY_ID.get(m.target)?.get(this.ctx) ?? 0.5;
+          m.range = { lo: Math.max(0, base - 0.1), hi: Math.min(1, base + 0.1) }; this.render();
+        });
+        ed.append(now, el("p", "map-hint", MOD_LFO.has(m.source)
+          ? t("Der Wert pendelt zwischen „Von“ und „Bis“, egal wo der Regler steht. Ein enger Rahmen ergibt eine ruhige Bewegung.")
+          : t("Stille = „Von“, voller Pegel = „Bis“. Ein enger Rahmen ergibt eine ruhige Bewegung.")));
+      } else {
+        const r = el("label", "mrow"); r.append(el("span", "", t("Stärke")));
+        const depth = el("input"); depth.type = "range"; depth.min = "0"; depth.max = "100"; depth.value = String(Math.round(m.depth * 100));
+        const val = el("span", "mval", `${Math.round(m.depth * 100)} %`);
+        depth.addEventListener("input", () => { m.depth = Number(depth.value) / 100; val.textContent = `${depth.value} %`; });
+        r.append(depth, val); ed.append(r);
+      }
       this.meter = el("div", "mod-meter"); this.meter.title = t("Signal jetzt");
       ed.append(this.meter);
       const acts = el("div", "inline wrap");
@@ -145,7 +236,8 @@ export class ModMode {
       const list = el("div", "map-list");
       for (const x of this.mods) {
         const row = el("button", `mod-row${x.target === this.target ? " sel" : ""}${x.on ? "" : " off"}`);
-        row.append(el("span", "", label(x.target)), el("small", "", `${MOD_SOURCE_LABEL[x.source]}${MOD_LFO.has(x.source) ? ` · ${beatsLabel(x.beats)}` : ""} · ${Math.round(x.depth * 100)} %`));
+        const amount = x.range ? `${this.fmt(x.target, x.range.lo)} – ${this.fmt(x.target, x.range.hi)}` : `${Math.round(x.depth * 100)} %`;
+        row.append(el("span", "", label(x.target)), el("small", "", `${MOD_SOURCE_LABEL[x.source]}${MOD_LFO.has(x.source) ? ` · ${beatsLabel(x.beats)}` : ""} · ${amount}`));
         row.addEventListener("click", () => { this.target = x.target; this.render(); this.mark(); });
         list.append(row);
       }

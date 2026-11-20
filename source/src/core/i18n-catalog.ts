@@ -168,6 +168,11 @@ export const EFFECT_EN: Record<string, readonly [string, string]> = {
   "neon-triangles": ["Neon triangles", "Triangles grow out of the center while rotating."],
   "kaleido-burst": ["Kaleido explosion", "Twelvefold kaleidoscope with rays."],
   "infinity-loop": ["Infinity loop", "A comet of light runs along a horizontal eight."],
+  "pobj-cross": ["Particle cross", "3D cross made of thousands of sticks that fly apart on the beat and come back. Needs a strong graphics card (Apple M2 or comparable and up)."],
+  "pobj-cube": ["Particle cube", "Cube made of sticks that explodes on the beat and reassembles. Needs a strong graphics card (Apple M2 or comparable and up)."],
+  "pobj-sphere": ["Particle sphere", "Sphere made of sticks that fly apart on the beat. Needs a strong graphics card (Apple M2 or comparable and up)."],
+  "pobj-torus": ["Particle torus", "Ring (torus) made of sticks that explodes on the beat. Needs a strong graphics card (Apple M2 or comparable and up)."],
+  "pobj-star": ["Particle star", "Five-pointed 3D star made of sticks that flies apart on the beat. Needs a strong graphics card (Apple M2 or comparable and up)."],
 };
 
 /** Effekte im Stapel: ID → [Name, Info]. */

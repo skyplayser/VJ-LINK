@@ -17,18 +17,27 @@ export class Storage {
   private mediaDir: string;
   private videoDir: string;
   private videos = new Map<string, IndexEntry>();
+  /** Eigene 3D-Modelle als fertige Punktwolken („VJPC“), für das Partikel-Objekt. */
+  private modelDir: string;
+  private models = new Map<string, IndexEntry>();
   private projectFile: string;
   private index = new Map<string, IndexEntry>();
 
   constructor(root: string) {
     this.mediaDir = path.join(root, "media");
     this.videoDir = path.join(root, "videos");
+    this.modelDir = path.join(root, "models");
     this.projectFile = path.join(root, "project.json");
   }
 
   async init(): Promise<void> {
     await fs.mkdir(this.mediaDir, { recursive: true });
     await fs.mkdir(this.videoDir, { recursive: true });
+    await fs.mkdir(this.modelDir, { recursive: true });
+    try {
+      const list = JSON.parse(await fs.readFile(path.join(this.modelDir, "index.json"), "utf8")) as IndexEntry[];
+      for (const e of list) if (isValidMediaId(e.id) && e.file === `${e.id}.vjpc`) this.models.set(e.id, e);
+    } catch { /* noch keine Modelle */ }
     try {
       const list = JSON.parse(await fs.readFile(path.join(this.videoDir, "index.json"), "utf8")) as IndexEntry[];
       for (const e of list) if (isValidMediaId(e.id) && /^[a-z0-9]+\.(mp4|m4v|mov|webm)$/.test(e.file)) this.videos.set(e.id, e);
@@ -113,6 +122,71 @@ export class Storage {
   }
 
   hasVideo(id: string): boolean { return this.videos.has(id); }
+
+  // ---- 3D-Modelle: fertige Punktwolken im Ordner „models“, über vjmedia://model/<id> geladen ----
+
+  private saveModels(): Promise<void> {
+    return this.writeAtomic(path.join(this.modelDir, "index.json"), JSON.stringify([...this.models.values()]));
+  }
+
+  /** Umgewandeltes Modell (Punktwolke) ablegen. */
+  async addModel(data: Uint8Array, name: string): Promise<{ id: string; name: string }> {
+    const id = randomBytes(8).toString("hex");
+    const file = `${id}.vjpc`;
+    await this.writeAtomic(path.join(this.modelDir, file), Buffer.from(data.buffer, data.byteOffset, data.byteLength));
+    const nm = name.slice(0, 80);
+    this.models.set(id, { id, name: nm, file });
+    await this.saveModels();
+    return { id, name: nm };
+  }
+
+  async removeModel(id: unknown): Promise<boolean> {
+    if (!isValidMediaId(id)) return false;
+    const e = this.models.get(id);
+    if (!e) return false;
+    this.models.delete(id);
+    await fs.rm(path.join(this.modelDir, e.file), { force: true });
+    await this.saveModels();
+    return true;
+  }
+
+  hasModel(id: string): boolean { return this.models.has(id); }
+
+  /** Datei eines Modells in der Bibliothek, oder null. */
+  modelFile(id: string): { path: string; file: string } | null {
+    const e = this.models.get(id);
+    return e ? { path: path.join(this.modelDir, e.file), file: e.file } : null;
+  }
+
+  /** Modell aus einer Projektdatei übernehmen (gleiche Kennung). Nur echte Punktwolken (Kopf „VJPC“). */
+  async importModel(src: string, id: string, name: string): Promise<boolean> {
+    if (!isValidMediaId(id) || !path.isAbsolute(src) || !src.endsWith(".vjpc")) return false;
+    try {
+      const st = await fs.lstat(src);
+      if (!st.isFile() || st.size < 16 || st.size > 64 * 1024 * 1024) return false;
+      const fh = await fs.open(src, "r");
+      const head = Buffer.alloc(4);
+      try { await fh.read(head, 0, 4, 0); } finally { await fh.close(); }
+      if (head.toString("latin1") !== "VJPC") return false;
+      await fs.copyFile(src, path.join(this.modelDir, `${id}.vjpc`));
+    } catch { return false; }
+    this.models.set(id, { id, name: name.slice(0, 80), file: `${id}.vjpc` });
+    await this.saveModels();
+    return true;
+  }
+
+  /** Antwort für vjmedia://model/<id>. */
+  async serveModel(req: Request): Promise<Response> {
+    const u = new URL(req.url);
+    const id = u.pathname.replace(/^\//, "");
+    const e = isValidMediaId(id) ? this.models.get(id) : undefined;
+    const cors = { "Access-Control-Allow-Origin": "*" };
+    if (!e) return new Response("nicht gefunden", { status: 404, headers: cors });
+    try {
+      const buf = await fs.readFile(path.join(this.modelDir, e.file));
+      return new Response(new Uint8Array(buf), { status: 200, headers: { ...cors, "Content-Type": "application/octet-stream", "Content-Length": String(buf.length) } });
+    } catch { return new Response("nicht gefunden", { status: 404, headers: cors }); }
+  }
 
   /** Antwort für vjmedia://video/<id>: mit Range-Unterstützung (Spulen) und CORS (für WebGL). */
   async serveVideo(req: Request): Promise<Response> {

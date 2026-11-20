@@ -81,11 +81,15 @@ export class ProjectFiles {
     const folderName = mediaFolderName(base);
     const included = new Set(images.map(image => image.id));
     const missing = refs.mediaIds.filter(id => !included.has(id));
-    if (refs.videos.length) {
+    const files = [
+      ...refs.videos.map(v => ({ name: v.name, src: this.storage.videoFile(v.id) })),
+      ...refs.models.map(m => ({ name: m.name, src: this.storage.modelFile(m.id) })),
+    ];
+    if (files.length) {
       const folder = path.join(path.dirname(file), folderName);
       await fs.mkdir(folder, { recursive: true });
-      for (const v of refs.videos) {
-        const src = this.storage.videoFile(v.id);
+      for (const v of files) {
+        const src = v.src;
         if (!src) { missing.push(v.name); continue; }
         const dest = path.join(folder, src.file);
         const [a, b] = await Promise.all([fs.stat(src.path).catch(() => null), fs.stat(dest).catch(() => null)]);
@@ -93,7 +97,7 @@ export class ProjectFiles {
         if (!b || b.size !== a.size) await fs.copyFile(src.path, dest);
       }
     }
-    const text = packProject(projectJson, images, refs.videos.length ? folderName : null, new Date().toISOString());
+    const text = packProject(projectJson, images, files.length ? folderName : null, new Date().toISOString());
     const tmp = `${file}.tmp`;
     await fs.writeFile(tmp, text);
     await fs.rename(tmp, file);
@@ -140,6 +144,11 @@ export class ProjectFiles {
       const src = p.mediaFolder ? path.join(path.dirname(file), p.mediaFolder, `${v.id}.${v.ext}`) : null;
       if (!src || !(await this.storage.importVideo(src, v.id, v.name))) missing.push(v.name);
     }
+    for (const m of projectRefs(p.projectJson).models) {
+      if (this.storage.hasModel(m.id)) continue;
+      const src = p.mediaFolder ? path.join(path.dirname(file), p.mediaFolder, `${m.id}.vjpc`) : null;
+      if (!src || !(await this.storage.importModel(src, m.id, m.name))) missing.push(m.name);
+    }
     await this.storage.saveProject(p.projectJson);
     this.state.current = file; this.state.savedHash = null; this.state.fresh = true;
     this.remember(file);
@@ -170,6 +179,11 @@ export async function verifyShowPackage(file: string): Promise<ShowPackageResult
     const candidate = pkg.mediaFolder && path.join(path.dirname(file), pkg.mediaFolder, `${v.id}.${v.ext}`);
     const video = candidate ? await fs.stat(candidate).catch(() => null) : null;
     if (!video?.isFile() || !video.size) missing.push(v.name);
+  }
+  for (const m of projectRefs(pkg.projectJson).models) {
+    const candidate = pkg.mediaFolder && path.join(path.dirname(file), pkg.mediaFolder, `${m.id}.vjpc`);
+    const model = candidate ? await fs.stat(candidate).catch(() => null) : null;
+    if (!model?.isFile() || !model.size) missing.push(m.name);
   }
   return { file, missing };
 }

@@ -1,6 +1,7 @@
 // Ebene: Antrieb (Takt, Audio, ruhig), Farben (auch mehrere Slots) und bei Laser-Visuals Lage, Größe und Stärke.
 import type { ControlContext } from "../core/control";
-import { CHASE_ORDER_LABEL, DRIVE_LABEL } from "../core/controls";
+import { CHASE_ORDER_LABEL, DRIVE_LABEL, PARTICLE_TRIGGER_LABEL } from "../core/controls";
+import { PARTICLE_DEFAULT_COUNT, PARTICLE_LIMITS, PARTICLE_TRIGGERS, defaultParticles, isParticleClip, type ParticleNumKey } from "../core/particles";
 import { CHASE_ORDERS, CHASE_STEPS, chaseAt, chaseList, chaseStep, defaultChase } from "../core/chase";
 import { EFFECT_BY_ID } from "../core/effects";
 import { t } from "../core/i18n";
@@ -30,6 +31,22 @@ const LASER_FIELDS: LaserField[] = [
   { key: "thick", label: t("Linienstärke"), scale: 100, unit: " %", laserOnly: true },
 ];
 
+interface ParticleField { key: ParticleNumKey; label: string; scale: number; unit: string; step?: number; dec?: number; spinOnly?: boolean; sub?: string }
+const PARTICLE_FIELDS: ParticleField[] = [
+  { key: "explode", label: t("Explosion"), scale: 100, unit: " %" },
+  { key: "ret", label: t("Rückkehr"), scale: 1, unit: " Beats", step: 0.25, dec: 2 },
+  { key: "scatter", label: t("Streuung"), scale: 100, unit: " %" },
+  { key: "rpmX", label: t("Drehtempo X"), scale: 1, unit: ` ${t("U/min")}`, step: 0.5, dec: 1, spinOnly: true, sub: t("Drehung je Achse") },
+  { key: "rpm", label: t("Drehtempo Y"), scale: 1, unit: ` ${t("U/min")}`, step: 0.5, dec: 1, spinOnly: true },
+  { key: "rpmZ", label: t("Drehtempo Z"), scale: 1, unit: ` ${t("U/min")}`, step: 0.5, dec: 1, spinOnly: true },
+  { key: "angX", label: t("Winkel X (kippen)"), scale: 1, unit: "°" },
+  { key: "angY", label: t("Winkel Y (drehen)"), scale: 1, unit: "°" },
+  { key: "angZ", label: t("Winkel Z (rollen)"), scale: 1, unit: "°" },
+  { key: "size", label: t("Partikelgröße"), scale: 100, unit: " %" },
+  { key: "length", label: t("Länge (0 = Punkte)"), scale: 100, unit: " %" },
+  { key: "count", label: t("Anzahl"), scale: 1, unit: ` ${t("Tsd.")}`, step: 5 },
+];
+
 const rgbCss = (c: readonly number[]) => `rgb(${c.map(v => Math.round(v * 255)).join(",")})`;
 
 export class LayerPanel {
@@ -37,6 +54,7 @@ export class LayerPanel {
   /** Ebene, für die das Panel gebaut wurde: nach dem Laden eines Projekts sind es neue Objekte. */
   private built: LayerState | null = null;
   private ranges = new Map<NumKey, { input: HTMLInputElement; val: HTMLElement }>();
+  private pRanges = new Map<ParticleNumKey, { input: HTMLInputElement; val: HTMLElement }>();
   /** Clips der Zeile mit Anzeigenamen (setzt die Oberfläche). */
   clipsOf: (layer: number) => { id: string; name: string }[] = () => [];
   /** Beat und Tempo jetzt (für die Anzeige des laufenden Chase-Schritts). */
@@ -55,11 +73,13 @@ export class LayerPanel {
     // eigene Lage (Panel „Grafik“/„Video“). Laser-Regler, wenn ein Laser läuft oder die Zeile Laser enthält.
     const isLz = (id: string | null) => !!id && EFFECT_BY_ID.get(id)?.category === "laser";
     const isLaser = l.clip ? isLz(l.clip) : l.clips.some(isLz);
-    const isGen = !l.clip || EFFECT_BY_ID.get(l.clip)?.kind === "generator";
+    const isGen = !l.clip || EFFECT_BY_ID.get(l.clip)?.kind === "generator" || isParticleClip(l.clip);
     const slots = this.ctx.show.slots.map(rgbCss).join(";");
     const c = l.chase;
-    const sig = `${this.layerOf()}|${l.laser?.override ? 1 : 0}|${l.drive}|${l.colorSource}|${(l.colorSlots ?? []).join(",")}|${isLaser}|${isGen}|${slots}|${c?.on}|${c?.beats}|${c?.order}|${(c?.clips ?? []).join(",")}|${l.clips.join(",")}`;
-    if (force || sig !== this.sig || l !== this.built) { this.sig = sig; this.built = l; this.build(l, isLaser, isGen); }
+    const isPart = l.clip ? isParticleClip(l.clip) : l.clips.some(isParticleClip);
+    const pp = l.particles;
+    const sig = `${isPart}|${pp?.trigger}|${pp?.spin}|${this.layerOf()}|${l.laser?.override ? 1 : 0}|${l.drive}|${l.colorSource}|${(l.colorSlots ?? []).join(",")}|${isLaser}|${isGen}|${slots}|${c?.on}|${c?.beats}|${c?.order}|${(c?.clips ?? []).join(",")}|${l.clips.join(",")}`;
+    if (force || sig !== this.sig || l !== this.built) { this.sig = sig; this.built = l; this.build(l, isLaser, isGen, isPart); }
     this.updateChase(l);
     const z = l.laser ?? defaultLaser();
     for (const f of LASER_FIELDS) {
@@ -68,6 +88,63 @@ export class LayerPanel {
       if (document.activeElement !== r.input) r.input.value = String(Math.round(v * f.scale));
       r.val.textContent = `${Math.round(v * f.scale)}${f.unit}`;
     }
+    const pz = l.particles ?? defaultParticles();
+    for (const f of PARTICLE_FIELDS) {
+      const r = this.pRanges.get(f.key); if (!r) continue;
+      const v = pz[f.key] * f.scale;
+      if (document.activeElement !== r.input) r.input.value = String(v);
+      r.val.textContent = `${f.dec ? Number(v.toFixed(f.dec)) : Math.round(v)}${f.unit}`;
+    }
+  }
+
+  /** Partikel-Objekt: Explosion auf den Beat, Drehung, Stäbchen oder Punkte, Anzahl. */
+  private buildParticles(l: LayerState, n: number): void {
+    const p = (l.particles ??= defaultParticles());
+    this.root.append(el("h4", "lp-sub", t("Partikel-Objekt")));
+    // Auslöser
+    const tr = el("div", "lp-row"); tr.append(el("span", "lp-lab", t("Auslöser")));
+    const seg = el("div", "seg2 lp-seg lp-chase-seg"); seg.setAttribute("role", "radiogroup"); seg.dataset.ctl = `layer.${n + 1}.particles.trigger`;
+    for (const k of PARTICLE_TRIGGERS) {
+      const b = el("button", p.trigger === k ? "on" : "", PARTICLE_TRIGGER_LABEL[k]);
+      b.setAttribute("role", "radio"); b.setAttribute("aria-checked", String(p.trigger === k));
+      b.addEventListener("click", () => { p.trigger = k; this.update(true); });
+      seg.append(b);
+    }
+    tr.append(seg); this.root.append(tr);
+    if (p.trigger === "hold") this.root.append(el("p", "muted small lp-hint", t("Halten: Der Regler „Explosion“ hält die Partikel direkt auseinander, z. B. von einem Fader am Pult. Bei 0 % ist die Form geschlossen.")));
+    if (p.trigger === "bass") this.root.append(el("p", "muted small lp-hint", t("Bass: Je härter der Bass (Audio-Eingang oder LJ-Link), desto weiter fliegen die Partikel. „Explosion“ ist die Stärke, „Rückkehr“ wie schnell sie sich wieder sammeln. Ohne Audio bleibt die Form geschlossen.")));
+    // Drehung an/aus
+    const sr = el("div", "lp-row"); sr.append(el("span", "lp-lab", t("Drehung")));
+    const spin = el("button", `btn small-btn toggle${p.spin ? " on" : ""}`, p.spin ? t("An") : t("Aus"));
+    spin.setAttribute("aria-pressed", String(p.spin)); spin.dataset.ctl = `layer.${n + 1}.particles.spin`;
+    spin.addEventListener("click", () => { p.spin = !p.spin; this.update(true); });
+    sr.append(spin); this.root.append(sr);
+    for (const f of PARTICLE_FIELDS) {
+      if (f.spinOnly && !p.spin) continue;
+      if (f.sub) this.root.append(el("p", "muted small lp-hint", f.sub));
+      const [lo, hi] = PARTICLE_LIMITS[f.key];
+      const row = el("label", "mrow"); row.append(el("span", "", f.label));
+      const input = el("input"); input.type = "range";
+      input.min = String(lo * f.scale); input.max = String(hi * f.scale); input.step = String(f.step ?? 1);
+      input.dataset.ctl = `layer.${n + 1}.particles.${f.key}`;
+      input.setAttribute("aria-label", f.label);
+      input.addEventListener("input", () => { p[f.key] = Number(input.value) / f.scale; this.update(); });
+      const val = el("span", "mval");
+      // Doppelklick: auf 0 (Rückkehr, Größe und Anzahl haben keine 0: auf die Vorgabe) und sofort anzeigen
+      input.addEventListener("dblclick", () => {
+        const v = lo <= 0 && hi >= 0 ? 0 : defaultParticles()[f.key];
+        p[f.key] = v;
+        input.value = String(v * f.scale);
+        val.textContent = `${f.dec ? Number((v * f.scale).toFixed(f.dec)) : Math.round(v * f.scale)}${f.unit}`;
+      });
+      row.append(input, val);
+      this.root.append(row);
+      this.pRanges.set(f.key, { input, val });
+    }
+    const reset = el("button", "btn small-btn", t("Partikel zurücksetzen"));
+    reset.addEventListener("click", () => { l.particles = defaultParticles(); this.update(true); });
+    this.root.append(reset);
+    this.root.append(el("p", "muted small lp-hint gpu-hint", t("Braucht eine starke Grafikkarte. Ziel: 3 Bildschirme mit 60 fps ab Apple M2 (oder vergleichbar) bei bis zu {n} Tsd. Partikeln. Ruckelt es, „Anzahl“ senken oder „Länge“ auf 0 (Punkte). Doppelklick setzt einen Regler auf 0 (Rückkehr, Größe und Anzahl auf die Vorgabe).", { n: PARTICLE_DEFAULT_COUNT })));
   }
 
   /**
@@ -151,10 +228,11 @@ export class LayerPanel {
     if (u.info.textContent !== txt) u.info.textContent = txt;
   }
 
-  private build(l: LayerState, isLaser: boolean, isGen: boolean): void {
+  private build(l: LayerState, isLaser: boolean, isGen: boolean, isPart = false): void {
     const n = this.layerOf();
     this.root.replaceChildren();
     this.ranges.clear();
+    this.pRanges.clear();
     this.root.append(el("h2", "", t("Ebene {n}", { n: n + 1 })));
     // Name der Ebene (erscheint im Clip-Raster)
     const nr = el("div", "lp-row"); nr.append(el("span", "lp-lab", t("Name")));
@@ -208,6 +286,7 @@ export class LayerPanel {
     }
 
     this.buildChase(l, n);
+    if (isPart) this.buildParticles(l, n);
 
     // Lage, Größe, Drehung (jedes Visual); Stärke und XY-Override nur bei Lasern
     if (!isGen) return;
@@ -233,7 +312,12 @@ export class LayerPanel {
       input.dataset.ctl = `layer.${n + 1}.laser.${f.key}`;
       input.setAttribute("aria-label", f.label);
       input.addEventListener("input", () => { l.laser = { ...(l.laser ?? defaultLaser()), [f.key]: Number(input.value) / f.scale }; });
-      input.addEventListener("dblclick", () => { l.laser = { ...(l.laser ?? defaultLaser()), [f.key]: defaultLaser()[f.key] }; });
+      input.addEventListener("dblclick", () => {
+        const v = defaultLaser()[f.key] ?? 0;
+        l.laser = { ...(l.laser ?? defaultLaser()), [f.key]: v };
+        // Sofort anzeigen (der Regler hat nach dem Doppelklick den Fokus, update() lässt ihn sonst in Ruhe)
+        input.value = String(Math.round(v * f.scale)); val.textContent = `${Math.round(v * f.scale)}${f.unit}`;
+      });
       const val = el("span", "mval");
       row.append(input, val);
       this.root.append(row);

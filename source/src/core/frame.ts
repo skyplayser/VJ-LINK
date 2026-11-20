@@ -192,6 +192,9 @@ export interface VjBridge {
   pathForFile(f: File): string;
   /** Video in die Bibliothek kopieren. Gibt ID und Endung oder eine Fehlermeldung zurück. */
   addVideo(path: string, name: string): Promise<{ id: string; ext: string; name: string } | string>;
+  /** 3D-Modell (OBJ/STL) übernehmen: wird im Hauptprozess in eine Punktwolke umgewandelt. */
+  addModel(path: string, name: string): Promise<{ id: string; name: string; colors: boolean } | string>;
+  removeModel(id: string): void;
   removeVideo(id: string): void;
   /** Art-Net-Timecode senden (19-Byte-Paket an IP oder Broadcast). */
   sendArtTimecode(bytes: Uint8Array, host: string): void;

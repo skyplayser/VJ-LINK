@@ -6,8 +6,8 @@ import { decodeImage } from "./medialib";
 import { VideoPool } from "./videopool";
 import { CameraPool } from "./campool";
 import { PersonMasks } from "./segment";
-import { devicePlacement, limitOutputRect, masksFor, renderSize, viewFor, warpFor, type DeviceOutput } from "../core/layout";
-import { layerTimesAt } from "../core/show";
+import { devicePlacement, imageForScreen, limitOutputRect, masksFor, renderSize, viewFor, warpFor, type DeviceOutput } from "../core/layout";
+import { imageList, layerTimesAt, showForImage, MAIN_STACK, type ShowState } from "../core/show";
 import { t } from "../core/i18n";
 
 /** Welcher Bildschirm bin ich? (für den Ausschnitt auf der Leinwand) */
@@ -76,8 +76,22 @@ function whoAmI(f: Frame): { n: number; label: string; at: string } {
   const i = screens.findIndex(s => s.id === displayId);
   const me = screens[i];
   const n = i >= 0 ? i + 1 : Math.max(1, open.indexOf(displayId) + 1);
-  const at = f.layout?.mode === "canvas" && me ? `${t("Leinwand bei {x}, {y}", { x: me.x, y: me.y })}${me.w !== canvas.width || me.h !== canvas.height ? t(" · als {w} × {h}", { w: me.w, h: me.h }) : ""}` : t("Überall dasselbe Bild");
+  const at = f.layout?.mode === "canvas" && me ? `${t("Leinwand bei {x}, {y}", { x: me.x, y: me.y })}${me.w !== canvas.width || me.h !== canvas.height ? t(" · als {w} × {h}", { w: me.w, h: me.h }) : ""}`
+    : f.layout?.mode === "separate" ? t("Zeigt {name}", { name: imageList(f.show).find(im => im.id === myImage(f))?.name ?? t("Bild 1") })
+    : t("Überall dasselbe Bild");
   return { n, label: me?.label ?? t("Ausgang {n}", { n }), at };
+}
+
+/** Modus „Getrennt“: Bild dieses Ausgangs (unbekannte Bilder → Bild 1). */
+function myImage(f: Frame): string {
+  return imageForScreen(f.layout, displayId, imageList(f.show).map(im => im.id));
+}
+
+/** Modus „Getrennt“: das gewählte Bild als Hauptbild rechnen, SHOW-Ablauf nur auf seinem Bild. */
+function showFor(f: Frame, sh: ShowState): ShowState {
+  if (f.layout?.mode !== "separate") return sh;
+  const ids = imageList(sh).map(im => im.id), cue = sh.cueImage && ids.includes(sh.cueImage) ? sh.cueImage : MAIN_STACK;
+  return showForImage(sh, myImage(f), cue);
 }
 
 /** Schriftgröße so, dass der Text in maxW passt (höchstens fs). */
@@ -145,7 +159,7 @@ function drawOverlay(f: Frame, device: DeviceOutput | undefined): void {
     }
   }
   if (device) {
-    const src = f.layout?.mode === "mirror" ? renderSize(f.layout.res, w, h) : { w, h };
+    const src = f.layout?.mode === "mirror" || f.layout?.mode === "separate" ? renderSize(f.layout.res, w, h) : { w, h };
     const { image, region: [x, bottom, rw, rh] } = devicePlacement(device, src.w, src.h, w, h);
     overlay.width = w; overlay.height = h;
     overlay.getContext("2d")!.drawImage(source, x * w, (1 - bottom - rh) * h, rw * w, rh * h, image.x, image.y, image.w, image.h);
@@ -191,7 +205,7 @@ function loop(tick: number): void {
       if (key !== testKey) { testKey = key; overlay.style.display = key ? "block" : "none"; if (key) drawOverlay(f, device); }
       const lt = f.layerClock ? layerTimesAt(f.layerClock, now, f.show.layers) : null;
       engine.outRes = f.layout?.res ?? null;
-      engine.render(f.show, frameBeat(f, now), now, f.bpm, view, lt, warps, "", outputMasks, device, f.layout?.deviceEffects?.[displayId]);
+      engine.render(showFor(f, f.show), frameBeat(f, now), now, f.bpm, view, lt, warps, "", outputMasks, device, f.layout?.deviceEffects?.[displayId]);
     }
     sampleFrames++;
     if (tick - sampleStart >= 1000) {

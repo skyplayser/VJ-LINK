@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' vjasset: 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' data:; media-src vjmedia: blob:; connect-src vjasset:">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' vjasset: 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' data:; media-src vjmedia: blob:; connect-src vjasset: vjmedia:">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>VJ-Link</title>
 <link rel="stylesheet" href="intro/program-intro.css">
@@ -99,7 +99,7 @@
         <div class="canvas-pick" id="canvas-pick" hidden></div>
       </div>
       <div class="h2row grid-head"><h2><span data-i18n>Clip-Raster</span> <span class="grid-canvas" id="grid-canvas" hidden></span> <span class="muted" data-i18n>· Klick auf eine Ebene zeigt ihre Effekte · Grafiken und Videos über „+ Clips“ hinzufügen oder auf eine Zeile ziehen</span></h2><span class="inline"><button class="btn small-btn" id="text-add" title="Text-Clip gestalten und auf die gewählte Ebene legen" data-i18n-title>+ Text</button><button class="btn small-btn" id="layer-add" data-i18n>+ Ebene</button></span></div>
-      <input type="file" id="file-input" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml,video/mp4,video/quicktime,video/webm,.mp4,.mov,.m4v,.webm" multiple hidden>
+      <input type="file" id="file-input" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml,video/mp4,video/quicktime,video/webm,.mp4,.mov,.m4v,.webm,.obj,.stl" multiple hidden>
       <div id="toast" class="toast" role="status" hidden></div>
       <div id="grid" class="clip-grid"></div>
     </div>
@@ -164,6 +164,7 @@
       <div class="seg2 out-mode" id="out-mode" role="radiogroup" aria-label="Anordnung" data-i18n-aria>
         <button data-mode="mirror" role="radio" data-i18n>Überall dasselbe Bild</button>
         <button data-mode="canvas" role="radio" data-i18n>Leinwand: Bildschirme anordnen</button>
+        <button data-mode="separate" role="radio" data-i18n>Getrennt: jeder Ausgang sein Bild</button>
         <button data-mode="mapping" role="radio" data-i18n>Projektionsmapping</button>
       </div>
       <p class="muted small" id="out-mode-hint"></p>

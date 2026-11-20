@@ -3,7 +3,7 @@
 // sofort abrufen kann (Pult, MIDI, Tastatur). Text und Logo legt die Oberfläche an und übergibt die Clip-IDs.
 import type { ControlContext } from "./control";
 import { EFFECTS } from "./effects";
-import { addLayer, applyScene, defaultLayer, type EffectSlot, type LayerState, type Rgb, type Scene, type TransitionStyle } from "./show";
+import { LAYER_COUNT, addLayer, applyScene, defaultLayer, type EffectSlot, type LayerState, type Rgb, type Scene, type TransitionStyle } from "./show";
 import { t } from "./i18n";
 
 export interface StarterMedia {
@@ -110,5 +110,19 @@ export function applyStarter(c: ControlContext, m: StarterMedia): void {
   c.scenes.splice(0, c.scenes.length, ...starterScenes());
   applyScene(s, c.scenes[0]!);
   s.scene = 1;
+  s.autoVj = false;
+}
+
+/**
+ * „Leeres Projekt“: vier Ebenen ohne Clips und Effekte, keine Szenen, nichts läuft. Die Clips holt man sich
+ * aus der GALERIE. Farben, Tempo und Ausgänge bleiben wie bei jedem neuen Projekt.
+ */
+export function applyEmpty(c: ControlContext): void {
+  const s = c.show;
+  s.layers.splice(LAYER_COUNT);
+  while (s.layers.length < LAYER_COUNT && addLayer(s) >= 0) { /* auffüllen */ }
+  s.layers.forEach((l, i) => Object.assign(l, defaultLayer(), { clip: null, clips: [], effects: [], blend: i === 0 ? "normal" : "add", opacity: 1 }));
+  c.scenes.splice(0, c.scenes.length);
+  s.scene = 0;
   s.autoVj = false;
 }

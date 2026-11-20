@@ -127,7 +127,7 @@ export function editDeviceOutput(api: DeviceDialog): void {
     edge.c.checked = tst === "active-edge";
     test.value = tst && tst !== "active-edge" ? tst : "";
     // Vorschau
-    const l = api.layout(), src = l.mode === "mirror" ? renderSize(l.res, w, h) : { w, h };
+    const l = api.layout(), src = l.mode === "mirror" || l.mode === "separate" ? renderSize(l.res, w, h) : { w, h };
     const pl = devicePlacement(cfg, src.w, src.h, w, h);
     const place = (n: HTMLElement, b: PixelRect) => Object.assign(n.style, { left: `${100 * b.x / w}%`, top: `${100 * b.y / h}%`, width: `${100 * b.w / w}%`, height: `${100 * b.h / h}%` });
     place(area, pl.target); place(pic, pl.image);

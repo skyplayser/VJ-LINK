@@ -127,6 +127,7 @@ export class ResPanel {
     }
     const mode = this.layout().mode;
     if (mode === "canvas" && r.mode !== "auto") p.append(el("p", "am-hint warn", t("Bei „Leinwand“ bestimmt die Anordnung der Bildschirme die Auflösung. Diese Einstellung gilt dort nicht.")));
+    if (mode === "separate" && r.mode !== "auto") p.append(el("p", "am-hint", t("Getrennt: Jeder Ausgang rechnet sein Bild in dieser Größe.")));
     if (mode === "mapping" && r.mode !== "auto") p.append(el("p", "am-hint", t("Projektionsmapping: Das Bild wird in dieser Größe gerechnet und dann auf die Leinwände verteilt.")));
   }
 }

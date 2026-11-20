@@ -7,6 +7,7 @@ import { Network } from "./network";
 import { Storage } from "./storage";
 import { LinkClient } from "./link";
 import { ProjectFiles, verifyShowPackage } from "./projectfile";
+import { convertModel } from "./modelimport";
 import { monitorPixels } from "./monitor-pixels";
 import { Updater } from "./updater";
 import { ChatNet } from "./suitechat";
@@ -614,7 +615,7 @@ app.whenReady().then(async () => {
   });
   setLang(await savedLang());
   buildMenu();
-  protocol.handle("vjmedia", req => storage!.serveVideo(req));
+  protocol.handle("vjmedia", req => (new URL(req.url).hostname === "model" ? storage!.serveModel(req) : storage!.serveVideo(req)));
   protocol.handle("vjasset", async req => {
     const root = path.join(__dirname, "..", "renderer", "vendor");
     const rel = decodeURIComponent(new URL(req.url).pathname).replace(/^\/+/, "");
@@ -859,6 +860,15 @@ app.whenReady().then(async () => {
     if (fromControl(e) && b instanceof Uint8Array && b.length === 19 && typeof host === "string") net?.sendArtnet(b, host);
   });
   ipcMain.on("video:remove", (e, id: unknown) => { if (fromControl(e)) void storage!.removeVideo(id); });
+  // 3D-Modell: OBJ/STL lesen, abtasten, als Punktwolke ablegen (alle Fenster laden dann nur noch diese)
+  ipcMain.handle("model:add", async (e, src: unknown, name: unknown) => {
+    if (!fromControl(e)) return "Nicht erlaubt.";
+    const r = await convertModel(src);
+    if (typeof r === "string") return r;
+    const nm = typeof name === "string" && name.trim() ? name.trim() : path.basename(String(src)).replace(/\.[^.]+$/, "");
+    return { ...(await storage!.addModel(r.data, nm)), colors: r.colors };
+  });
+  ipcMain.on("model:remove", (e, id: unknown) => { if (fromControl(e)) void storage!.removeModel(id); });
   ipcMain.handle("chat:get", (e, since: unknown) => (fromControl(e) && chat ? chat.state(typeof since === "number" ? since : 0) : null));
   ipcMain.handle("chat:post", (e, text: unknown, urgent: unknown) => (fromControl(e) && chat ? chat.post(text, urgent) : false));
   // NOTFALL, während das Bedienfenster hinten liegt oder minimiert ist: ohne Ton bemerkbar machen

@@ -459,16 +459,19 @@ body.mapping .cell-x{display:none}
 .out-left h2,.out-right h2{margin-bottom:0}
 .out-mode{display:grid;grid-template-columns:1fr 1fr}
 .out-mode button{padding:9px;font-size:12px}
-.cv-stage{position:relative;height:clamp(240px,46vh,520px);background:repeating-linear-gradient(0deg,transparent 0 19px,rgba(255,255,255,.035) 19px 20px),repeating-linear-gradient(90deg,transparent 0 19px,rgba(255,255,255,.035) 19px 20px),var(--bg);border:1px solid var(--line);border-radius:6px;overflow:hidden;touch-action:none}
+.cv-stage{position:relative;height:clamp(240px,40vh,520px);background:repeating-linear-gradient(0deg,transparent 0 19px,rgba(255,255,255,.035) 19px 20px),repeating-linear-gradient(90deg,transparent 0 19px,rgba(255,255,255,.035) 19px 20px),var(--bg);border:1px solid var(--line);border-radius:6px;overflow:hidden;touch-action:none}
 .cv-stage.off{opacity:.45}
 .cv-rect{position:absolute;border:2px solid var(--text);background:rgba(34,200,240,.12);border-radius:3px;cursor:grab;display:grid;align-content:center;justify-items:center;gap:2px;text-align:center;padding:4px;user-select:none;overflow:hidden}
 .cv-rect b{font-size:12px}.cv-rect small{font:10.5px var(--mono);color:var(--dim)}
 .cv-rect.sel{border-color:var(--accent);background:rgba(255,92,147,.16)}
+.cv-rect select.cv-img{background:var(--raise);border:1px solid var(--accent);border-radius:4px;padding:3px 6px;color:var(--text);font:600 12px system-ui,sans-serif;cursor:pointer;max-width:90%}
+.cv-stage.off .cv-rect,.cv-stage.sep .cv-rect{cursor:default}
 .cv-rect:active{cursor:grabbing}
 .cv-canvas{position:absolute;border:1px dashed var(--warn);pointer-events:none}
 .cv-canvas span{position:absolute;right:4px;bottom:2px;font:10px var(--mono);color:var(--warn)}
 .cv-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .cv-tools label{display:flex;gap:4px;align-items:center;font-size:11.5px;color:var(--dim)}
+.cv-tools select{background:var(--raise);border:1px solid var(--line);border-radius:3px;padding:4px 6px;color:var(--text);font-size:12px}
 .cv-tools input{width:76px;background:var(--raise);border:1px solid var(--line);border-radius:3px;padding:4px 6px;color:var(--text);font:12px var(--mono)}
 #test-quick.on-test{background:var(--warn);border-color:var(--warn);color:#000}
 @media (max-width:1000px){.out-grid{grid-template-columns:1fr}}
@@ -574,7 +577,7 @@ body.mapping .cell-edit,body.modding .cell-edit{display:none}
 .mp-corner.sel{fill:var(--accent)}
 .mp-surf.off{opacity:.4}
 .mp-nm{width:130px;background:var(--raise);border:1px solid var(--line);border-radius:4px;color:var(--text);padding:4px 7px;font:600 12px system-ui,sans-serif}
-.out-mode{display:grid;grid-template-columns:repeat(3,1fr)}
+.out-mode{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
 /* Leinwand-Auswahl (Projektionsmapping) */
 .canvas-pick{display:flex;flex-direction:column;gap:5px;min-width:190px;max-width:260px;overflow:auto}
 .canvas-pick[hidden]{display:none}
@@ -1008,6 +1011,9 @@ input[type=range].modded{accent-color:color-mix(in srgb,var(--accent) calc(35% +
 
 .lrow.clip-drop .lname,.lrow.clip-drop .cell.add{border-color:var(--accent)}
 .clip-move .report-box{width:min(420px,100%)}
+.new-proj .report-box{width:min(460px,100%)}
+.new-proj-opts{display:grid;gap:8px}
+.new-proj-opts .start-btn small{color:var(--dim);font-size:12px;line-height:1.35;white-space:normal;overflow:visible;text-overflow:clip}
 
 .phone-pairing{display:flex;align-items:center;flex-wrap:wrap;gap:16px;margin:4px 0}
 .phone-pairing[hidden]{display:none}

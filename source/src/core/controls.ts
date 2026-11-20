@@ -7,10 +7,29 @@ import { BLEND_MODES, COLOR_SOURCES, DRIVES, LASER_LIMITS, MAIN_STACK, MAX_IMAGE
 import { EFFECT_BY_ID } from "./effects";
 import { CHASE_ORDERS, CHASE_STEPS, defaultChase, type ChaseOrder } from "./chase";
 import { t } from "./i18n";
+import { PARTICLE_LIMITS, PARTICLE_TRIGGERS, defaultParticles, type ParticleNumKey, type ParticleSettings, type ParticleTrigger } from "./particles";
 
 export const DRIVE_LABEL: Record<"auto" | "bpm" | "audio" | "static", string> = { auto: "Auto", bpm: t("Takt"), audio: "Audio", static: t("Statisch") };
 export const CHASE_ORDER_LABEL: Record<ChaseOrder, string> = { forward: t("Vorwärts"), pingpong: t("Hin und her"), random: t("Zufall") };
 const LASER_LABEL: Record<"y" | "x" | "size" | "thick" | "rot", string> = { y: t("Y (Höhe)"), x: t("X (Seite)"), size: t("Größe"), thick: t("Linienstärke"), rot: t("Drehung") };
+/** Regler des Partikel-Objekts (Pult, MIDI, OSC). */
+export const PARTICLE_FADER_LABEL: Record<ParticleNumKey, string> = {
+  explode: t("Partikel-Explosion"), ret: t("Partikel-Rückkehr"), scatter: t("Partikel-Streuung"),
+  rpmX: t("Partikel-Drehtempo X"), rpm: t("Partikel-Drehtempo Y"), rpmZ: t("Partikel-Drehtempo Z"),
+  angX: t("Partikel-Winkel X"), angY: t("Partikel-Winkel Y"), angZ: t("Partikel-Winkel Z"),
+  size: t("Partikelgröße"), length: t("Partikel-Länge"), count: t("Partikel-Anzahl"),
+};
+/** Wert eines Partikel-Reglers mit Einheit (für Modulation und Anzeigen). */
+export function particleFormat(k: ParticleNumKey, v: number): string {
+  if (k === "explode" || k === "scatter" || k === "size" || k === "length") return `${Math.round(v * 100)} %`;
+  if (k === "ret") return `${Number(v.toFixed(2))} Beats`;
+  if (k === "count") return `${Math.round(v)} ${t("Tsd.")}`;
+  if (k.startsWith("ang")) return `${Math.round(v)}°`;
+  return `${Number(v.toFixed(1))} ${t("U/min")}`;
+}
+export const PARTICLE_TRIGGER_LABEL: Record<ParticleTrigger, string> = {
+  beat: t("Jeder Beat"), bar: t("Takt 1"), "2bars": t("Alle 2 Takte"), "4bars": t("Alle 4 Takte"), bass: t("Bass (Audio)"), hold: t("Halten (Regler)"),
+};
 
 /** So viele Szenen sind per MIDI, OSC und Registry direkt abrufbar. */
 export const SCENE_SLOTS = 32;
@@ -154,6 +173,23 @@ export function buildControls(): ControlDef[] {
       { id: `layer.${i + 1}.chase.gate`, label: t("E{n} Chase sichtbar", { n: i + 1 }), group: "Ebenen", kind: "fader", quick: false,
         get: c => clamp01(((c.show.layers[i]?.chase?.gate ?? 1) - 0.05) / 0.95),
         set: (c, v) => { const x = ch(c); if (x) x.gate = 0.05 + clamp01(v) * 0.95; } },
+    );
+    // Partikel-Objekt: Explosion, Drehung, Stäbchen (wirken, sobald die Ebene ein Partikel-Objekt zeigt)
+    const pt = (c: ControlContext): ParticleSettings | null => { const l = c.show.layers[i]; return l ? (l.particles ??= defaultParticles()) : null; };
+    const pget = (c: ControlContext) => c.show.layers[i]?.particles ?? defaultParticles();
+    list.push(
+      ...(Object.keys(PARTICLE_FADER_LABEL) as ParticleNumKey[]).map(k => ({
+        id: `layer.${i + 1}.particles.${k}`, label: `${t("E{n}", { n: i + 1 })} ${PARTICLE_FADER_LABEL[k]}`, group: "Ebenen" as const, kind: "fader" as const, quick: false,
+        format: (c: ControlContext) => particleFormat(k, pget(c)[k]),
+        get: (c: ControlContext) => { const [lo, hi] = PARTICLE_LIMITS[k]; return clamp01((pget(c)[k] - lo) / (hi - lo)); },
+        set: (c: ControlContext, v: number) => { const x = pt(c); if (!x) return; const [lo, hi] = PARTICLE_LIMITS[k]; x[k] = lo + clamp01(v) * (hi - lo); },
+      })),
+      { id: `layer.${i + 1}.particles.trigger`, label: t("E{n} Partikel-Auslöser", { n: i + 1 }), group: "Ebenen", kind: "fader", quick: false,
+        get: c => Math.max(0, PARTICLE_TRIGGERS.indexOf(pget(c).trigger)) / (PARTICLE_TRIGGERS.length - 1),
+        set: (c, v) => { const x = pt(c); if (x) x.trigger = PARTICLE_TRIGGERS[stepIndex(v, PARTICLE_TRIGGERS.length)]!; },
+        format: c => PARTICLE_TRIGGER_LABEL[pget(c).trigger] },
+      { id: `layer.${i + 1}.particles.spin`, label: t("E{n} Partikel-Drehung an", { n: i + 1 }), group: "Ebenen", kind: "toggle", quick: false,
+        get: c => (pget(c).spin ? 1 : 0), set: (c, v) => { const x = pt(c); if (x) x.spin = on(v); } },
     );
   }
   // Farbslots per Drehregler: Farbton bei voller Sättigung

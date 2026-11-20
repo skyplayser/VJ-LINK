@@ -33,11 +33,11 @@ export function hashText(s: string): string {
 /** Name des Medienordners neben der Projektdatei. */
 export const mediaFolderName = (fileBase: string): string => `${fileBase} Medien`;
 
-/** Welche Grafiken und Videos das Projekt braucht. */
-export function projectRefs(projectJson: string): { mediaIds: string[]; videos: VideoRef[] } {
+/** Welche Grafiken, Videos und 3D-Modelle das Projekt braucht. Modelle liegen als Punktwolke („<id>.vjpc“) im Medienordner. */
+export function projectRefs(projectJson: string): { mediaIds: string[]; videos: VideoRef[]; models: { id: string; name: string }[] } {
   const p = parseProject(projectJson);
-  if (!p) return { mediaIds: [], videos: [] };
-  return { mediaIds: p.media.map(m => m.id), videos: p.videos.map(v => ({ id: v.id, name: v.name, ext: v.ext })) };
+  if (!p) return { mediaIds: [], videos: [], models: [] };
+  return { mediaIds: p.media.map(m => m.id), videos: p.videos.map(v => ({ id: v.id, name: v.name, ext: v.ext })), models: (p.models ?? []).map(m => ({ id: m.id, name: m.name })) };
 }
 
 /** Projektdatei zusammenstellen. */

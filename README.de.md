@@ -6,7 +6,7 @@
 
 <p align="center">
   Live-Visuals, gesteuert von deinem Lichtpult.<br>
-  150 Visuals, 50 Effekte, Szenen und Ausgänge – im Takt der Musik.
+  155 Visuals, 50 Effekte, Szenen und Ausgänge – im Takt der Musik.
 </p>
 
 <p align="center">
@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <img alt="Stand: Beta 0.1.11" src="https://img.shields.io/badge/Stand-Beta%200.1.11-FF5C93">
+  <img alt="Stand: Beta 0.1.12" src="https://img.shields.io/badge/Stand-Beta%200.1.12-FF5C93">
   <img alt="macOS und Windows, kostenlos" src="https://img.shields.io/badge/macOS%20%7C%20Windows-kostenlos-3DDC84">
   <img alt="Lizenz: EPL-2.0" src="https://img.shields.io/badge/Lizenz-EPL--2.0-60a5fa">
   <a href="https://github.com/skyplayser/VJ-LINK/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/skyplayser/VJ-LINK/total?label=Downloads&color=a78bfa"></a>
@@ -38,13 +38,13 @@ und danach höchstens einmal pro Stunde bei GitHub nach der neuesten Version; ab
 Fehlermeldung, wenn du eine schickst.
 
 > [!WARNING]
-> **Das ist die Beta 0.1.11.** Nach einem kompletten Testtag (Fehler, Arbeitsabläufe, Oberfläche und Sicherheitstest) ist sie
+> **Das ist die Beta 0.1.12.** Nach einem kompletten Testtag (Fehler, Arbeitsabläufe, Oberfläche und Sicherheitstest) ist sie
 > deutlich robuster als die erste Alpha, aber große Teile haben noch keine echte Bühnentechnik gesehen. Probier sie bitte vor
 > einer wichtigen Show aus, und sag uns, was dir auffällt: **Hilfe → Fehler melden** im Programm.
 
 ## Was du bekommst
 
-- **150 Visuals in 15 Kategorien:** Minimal und Monochrom, 3D und Raum, Fraktale, Demoscene, Heilige Geometrie, Daten und
+- **155 Visuals in 15 Kategorien:** Minimal und Monochrom, 3D und Raum, Fraktale, Demoscene, Heilige Geometrie, Daten und
   Glitch, Op-Art, Organisch und Flüssig, Audio und Equalizer, Partikel, Retro und Synthwave, Geometrie und Tunnel, Licht und
   Raum sowie 16 Laser-Looks für einen Beamer im Nebel. Für VJ-Link geschrieben, alle reagieren auf Beat oder Audio. Einige kleine
   Bausteine folgen veröffentlichten Code-Beispielen unter MIT-Lizenz – siehe „Shader credits“ in
@@ -74,11 +74,11 @@ Fehlermeldung, wenn du eine schickst.
 - **Medien und Text:** Logos und Bilder mit automatischem Freistellen, Videos mit einem Loop im Takt und Text-Clips mit Schrift,
   Leuchten, Kontur und Kasten.
 - **Aus LJ-Link:** Tempo, Beat-Phase, Phrasen und Trackwechsel, eine *Now-Playing*-Bauchbinde und die DJ-Waveform als Clips.
+- **Neu in 0.1.12:** das **Partikel-Objekt**: 3D-Körper aus Tausenden Stäbchen, die auf den Beat oder den Bass explodieren und zurückschnellen, Drehung je Achse, fünf eingebaute Körper und eigene **OBJ/STL**-Modelle ([Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-particles.html), braucht eine starke Grafikkarte); die Anordnung **Getrennt**, bei der jeder Ausgang sein eigenes Bild zeigt, z. B. zwei gleiche Bildschirme mit verschiedenen Visuals ([Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-outputs.html#each-output-its-own-picture)); **Modulation mit Bereich** von–bis ([Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-modulation.html#range)); und *Neues Projekt* **mit Start-Aufbau oder leer**.
 - **Neu in 0.1.10:** **NDI®-Ausgang** (bis zu vier Quellen mit eigenem Namen, freier Größe und Bildrate; [Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-ndi.html)),
   **Bildfläche, Gerät und Ausgabeprofile** je Ausgang, z. B. eine LED-Wand, die nur 280 × 112 Pixel eines 1280 × 1024-Controllersignals nutzt,
   Strobe und Blinder je Gerät ([Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-output-area.html)), eine **Handy-Fernsteuerung** im lokalen WLAN mit QR-Kopplung
   ([Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-phone-remote.html)), ein **Showpaket für USB** und Clips im Raster verschieben. *Community-Funktion! Danke an Fabi!*
-- **Behoben in 0.1.11:** Die Vorschaubilder in der Galerie und im Clip-Raster sind wieder zügig (in 0.1.10 waren sie langsam geworden).
 - **Startanimation und Link-Suite (neu in 0.1.9):** die kurze Animation, die alle Programme der [Link-Suite](https://skyplayser.github.io/Link-Suite/) teilen, höchstens 2,5 s, jede Taste überspringt sie. Fehlt der Launcher, zeigt der Startbildschirm eine kleine Karte *Link-Suite laden*. [Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-projects.html#start-animation)
 - **Suite-Chat (Alpha, neu in 0.1.8):** ein Chatraum mit LJ Link und [LJL Link](https://github.com/skyplayser/LJL-Link) (den DJs) im selben Netzwerk, ohne Server. Ein
   **EMERGENCY**-Knopf zeigt bei allen anderen sofort ein Popup mit gelb blinkendem Rand. Nur im Bedienfenster, nie auf den
@@ -92,7 +92,7 @@ Fehlermeldung, wenn du eine schickst.
 <table>
   <tr>
     <td width="50%"><img src="docs/images/de/show.png" alt="SHOW-Tab mit Ablauf und Timeline"><br><sub><b>SHOW.</b> Ablauf mit WEITER und einer Timeline für Szenen und Effekte.</sub></td>
-    <td width="50%"><img src="docs/images/de/gallery.png" alt="Galerie mit allen 150 Visuals"><br><sub><b>Galerie.</b> 150 Visuals und 50 Effekte mit Live-Vorschau.</sub></td>
+    <td width="50%"><img src="docs/images/de/gallery.png" alt="Galerie mit allen 155 Visuals"><br><sub><b>Galerie.</b> 155 Visuals und 50 Effekte mit Live-Vorschau.</sub></td>
   </tr>
   <tr>
     <td><img src="docs/images/de/mapping.png" alt="MIDI-Mapping"><br><sub><b>Mapping.</b> Element anklicken, Fader am Controller bewegen.</sub></td>

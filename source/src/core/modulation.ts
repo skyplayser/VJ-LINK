@@ -26,9 +26,21 @@ export interface Modulation {
   /** Stärke 0–1: bei 1 schwingt der Wert ±0,5 um den Grundwert. */
   depth: number;
   on: boolean;
+  /**
+   * Bewegungsrahmen (0–1 des Reglerwegs): Der Wert läuft zwischen „von“ und „bis“, egal wo der Regler steht.
+   * Fehlt = schwingt mit „Stärke“ um den Grundwert.
+   */
+  range?: { lo: number; hi: number };
 }
 
-export const newModulation = (target: string): Modulation => ({ target, source: "sine", beats: 4, depth: 0.5, on: true });
+/** Neue Modulation: sanft, in einem Rahmen von ±10 % um die jetzige Reglerstellung. */
+export const newModulation = (target: string, base?: number): Modulation =>
+  base === undefined
+    ? { target, source: "sine", beats: 4, depth: 0.5, on: true }
+    : { target, source: "sine", beats: 4, depth: 0.5, on: true, range: { lo: clamp01(base - 0.1), hi: clamp01(base + 0.1) } };
+
+/** Läuft die Modulation (an und mit Ausschlag)? */
+export const modActive = (m: Modulation): boolean => m.on && (m.range ? Math.abs(m.range.hi - m.range.lo) > 0.001 : m.depth > 0.001);
 
 /** Welche Regler sich modulieren lassen: Fader, die nur das Bild betreffen (kein Tempo, keine Stufen-Auswahl). */
 export function modulatable(id: string): boolean {
@@ -82,14 +94,18 @@ export const audioModValue = (base: number, depth: number, signal: number): numb
 
 /** Wert einer Modulation für einen Grundwert. */
 export const modulate = (m: Modulation, base: number, beat: number, bands: readonly number[]): number =>
-  MOD_LFO.has(m.source) ? modValue(base, m.depth, modSignal(m, beat, bands)) : audioModValue(base, m.depth, modSignal(m, beat, bands));
+  m.range ? rangeValue(m.range, modSignal(m, beat, bands))
+    : MOD_LFO.has(m.source) ? modValue(base, m.depth, modSignal(m, beat, bands)) : audioModValue(base, m.depth, modSignal(m, beat, bands));
+
+/** Wert im Bewegungsrahmen: Signal 0 = „von“, 1 = „bis“ (bei Audio: Stille = „von“). */
+export const rangeValue = (r: { lo: number; hi: number }, signal: number): number => clamp01(r.lo + (r.hi - r.lo) * clamp01(signal));
 
 /**
  * Bild-Zustand mit allen Modulationen. Ohne aktive Modulation kommt der Original-Zustand zurück (keine Kopie).
  * Der Grundwert jedes Reglers bleibt in c.show unverändert.
  */
 export function modulatedShow(c: ControlContext, mods: readonly Modulation[], beat: number, bands: readonly number[]): ShowState {
-  const active = mods.filter(m => m.on && m.depth > 0.001 && modulatable(m.target));
+  const active = mods.filter(m => modActive(m) && modulatable(m.target));
   if (!active.length) return c.show;
   const show = structuredClone(c.show);
   const view: ControlContext = { ...c, show };
@@ -99,6 +115,9 @@ export function modulatedShow(c: ControlContext, mods: readonly Modulation[], be
   }
   return show;
 }
+
+const isRange = (v: unknown): v is { lo: number; hi: number } =>
+  typeof v === "object" && v !== null && Number.isFinite((v as { lo: unknown }).lo) && Number.isFinite((v as { hi: unknown }).hi);
 
 /** Modulationen aus einer Datei prüfen. */
 export function parseMods(v: unknown): Modulation[] {
@@ -114,6 +133,7 @@ export function parseMods(v: unknown): Modulation[] {
       beats: MOD_BEATS.includes(m.beats as typeof MOD_BEATS[number]) ? m.beats as number : 4,
       depth: typeof m.depth === "number" && Number.isFinite(m.depth) ? clamp01(m.depth) : 0.5,
       on: m.on !== false,
+      ...(isRange(m.range) ? { range: { lo: clamp01(m.range.lo), hi: clamp01(m.range.hi) } } : {}),
     });
     if (out.length >= MAX_MODS) break;
   }

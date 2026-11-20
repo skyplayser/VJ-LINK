@@ -1,6 +1,7 @@
-// AUSGABE → Anordnung: Gleiches Bild auf allen Bildschirmen oder eine Leinwand, auf der die Bildschirme
-// liegen (ziehen, einrasten, Werte eintippen). Jeder Ausgang zeigt dann seinen Ausschnitt.
-import { arrange, canvasBounds, snapRect, syncScreens, type OutputLayout, type ScreenRect } from "../core/layout";
+// AUSGABE → Anordnung: Gleiches Bild auf allen Bildschirmen, eine Leinwand, auf der die Bildschirme
+// liegen (ziehen, einrasten, Werte eintippen; jeder Ausgang zeigt seinen Ausschnitt), oder „Getrennt“:
+// jeder Ausgang zeigt ein eigenes Bild (Bild 1–5).
+import { arrange, canvasBounds, imageForScreen, snapRect, syncScreens, type OutputLayout, type ScreenRect } from "../core/layout";
 import { displayPixels, type DisplayInfo } from "../core/frame";
 import { MappingEditor } from "./mappingeditor";
 import { t } from "../core/i18n";
@@ -18,7 +19,7 @@ export class OutputTab {
   constructor(private get: () => OutputLayout, private set: (l: OutputLayout) => void,
     private displays: () => DisplayInfo[], private onChange: () => void,
     testGrid: { on: () => boolean; toggle: () => void } = { on: () => false, toggle: () => {} },
-    images?: () => { id: string; name: string }[], photos?: () => Record<string, { url: string; opacity: number }>) {
+    private images?: () => { id: string; name: string }[], photos?: () => Record<string, { url: string; opacity: number }>) {
     this.mapping = new MappingEditor(get, set, onChange, testGrid, images, photos);
     document.querySelectorAll<HTMLButtonElement>("#out-mode [data-mode]").forEach(b => b.addEventListener("click", () => {
       this.set({ ...this.get(), mode: b.dataset.mode as OutputLayout["mode"] });
@@ -48,14 +49,22 @@ export class OutputTab {
       return;
     }
     const b = canvasBounds(onCanvas);
+    const separate = l.mode === "separate";
+    const imgs = this.images?.() ?? [{ id: "main", name: t("Bild 1") }];
+    const imgOf = (id: number) => imageForScreen(l, id, imgs.map(im => im.id));
     document.getElementById("out-mode-hint")!.textContent = l.mode === "mirror"
       ? t("Jeder Ausgang zeigt das ganze Bild in seiner eigenen Auflösung.")
+      : separate
+        ? onCanvas.length
+          ? t("Jeder Ausgang zeigt sein eigenes Bild ganz, in seiner eigenen Auflösung. Welches, wählst du im Kasten des Ausgangs.")
+          : t("Öffne links mindestens einen Bildschirm als Ausgang, dann erscheint er hier.")
       : onCanvas.length
         ? t("Leinwand {w} × {h} Pixel. Jeder Ausgang zeigt seinen Teil, Visuals und Videos laufen nahtlos über alle Bildschirme. Zum Anordnen ziehen, die Kanten rasten ein.", { w: b.w, h: b.h })
         : t("Öffne links mindestens einen Bildschirm als Ausgang, dann erscheint er hier.");
 
     const stage = document.getElementById("cv-stage")!;
-    stage.classList.toggle("off", l.mode !== "canvas");
+    stage.classList.toggle("off", l.mode !== "canvas" && !separate);
+    stage.classList.toggle("sep", separate);
     stage.replaceChildren();
     const tools = document.getElementById("cv-tools")!;
     tools.replaceChildren();
@@ -68,13 +77,24 @@ export class OutputTab {
     const ox = (sw - b.w * scale) / 2 - b.x * scale, oy = (sh - b.h * scale) / 2 - b.y * scale;
     const frame = el("div", "cv-canvas");
     Object.assign(frame.style, { left: `${ox + b.x * scale}px`, top: `${oy + b.y * scale}px`, width: `${b.w * scale}px`, height: `${b.h * scale}px` });
-    frame.append(el("span", "", t("Leinwand {w} × {h}", { w: b.w, h: b.h })));
-    stage.append(frame);
+    if (!separate) { frame.append(el("span", "", t("Leinwand {w} × {h}", { w: b.w, h: b.h }))); stage.append(frame); }
 
     onCanvas.forEach((s, i) => {
       const r = el("div", `cv-rect${this.sel === s.id ? " sel" : ""}`);
       Object.assign(r.style, { left: `${ox + s.x * scale}px`, top: `${oy + s.y * scale}px`, width: `${s.w * scale}px`, height: `${s.h * scale}px` });
-      r.append(el("b", "", `${i + 1} · ${s.label}`), el("small", "", t("{w} × {h} · bei {x}, {y}", { w: s.w, h: s.h, x: s.x, y: s.y })));
+      r.append(el("b", "", `${i + 1} · ${s.label}`));
+      if (separate) {
+        // Bild direkt im Kasten des Ausgangs wählen
+        const sel = el("select", "cv-img"); sel.setAttribute("aria-label", t("Bild für {name}", { name: s.label }));
+        for (const im of imgs) sel.append(new Option(im.name, im.id));
+        sel.value = imgOf(s.id);
+        sel.addEventListener("change", () => {
+          const cur = this.get();
+          this.set({ ...cur, screenImages: { ...cur.screenImages, [s.id]: sel.value } });
+          this.render(); this.onChange();
+        });
+        r.append(sel);
+      } else r.append(el("small", "", t("{w} × {h} · bei {x}, {y}", { w: s.w, h: s.h, x: s.x, y: s.y })));
       r.setAttribute("role", "button"); r.tabIndex = 0;
       r.setAttribute("aria-label", t("{label}, {w} mal {h}, Position {x}, {y}", { label: s.label, w: s.w, h: s.h, x: s.x, y: s.y }));
       r.addEventListener("pointerdown", e => {
@@ -107,6 +127,7 @@ export class OutputTab {
       stage.append(r);
     });
 
+    if (separate) { tools.append(el("span", "muted small", t("Bilder anlegen und bearbeiten: in VISUALS über die Bild-Kacheln oben links."))); return; }
     if (l.mode !== "canvas") return;
     const auto = (dir: "row" | "column", label: string) => {
       const btn = el("button", "btn small-btn", label);

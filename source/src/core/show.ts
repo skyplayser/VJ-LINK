@@ -1,4 +1,5 @@
 // Zustand der Show: wird vom Pult, von OSC, von LJ-Link und von der Oberfläche verändert.
+import type { ParticleSettings } from "./particles";
 import { defaultCam, type CamSettings, type CameraSource } from "./camera";
 import { STARTER_CLIP_IDS } from "./effects";
 import { defaultVideo, type CueRender, type PlayStart, type VideoSettings } from "./video";
@@ -74,6 +75,8 @@ export interface LayerState {
   videoStart: PlayStart;
   /** Chase: im Takt durch die Clips der Zeile schalten (fehlt = aus). */
   chase?: ChaseSettings;
+  /** Partikel-Objekt: Explosion, Drehung, Stäbchen (fehlt = Vorgabe). */
+  particles?: ParticleSettings;
 }
 
 export type MediaAnim = "none" | "pulse" | "spin" | "bounce" | "float" | "wobble" | "zoom";
@@ -274,7 +277,8 @@ export const defaultLayer = (): LayerState => ({
 export const cloneLayer = (l: LayerState): LayerState =>
   ({ ...l, clips: [...l.clips], effects: l.effects.map(e => ({ ...e })), media: { ...l.media }, video: { ...l.video }, cam: { ...l.cam }, videoStart: { ...l.videoStart },
     colorSlots: [...(l.colorSlots ?? [0, 1])], laser: { ...(l.laser ?? defaultLaser()) },
-    chase: l.chase ? { ...l.chase, clips: [...l.chase.clips] } : defaultChase() });
+    chase: l.chase ? { ...l.chase, clips: [...l.chase.clips] } : defaultChase(),
+    ...(l.particles ? { particles: { ...l.particles } } : {}) });
 
 /** Palette einer Ebene: die gewählten Slots (bei „multi“), sonst leer. */
 export function layerPalette(l: Pick<LayerState, "colorSource" | "colorSlots">, slots: readonly Rgb[]): Rgb[] {
@@ -432,6 +436,7 @@ function applyStack(layers: LayerState[], patches: readonly (Partial<LayerState>
     if (patch.laser) layer.laser = { ...patch.laser };
     if (patch.colorSlots) layer.colorSlots = [...patch.colorSlots];
     if (patch.chase) layer.chase = { ...patch.chase, clips: [...patch.chase.clips] };
+    if (patch.particles) layer.particles = { ...patch.particles };
   });
 }
 
@@ -573,6 +578,20 @@ export function addImage(s: ShowState): string | null {
   st[id] = cloneLayers(mainLayers(s));
   s.images = [...list, { id, name: t("Bild {n}", { n: list.length + 1 }) }];
   return id;
+}
+
+/**
+ * Zustand, in dem ein Bild als Hauptbild gerechnet wird (Vorschau eines Bildes, Ausgang im Modus „Getrennt“).
+ * Der SHOW-Ablauf (Cues) erscheint nur auf dem Bild `cueImage`.
+ */
+export function showForImage(sh: ShowState, id: string, cueImage: string): ShowState {
+  const cues = cueImage === id ? sh.cues : [];
+  const stackGain = { [MAIN_STACK]: sh.stackGain?.[id] ?? 1 };
+  if (id === MAIN_STACK) return { ...sh, cues, stackGain, layers: sh.stacks?.[MAIN_STACK] ?? sh.layers };
+  const layers = sh.stacks?.[id];
+  if (!layers) return sh;
+  return { ...sh, cues, stackGain, layers, stacks: { ...sh.stacks, [MAIN_STACK]: layers },
+    transition: sh.transition ? { ...sh.transition, from: sh.transition.fromStacks?.[id] ?? sh.transition.from } : null };
 }
 
 /** Bild entfernen (Bild 1 bleibt immer). */

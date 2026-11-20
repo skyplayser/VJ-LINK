@@ -47,9 +47,10 @@ export function remapLayout(layout: OutputLayout, map: ReadonlyMap<number, numbe
     ...layout.stage,
     outputs: layout.stage.outputs.flatMap(o => { const display = to(o.display); return display === undefined ? [] : [{ ...o, display }]; }),
   };
-  const devices = keyed(layout.devices), deviceEffects = keyed(layout.deviceEffects);
+  const devices = keyed(layout.devices), deviceEffects = keyed(layout.deviceEffects), screenImages = keyed(layout.screenImages);
   const out: OutputLayout = { ...layout, screens, surfaces, masks, stage };
   if (devices) out.devices = devices; else delete out.devices;
+  if (screenImages) out.screenImages = screenImages; else delete out.screenImages;
   if (deviceEffects) out.deviceEffects = deviceEffects; else delete out.deviceEffects;
   return out;
 }
