@@ -8,7 +8,8 @@ export class ThumbView {
   private next = 0;
   private bounds = "";
 
-  constructor(private grid: HTMLElement, private layout: () => { cells: HTMLButtonElement[][]; clips: string[][] }, private ctx: ControlContext) {
+  constructor(private grid: HTMLElement, private layout: () => { cells: HTMLButtonElement[][]; clips: string[][] }, private ctx: ControlContext,
+    /** Ausgänge laufen: Vorschau sparsamer zeichnen, damit die Ausgänge Vorrang haben. */ private live: () => boolean = () => false) {
     this.canvas.className = "thumbs";
     this.canvas.setAttribute("aria-hidden", "true");
     grid.prepend(this.canvas);
@@ -20,7 +21,7 @@ export class ThumbView {
 
   draw(nowMs: number): void {
     if (!this.engine || nowMs < this.next || !this.grid.offsetParent) return;
-    this.next = nowMs + 75;
+    this.next = nowMs + (this.live() ? 75 : 33);
     const { clientWidth: w, clientHeight: h, scrollLeft: x, scrollTop: y } = this.grid;
     if (!w || !h) return;
     const dpr = Math.min(window.devicePixelRatio || 1, 1.5);

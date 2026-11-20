@@ -32,7 +32,7 @@ import { presetRgb, remotePairingUrl, type RemoteCommand, type RemoteEffect, typ
 import { editDeviceOutput } from "./deviceoutput";
 import { OutputTab } from "./outputtab";
 import { ResPanel } from "./respanel";
-import { canvasBounds, defaultLayout, resAspect, type DeviceOutput, type OutputLayout, type OutputRes } from "../core/layout";
+import { canvasBounds, defaultLayout, resAspect, type DeviceEffects, type DeviceOutput, type OutputLayout, type OutputRes } from "../core/layout";
 import { TimecodeClock, MtcDecoder, formatFrames, parseTc, tcToFrames } from "../core/timecode";
 import { TcPanel, defaultTcSettings, type TcSettings } from "./tcpanel";
 import { cueRenders, cueTick, isVideoClip, newCueState, videoClip, videoIdOf, type CueEnv } from "../core/video";
@@ -1828,11 +1828,12 @@ const scenePanel = new ScenePanel(ctx, $("scenes"), $<HTMLButtonElement>("scene-
 scenePanel.progress = () => { const n = Date.now(); return transitionProgress(ctx.show.transition, ctx.tempo.beatAt(n), n); };
 rebuildGrid(); buildSidebar(); bindSettings();
 fxPanel.select(0);
-const thumbs = new ThumbView($("grid"), () => ({ cells: clipCells, clips: rowClips }), ctx);
+const thumbs = new ThumbView($("grid"), () => ({ cells: clipCells, clips: rowClips }), ctx, () => displays.some(d => d.open));
 // GALERIE: Visuals, Effekte und Medien verwalten
 const gallery = new Gallery({
   ctx, images: library, videos: videoLib, importFiles: f => importToLibrary(f), toast,
   changed: () => rebuildGrid(), currentLayer: () => fxPanel.layer, selectLayer: l => fxPanel.select(l),
+  live: () => displays.some(d => d.open),
 }, $("gallery"));
 if (engine) library.attach(engine);
 if (thumbs.gl) {
@@ -2317,6 +2318,7 @@ requestAnimationFrame(frame);
   // Test: Auflösung des Ausgabebilds setzen (tests/e2e)
   setRes: (r: OutputRes) => { outLayout.res = { ...r }; fitPreview(); resPanel.sync(); },
   // Test: Bildfläche eines Ausgangs setzen (tests/e2e, null = ganze Fläche)
+  setDeviceEffects: (id: number, fx: DeviceEffects | null) => { const all = { ...outLayout.deviceEffects }; if (fx) all[id] = fx; else delete all[id]; outLayout = { ...outLayout, deviceEffects: Object.keys(all).length ? all : undefined }; },
   setDevice: (id: number, d: DeviceOutput | null) => { const devices = { ...outLayout.devices }; if (d) devices[id] = d; else delete devices[id]; outLayout = { ...outLayout, devices: Object.keys(devices).length ? devices : undefined }; },
   demoOutputs: (d: DisplayInfo[], layout?: OutputLayout) => { displays = d; demoDisplays = true; if (layout) outLayout = layout; renderDisplays(); outputTab.render(); fitPreview(); },
 };

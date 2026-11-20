@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <img alt="Stand: Beta 0.1.10" src="https://img.shields.io/badge/Stand-Beta%200.1.10-FF5C93">
+  <img alt="Stand: Beta 0.1.11" src="https://img.shields.io/badge/Stand-Beta%200.1.11-FF5C93">
   <img alt="macOS und Windows, kostenlos" src="https://img.shields.io/badge/macOS%20%7C%20Windows-kostenlos-3DDC84">
   <img alt="Lizenz: EPL-2.0" src="https://img.shields.io/badge/Lizenz-EPL--2.0-60a5fa">
   <a href="https://github.com/skyplayser/VJ-LINK/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/skyplayser/VJ-LINK/total?label=Downloads&color=a78bfa"></a>
@@ -38,7 +38,7 @@ und danach höchstens einmal pro Stunde bei GitHub nach der neuesten Version; ab
 Fehlermeldung, wenn du eine schickst.
 
 > [!WARNING]
-> **Das ist die Beta 0.1.10.** Nach einem kompletten Testtag (Fehler, Arbeitsabläufe, Oberfläche und Sicherheitstest) ist sie
+> **Das ist die Beta 0.1.11.** Nach einem kompletten Testtag (Fehler, Arbeitsabläufe, Oberfläche und Sicherheitstest) ist sie
 > deutlich robuster als die erste Alpha, aber große Teile haben noch keine echte Bühnentechnik gesehen. Probier sie bitte vor
 > einer wichtigen Show aus, und sag uns, was dir auffällt: **Hilfe → Fehler melden** im Programm.
 
@@ -78,6 +78,7 @@ Fehlermeldung, wenn du eine schickst.
   **Bildfläche, Gerät und Ausgabeprofile** je Ausgang, z. B. eine LED-Wand, die nur 280 × 112 Pixel eines 1280 × 1024-Controllersignals nutzt,
   Strobe und Blinder je Gerät ([Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-output-area.html)), eine **Handy-Fernsteuerung** im lokalen WLAN mit QR-Kopplung
   ([Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-phone-remote.html)), ein **Showpaket für USB** und Clips im Raster verschieben. *Community-Funktion! Danke an Fabi!*
+- **Behoben in 0.1.11:** Die Vorschaubilder in der Galerie und im Clip-Raster sind wieder zügig (in 0.1.10 waren sie langsam geworden).
 - **Startanimation und Link-Suite (neu in 0.1.9):** die kurze Animation, die alle Programme der [Link-Suite](https://skyplayser.github.io/Link-Suite/) teilen, höchstens 2,5 s, jede Taste überspringt sie. Fehlt der Launcher, zeigt der Startbildschirm eine kleine Karte *Link-Suite laden*. [Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-projects.html#start-animation)
 - **Suite-Chat (Alpha, neu in 0.1.8):** ein Chatraum mit LJ Link und [LJL Link](https://github.com/skyplayser/LJL-Link) (den DJs) im selben Netzwerk, ohne Server. Ein
   **EMERGENCY**-Knopf zeigt bei allen anderen sofort ein Popup mit gelb blinkendem Rand. Nur im Bedienfenster, nie auf den

@@ -28,6 +28,8 @@ export interface GalleryDeps {
   currentLayer: () => number;
   /** Ebene auswählen (öffnet ihre Einstellungen). */
   selectLayer: (l: number) => void;
+  /** Ausgänge laufen (Show): Vorschaubilder dann langsamer nachziehen, damit die Ausgänge nicht ruckeln. */
+  live?: () => boolean;
 }
 
 export class Gallery {
@@ -69,17 +71,18 @@ export class Gallery {
   /** Einmal pro Bild, solange die Galerie offen ist. */
   tick(nowMs: number): void {
     if (!this.root.offsetParent || nowMs < this.nextDraw) return;
-    this.nextDraw = nowMs + 32;
+    // Fehlen noch Vorschaubilder und laufen keine Ausgänge: bei jedem Bild weiter (Visuals werden je Durchlauf übersetzt)
+    this.nextDraw = nowMs + (this.queue.length && !this.d.live?.() ? 0 : 32);
     if (!this.live.isConnected) this.start();
     if (!this.engine) return;
     const beat = this.d.ctx.tempo.beatAt(nowMs);
     const show = this.probeShow(this.section === "effects" ? null : this.selected);
-    // JPEG-Auslesen synchronisiert die GPU, deshalb nur einzelne Karten pro Sekunde nachziehen.
+    // JPEG-Auslesen synchronisiert die GPU: Laufen Ausgänge, nur einzelne Karten pro Sekunde nachziehen, sonst bei jedem Bild.
     let next = nowMs >= this.nextThumb ? this.queue.shift() : undefined;
     // Visual wird noch übersetzt: hinten anstellen, sonst würde ein leeres Vorschaubild gespeichert
     if (next && !this.engine.clipReady(next)) { this.queue.push(next); next = undefined; }
     if (next) {
-      this.nextThumb = nowMs + 160;
+      this.nextThumb = nowMs + (this.d.live?.() ? 160 : 0);
       this.engine.resize(256, 144);
       this.engine.renderThumbs(this.probeShow(next), beat + 0.37, nowMs + 1500, [{ layer: 0, col: 0, clip: next, x: 0, y: 0, w: 256, h: 144 }]);
       try { this.thumbs.set(next, this.live.toDataURL("image/jpeg", 0.8)); } catch { /* ohne Bild */ }

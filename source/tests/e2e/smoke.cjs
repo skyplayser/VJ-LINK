@@ -282,6 +282,16 @@ async function main() {
       log("Bildfläche 140/56 · 280 × 112 pixelgenau", okEdges, detail);
       await c.eval("(()=>{ window.__vj.setDevice(-1, null); window.__vj.ctx.show.testCard = false; return true })()");
     }
+    // 10c) Blinder je Gerät: Master 0 + Blinder an ist weiß, auf einem „Beamer ohne Blinder“ bleibt es schwarz
+    {
+      const shotBright = async () => { const sh = await o.send("Page.captureScreenshot", { format: "png", clip: { x: 0, y: 0, width: 400, height: 300, scale: 0.5 } }); return sh.result?.data ? pngBrightness(Buffer.from(sh.result.data, "base64")) : -1; };
+      await c.eval("(()=>{ const s = window.__vj.ctx.show; s.master = 0; s.blinderOn = true; window.__vj.setDeviceEffects(-1, null); return true })()"); await wait(800);
+      const on = await shotBright();
+      await c.eval("(()=>{ window.__vj.setDeviceEffects(-1, { kind: 'projector', strobe: false, blinder: false }); return true })()"); await wait(800);
+      const off = await shotBright();
+      await c.eval("(()=>{ const s = window.__vj.ctx.show; s.master = 1; s.blinderOn = false; window.__vj.setDeviceEffects(-1, null); return true })()");
+      log("Blinder je Gerät (Beamer ohne Blinder bleibt schwarz)", on > 200 && off < 5, `Bildschirm ${on.toFixed(0)}, Beamer ${off.toFixed(0)}`);
+    }
     try { o.ws.close(); } catch { /* egal */ }
     await c.eval("window.vj.toggleOutput(-1)"); await wait(1500);
     const left = (await getJson()).filter(p => /output\.html/.test(p.url)).length;
