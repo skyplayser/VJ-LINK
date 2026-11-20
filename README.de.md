@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <img alt="Stand: Beta 0.1.9" src="https://img.shields.io/badge/Stand-Beta%200.1.9-FF5C93">
+  <img alt="Stand: Beta 0.1.10" src="https://img.shields.io/badge/Stand-Beta%200.1.10-FF5C93">
   <img alt="macOS und Windows, kostenlos" src="https://img.shields.io/badge/macOS%20%7C%20Windows-kostenlos-3DDC84">
   <img alt="Lizenz: EPL-2.0" src="https://img.shields.io/badge/Lizenz-EPL--2.0-60a5fa">
   <a href="https://github.com/skyplayser/VJ-LINK/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/skyplayser/VJ-LINK/total?label=Downloads&color=a78bfa"></a>
@@ -38,7 +38,7 @@ und danach höchstens einmal pro Stunde bei GitHub nach der neuesten Version; ab
 Fehlermeldung, wenn du eine schickst.
 
 > [!WARNING]
-> **Das ist die Beta 0.1.9.** Nach einem kompletten Testtag (Fehler, Arbeitsabläufe, Oberfläche und Sicherheitstest) ist sie
+> **Das ist die Beta 0.1.10.** Nach einem kompletten Testtag (Fehler, Arbeitsabläufe, Oberfläche und Sicherheitstest) ist sie
 > deutlich robuster als die erste Alpha, aber große Teile haben noch keine echte Bühnentechnik gesehen. Probier sie bitte vor
 > einer wichtigen Show aus, und sag uns, was dir auffällt: **Hilfe → Fehler melden** im Programm.
 
@@ -63,7 +63,7 @@ Fehlermeldung, wenn du eine schickst.
 - **Tempo von überall:** LJ-Link (wird automatisch gefunden, auch auf anderen Rechnern), Ableton Link (über Carabiner), OSC,
   MIDI-Clock oder Tap.
 - **Ausgänge:** ein Fenster pro Bildschirm in jeder Auflösung, überall dasselbe Bild oder eine Leinwand über alle, ein
-  Fenster-Ausgang, den OBS abgreifen kann (NDI und Syphon über OBS-Plugins oder Zusatzprogramme, nicht eingebaut), Testbilder und **Projektionsmapping** mit Eckpunkten, Raster-Verzerrung
+  Fenster-Ausgang, den OBS abgreifen kann, **NDI®**-Ausgang, eine Bildfläche je Ausgang in Pixeln (LED-Controller), Ausgabeprofile je Ort, Testbilder und **Projektionsmapping** mit Eckpunkten, Raster-Verzerrung
   (3×3, 5×5) und Masken.
 - **SHOW:** ein Ablauf aus Video-, Bild-, Kamera-, Schwarz-, Szenen- und Timecode-Cues mit WEITER auf der Leertaste, dazu eine
   Timeline, auf der Szenen und Effekte (Strobe, Flash, Blinder, Blackout) wie im Schnittprogramm liegen. Timecode rein und raus
@@ -74,6 +74,10 @@ Fehlermeldung, wenn du eine schickst.
 - **Medien und Text:** Logos und Bilder mit automatischem Freistellen, Videos mit einem Loop im Takt und Text-Clips mit Schrift,
   Leuchten, Kontur und Kasten.
 - **Aus LJ-Link:** Tempo, Beat-Phase, Phrasen und Trackwechsel, eine *Now-Playing*-Bauchbinde und die DJ-Waveform als Clips.
+- **Neu in 0.1.10:** **NDI®-Ausgang** (bis zu vier Quellen mit eigenem Namen, freier Größe und Bildrate; [Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-ndi.html)),
+  **Bildfläche, Gerät und Ausgabeprofile** je Ausgang, z. B. eine LED-Wand, die nur 280 × 112 Pixel eines 1280 × 1024-Controllersignals nutzt,
+  Strobe und Blinder je Gerät ([Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-output-area.html)), eine **Handy-Fernsteuerung** im lokalen WLAN mit QR-Kopplung
+  ([Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-phone-remote.html)), ein **Showpaket für USB** und Clips im Raster verschieben. *Community-Funktion! Danke an Fabi!*
 - **Startanimation und Link-Suite (neu in 0.1.9):** die kurze Animation, die alle Programme der [Link-Suite](https://skyplayser.github.io/Link-Suite/) teilen, höchstens 2,5 s, jede Taste überspringt sie. Fehlt der Launcher, zeigt der Startbildschirm eine kleine Karte *Link-Suite laden*. [Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-projects.html#start-animation)
 - **Suite-Chat (Alpha, neu in 0.1.8):** ein Chatraum mit LJ Link und [LJL Link](https://github.com/skyplayser/LJL-Link) (den DJs) im selben Netzwerk, ohne Server. Ein
   **EMERGENCY**-Knopf zeigt bei allen anderen sofort ein Popup mit gelb blinkendem Rand. Nur im Bedienfenster, nie auf den
@@ -191,9 +195,10 @@ Sag uns bitte, was du getestet hast: **Hilfe → Fehler melden** oder auf [Disco
 | Art-Net, sACN, MIDI, OSC, Tastatur-Mapping | fertig, Tests an echten Pulten fehlen |
 | Projektionsmapping, Leinwand, Fenster-Ausgang | fertig (Beta) |
 | Personen-Erkennung für Kamera-Looks | fertig (Beta) |
-| Natives Syphon und Spout, NDI | geplant (bis dahin: Fenster-Ausgang und Bildschirmaufnahme) |
+| NDI®-Ausgang, Bildfläche je Ausgang, Ausgabeprofile | fertig (Beta) |
+| Natives Syphon und Spout | geplant (bis dahin: Fenster-Ausgang und Bildschirmaufnahme) |
 | Pult-Profile als GDTF und grandMA2-XML | geplant |
-| Fernbedienung im Browser | geplant |
+| Handy-Fernsteuerung im Browser | fertig (Beta) |
 | Tempo-Erkennung aus Audio | geplant |
 | Signierte Installer | geplant |
 
@@ -263,7 +268,8 @@ Art-Net™ Designed by and Copyright Artistic Licence Holdings Ltd
 
 VJ-Link ist ein unabhängiges Projekt und kein offizielles Produkt der genannten Hersteller; es wird von ihnen weder unterstützt
 noch geprüft. Alle genannten Produktnamen und Marken gehören ihren jeweiligen Inhabern und werden nur genannt, um die
-Kompatibilität zu beschreiben. Ableton und Link sind Marken der Ableton AG.
+Kompatibilität zu beschreiben. Ableton und Link sind Marken der Ableton AG. NDI® ist eine eingetragene Marke der Vizrt NDI AB;
+VJ-Link ist kein Produkt von NDI und liefert keine NDI-Dateien mit (die NDI-Laufzeit installiert der Nutzer, siehe [NDI-Ausgang](https://skyplayser.github.io/VJ-LINK/de/wiki-ndi.html)).
 
 ## Lizenz
 

@@ -1,7 +1,7 @@
 // AUSGABE → Anordnung: Gleiches Bild auf allen Bildschirmen oder eine Leinwand, auf der die Bildschirme
 // liegen (ziehen, einrasten, Werte eintippen). Jeder Ausgang zeigt dann seinen Ausschnitt.
 import { arrange, canvasBounds, snapRect, syncScreens, type OutputLayout, type ScreenRect } from "../core/layout";
-import type { DisplayInfo } from "../core/frame";
+import { displayPixels, type DisplayInfo } from "../core/frame";
 import { MappingEditor } from "./mappingeditor";
 import { t } from "../core/i18n";
 
@@ -29,7 +29,7 @@ export class OutputTab {
 
   /** Offene Bildschirme in Pixeln (native Auflösung). */
   private open(): { id: number; label: string; w: number; h: number }[] {
-    return this.displays().filter(d => d.open).map(d => ({ id: d.id, label: d.label, w: Math.round(d.width * d.scaleFactor), h: Math.round(d.height * d.scaleFactor) }));
+    return this.displays().filter(d => d.open).map(d => ({ id: d.id, label: d.label, ...displayPixels(d) }));
   }
 
   /** Bildschirme auf der Leinwand mit den offenen abgleichen (neue kommen rechts dazu). */

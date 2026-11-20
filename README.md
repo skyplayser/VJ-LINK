@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <img alt="Status: beta 0.1.9" src="https://img.shields.io/badge/status-beta%200.1.9-FF5C93">
+  <img alt="Status: beta 0.1.10" src="https://img.shields.io/badge/status-beta%200.1.10-FF5C93">
   <img alt="macOS and Windows, free" src="https://img.shields.io/badge/macOS%20%7C%20Windows-free-3DDC84">
   <img alt="License: EPL-2.0" src="https://img.shields.io/badge/license-EPL--2.0-60a5fa">
   <a href="https://github.com/skyplayser/VJ-LINK/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/skyplayser/VJ-LINK/total?label=downloads&color=a78bfa"></a>
@@ -38,7 +38,7 @@ It runs locally. There is no account, no cloud and no telemetry. The only connec
 and a problem report, when you send one.
 
 > [!WARNING]
-> **This is the beta 0.1.9.** After a full test day (bugs, workflows, interface and a security test) it is a lot more robust
+> **This is the beta 0.1.10.** After a full test day (bugs, workflows, interface and a security test) it is a lot more robust
 > than the first alpha, but large parts have still not met real stage hardware. Please try it before an important show, and
 > tell us what you find: **Help → Report a problem** in the program.
 
@@ -63,7 +63,7 @@ and a problem report, when you send one.
 - **Tempo from everywhere:** LJ-Link (found automatically, also on other computers), Ableton Link (through Carabiner), OSC,
   MIDI clock or tap.
 - **Outputs:** one window per screen in any resolution, the same picture on all of them or one canvas across all, a window output
-  that OBS can capture (NDI and Syphon via OBS plugins or other tools; not built in), test patterns, and **projection mapping** with corner pin, grid warp (3×3, 5×5) and masks.
+  that OBS can capture, **NDI®** output, an image area per output in pixels (LED controllers), output profiles per venue, test patterns, and **projection mapping** with corner pin, grid warp (3×3, 5×5) and masks.
 - **SHOW:** a running order of video, image, camera, black, scene and timecode cues with GO on the space bar, and a timeline
   where scenes and effects (strobe, flash, blinder, blackout) are laid out like in an editing program. Timecode in and out over
   Art-Net and MIDI.
@@ -73,6 +73,10 @@ and a problem report, when you send one.
 - **Media and text:** logos and images with automatic background removal, videos with a loop locked to the beat, and text clips
   with font, glow, outline and box.
 - **From LJ-Link:** tempo, beat phase, phrases and track changes, a *Now Playing* lower third and the DJ waveform as clips.
+- **New in 0.1.10:** **NDI® output** (up to four sources with own name, free size and frame rate; [wiki](https://skyplayser.github.io/VJ-LINK/wiki-ndi.html)),
+  **image area, device and output profiles** per output, e.g. an LED wall that uses only 280 × 112 pixels of a 1280 × 1024 controller signal,
+  strobe and blinder per device ([wiki](https://skyplayser.github.io/VJ-LINK/wiki-output-area.html)), a **phone remote** in the local Wi-Fi with QR pairing
+  ([wiki](https://skyplayser.github.io/VJ-LINK/wiki-phone-remote.html)), a **show package for USB** and moving clips in the grid. *Community function! Thanks to Fabi!*
 - **Start animation and Link-Suite (new in 0.1.9):** the short animation every program of the [Link-Suite](https://skyplayser.github.io/Link-Suite/) shares, at most 2.5 s, any key skips it. If the launcher is missing, the start screen shows a small card *Get Link-Suite*. [Wiki](https://skyplayser.github.io/VJ-LINK/wiki-projects.html#start-animation)
 - **Suite chat (Alpha, new in 0.1.8):** one chat room with LJ Link and [LJL Link](https://github.com/skyplayser/LJL-Link) (the DJs) in the same network, no server needed. An
   **EMERGENCY** button shows a pop-up with a yellow blinking border at everyone else at once. Only in the control window,
@@ -188,9 +192,10 @@ Please tell us what you tested: **Help → Report a problem**, or on [Discord](h
 | Art-Net, sACN, MIDI, OSC, keyboard mapping | done, needs tests on real desks |
 | Projection mapping, canvas, window output | done (beta) |
 | Person detection for camera looks | done (beta) |
-| Native Syphon and Spout, NDI | planned (until then: window output and screen capture) |
+| NDI® output, image area per output, output profiles | done (beta) |
+| Native Syphon and Spout | planned (until then: window output and screen capture) |
 | Desk profiles as GDTF and grandMA2 XML | planned |
-| Remote control in the browser | planned |
+| Phone remote in the browser | done (beta) |
 | Tempo detection from audio | planned |
 | Signed installers | planned |
 
@@ -255,7 +260,8 @@ Art-Net™ Designed by and Copyright Artistic Licence Holdings Ltd
 
 VJ-Link is an independent project and not an official product of, or endorsed by, any of the manufacturers named. All product
 names and trademarks belong to their respective owners and are used only to describe compatibility. Ableton and Link are
-trademarks of Ableton AG.
+trademarks of Ableton AG. NDI® is a registered trademark of Vizrt NDI AB; VJ-Link is not a product of NDI and ships no NDI files
+(the NDI runtime is installed by the user, see [NDI output](https://skyplayser.github.io/VJ-LINK/wiki-ndi.html)).
 
 ## License
 

@@ -245,3 +245,36 @@ def CHAT_EMERGENCY():
     out.append(T(24, 262, "At most 3 per program in 60 s and 20 open pop-ups; more arrive as normal messages.",
                  "Höchstens 3 je Programm in 60 s und 20 offene Popups; weitere kommen als normale Nachricht.", 12, DIM, "start"))
     return FIG(800, 278, out, label=("What an EMERGENCY does in VJ-Link", "Was ein EMERGENCY in VJ-Link auslöst"))
+
+
+def OUTPUT_AREA():
+    """LED-Controller meldet sich als Monitor 1280 × 1024, die Wand nutzt nur 140/56 · 280 × 112: dort Bild, sonst Schwarz."""
+    out = [_panel(10, 10, 868, 352)]
+    k = 0.25  # 1280 × 1024 → 320 × 256
+    mx, my, mw, mh = 40, 50, 1280 * k, 1024 * k
+    out.append(T(mx + mw / 2, 38, "Monitor signal of the LED controller 1280 × 1024", "Monitorsignal des LED-Controllers 1280 × 1024", 12.5, INK, weight="600"))
+    out.append('<rect x="%.0f" y="%.0f" width="%.0f" height="%.0f" fill="#000" stroke="%s" stroke-width="2"/>' % (mx, my, mw, mh, DIM))
+    ax, ay, aw, ah = mx + 140 * k, my + 56 * k, 280 * k, 112 * k
+    out.append('<rect x="%.1f" y="%.1f" width="%.1f" height="%.1f" fill="#2a1630" stroke="%s" stroke-width="2"/>' % (ax, ay, aw, ah, PINK))
+    # Maße
+    out.append('<line x1="%.0f" y1="%.1f" x2="%.1f" y2="%.1f" stroke="%s" stroke-dasharray="3 3"/>' % (mx, ay + ah / 2, ax, ay + ah / 2, DIM))
+    out.append(T(mx + 140 * k / 2, ay + ah / 2 + 15, "X 140", None, 10.5, DIM))
+    out.append('<line x1="%.1f" y1="%.0f" x2="%.1f" y2="%.1f" stroke="%s" stroke-dasharray="3 3"/>' % (ax + aw / 2, my, ax + aw / 2, ay, DIM))
+    out.append(T(ax + aw / 2 + 6, my + (ay - my) / 2 + 4, "Y 56", None, 10.5, DIM, "start"))
+    out.append(T(ax + aw / 2, ay + ah + 16, "280 × 112", None, 11, PINK, weight="600"))
+    out.append(T(mx + mw / 2, my + mh - 12, "black: not used by the wall", "Schwarz: von der Wand nicht genutzt", 11, DIM))
+    # Pfeil zur Wand
+    out.append('<line x1="%.0f" y1="%.0f" x2="%.0f" y2="%.0f" stroke="%s" stroke-width="2"/>' % (mx + mw + 18, my + mh / 2, 530, my + mh / 2, DIM))
+    out.append('<path d="M530 %.0f l-10 -6 v12 z" fill="%s"/>' % (my + mh / 2, DIM))
+    out.append(T(460, my + mh / 2 - 10, "LED controller", "LED-Controller", 11.5, DIM))
+    # LED-Wand 5:2
+    wx, wy, ww, wh = 550, my + mh / 2 - 56, 300, 120
+    out.append('<rect x="%d" y="%.0f" width="%d" height="%d" rx="6" fill="#2a1630" stroke="%s" stroke-width="2"/>' % (wx, wy, ww, wh, PINK))
+    for i in range(1, 5):
+        out.append('<line x1="%d" y1="%.0f" x2="%d" y2="%.0f" stroke="%s" stroke-opacity=".35"/>' % (wx + i * 60, wy, wx + i * 60, wy + wh, PINK))
+    out.append('<line x1="%d" y1="%.0f" x2="%d" y2="%.0f" stroke="%s" stroke-opacity=".35"/>' % (wx, wy + 60, wx + ww, wy + 60, PINK))
+    out.append(T(wx + ww / 2, wy - 12, "LED wall (5 × 2 panels)", "LED-Wand (5 × 2 Module)", 12.5, INK, weight="600"))
+    out.append(T(wx + ww / 2, wy + wh / 2 + 5, "the picture, pixel for pixel", "das Bild, Pixel für Pixel", 12, INK))
+    out.append(T(24, 350, "VJ-Link puts the picture exactly into the area the controller sends to the wall; the rest of the signal stays black.",
+                 "VJ-Link legt das Bild genau in die Fläche, die der Controller an die Wand gibt; der Rest des Signals bleibt schwarz.", 12, DIM, "start"))
+    return FIG(888, 372, out, label=("Image area on an LED controller", "Bildfläche auf einem LED-Controller"))

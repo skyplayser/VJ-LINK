@@ -21,14 +21,18 @@ import { DmxDecoder, DMX_MODE_STANDARD_CHANNELS, CH, channelListCsv } from "../c
 import { handleLj, handleOsc, recallScene, tickAuto, tickTransition, tickVideoStarts, type ControlContext } from "../core/control";
 import { CLUB_STANDARD_RULES, newLjState, parseLjMessage } from "../core/ljlink";
 import { CATEGORY_LABEL, EFFECTS, EFFECT_BY_ID, POST_EFFECTS, READY_GENERATORS, type EffectCategory } from "../core/effects";
-import { BLEND_MODES, COLOR_SOURCES_ALL, DRIVES, type Drive, MAX_LAYERS, addClip, addLayer, defaultScenes, removeClip, removeLayer, SLOT_NAMES, defaultShow, type BlendMode, type ColorSource } from "../core/show";
+import { BLEND_MODES, COLOR_SOURCES_ALL, DRIVES, type Drive, MAX_LAYERS, addClip, addLayer, defaultScenes, moveClip, removeClip, removeLayer, SLOT_NAMES, defaultShow, type BlendMode, type ColorSource } from "../core/show";
 import { LedFeedback, MappingTable, MidiClock, defaultKeyMappings, oscValue, parseMidi, type MapProtocol } from "../core/mapping";
 import { MapMode } from "./mapmode";
 import { LibraryPanel } from "./librarypanel";
 import { AudioIn } from "./audioin";
+import { applyProfile, MAX_PROFILES, parseProfiles, PROFILE_NAME_MAX, type OutputProfile } from "../core/outputprofile";
+import { RemoteThumbs } from "./remotethumbs";
+import { presetRgb, remotePairingUrl, type RemoteCommand, type RemoteEffect, type RemoteInfo } from "../core/remote";
+import { editDeviceOutput } from "./deviceoutput";
 import { OutputTab } from "./outputtab";
 import { ResPanel } from "./respanel";
-import { canvasBounds, defaultLayout, resAspect, type OutputLayout, type OutputRes } from "../core/layout";
+import { canvasBounds, defaultLayout, resAspect, type DeviceOutput, type OutputLayout, type OutputRes } from "../core/layout";
 import { TimecodeClock, MtcDecoder, formatFrames, parseTc, tcToFrames } from "../core/timecode";
 import { TcPanel, defaultTcSettings, type TcSettings } from "./tcpanel";
 import { cueRenders, cueTick, isVideoClip, newCueState, videoClip, videoIdOf, type CueEnv } from "../core/video";
@@ -40,7 +44,7 @@ import { AUDIO_CLIPS, micDrives } from "../core/audio";
 import { MidiIn } from "./midi";
 import type { TempoSource } from "../core/tempo";
 import { DjLink } from "./djlink";
-import { WINDOW_SIZES, frameBeat, type VjStatus, type ControlEvent, type DisplayInfo, type Frame, type NetStatus, type NetConfig } from "../core/frame";
+import { NDI_FPS_CHOICES, WINDOW_SIZES, displayPixels, frameBeat, type OutputStats, type OutputTest, type ShowPackageResult, type VjStatus, type ControlEvent, type DisplayInfo, type Frame, type NetStatus, type NetConfig, NDI_MAX, NDI_MAX_SIZE, NDI_MIN_SIZE } from "../core/frame";
 import { bridge } from "./bridge";
 import { CONTROL_BY_ID, resolveControl, setControl } from "../core/controls";
 import { buildDeck } from "./deck";
@@ -103,6 +107,8 @@ interface Settings {
   farewell: boolean;
   /** Hinweis „Link-Suite laden“: „Nicht mehr zeigen“ gewählt */
   hideLauncherHint?: boolean;
+  /** Ausgabeprofile (unabhängig vom Projekt), beim Laden geprüft. */
+  outputProfiles?: unknown;
   /** Verbindungen an/aus (VERBINDEN) und OSC-Port. */
   net: { artnet: boolean; sacn: boolean; osc: boolean; lj: boolean; link: boolean; midi: boolean; oscPort: number };
 }
@@ -191,6 +197,29 @@ function dispatchDmx(universe: number, data: Uint8Array): void {
 }
 
 // ---- Eingänge -------------------------------------------------------------------------
+const remoteHeld = new Set<RemoteEffect>();
+
+function applyRemote(command: RemoteCommand, now: number): void {
+  switch (command.kind) {
+    case "hold":
+      if (command.active) remoteHeld.add(command.effect);
+      else remoteHeld.delete(command.effect);
+      break;
+    case "tap": ctx.tempo.tap(now); break;
+    case "color": ctx.show.slots[command.slot] = presetRgb(command.preset); break;
+    case "strobeValue": ctx.show.strobe[command.control] = command.value; break;
+    case "clip":
+    case "assign": {
+      if (command.stack !== (ctx.show.canvas ?? MAIN_STACK)) return;
+      const layer = ctx.show.layers[command.layer];
+      if (!layer) return;
+      if (command.kind === "assign") layer.colorSource = SLOT_NAMES[command.slot]!;
+      else if (command.id === null || layer.clips.includes(command.id)) layer.clip = command.id;
+      break;
+    }
+  }
+}
+
 function onControl(e: ControlEvent): void {
   const now = Date.now();
   switch (e.type) {
@@ -213,6 +242,8 @@ function onControl(e: ControlEvent): void {
       if (fx.scene !== undefined) recallScene(ctx, fx.scene - 1, now);
       break;
     }
+    case "remote": applyRemote(e.command, now); break;
+    case "remote-thumbnail": phoneThumbs.request(e.clip); break;
     case "osc": {
       if (e.address.startsWith("/vjlink/")) { handleOsc(ctx, { address: e.address, args: e.args, tags: e.tags }, now); break; }
       const input = { p: "osc" as const, address: e.address.slice(0, 120) };
@@ -237,6 +268,7 @@ bridge?.onControl(onControl);
 document.querySelectorAll<HTMLButtonElement>(".tabs button").forEach(b => b.addEventListener("click", () => {
   document.querySelectorAll(".tabs button").forEach(x => x.classList.toggle("on", x === b));
   document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.id === `tab-${b.dataset.tab}`));
+  if (b.dataset.tab === "connect") void refreshPhone();
   if (b.dataset.tab === "output") void refreshDisplays().then(() => outputTab.render());
   // Die Ausgangs-Vorschau wandert mit: in SHOW sitzt sie neben dem Ablauf
   const box = $("mon-box");
@@ -252,6 +284,40 @@ let clipCells: HTMLButtonElement[][] = [];
 let rowClips: string[][] = [];
 const opSliders: HTMLInputElement[] = [];
 let importTarget = 0;
+let draggedClip: { layer: number; id: string; stack: string | undefined } | null = null;
+
+function moveGridClip(from: number, to: number, id: string, before?: string): void {
+  if (showLock.locked || mapMode.active || !moveClip(ctx.show, ctx.scenes, from, to, id, before)) return;
+  rebuildGrid();
+  clipCells[to]?.[rowClips[to]?.indexOf(id) ?? -1]?.focus();
+  toast(t("Clip nach {layer} verschoben", { layer: layerName(ctx.show.layers[to], to) }));
+}
+
+function showClipDestinations(from: number, id: string, label: string): void {
+  if (showLock.locked || mapMode.active || ctx.show.layers.length < 2) return;
+  const wrap = el("div", "report clip-move"); wrap.setAttribute("role", "dialog"); wrap.setAttribute("aria-modal", "true");
+  const box = el("div", "report-box");
+  const head = el("div", "report-head"); head.append(el("h2", "", t("„{name}“ verschieben", { name: label })));
+  const buttons = el("div", "report-btns");
+  const close = () => { wrap.remove(); window.removeEventListener("keydown", key, true); };
+  const key = (e: KeyboardEvent) => { if (e.key === "Escape") { e.stopPropagation(); close(); } };
+  const layers = ctx.show.layers;
+  for (let l = layers.length - 1; l >= 0; l--) {
+    if (l === from) continue;
+    const button = el("button", "btn", `${t("E{n}", { n: l + 1 })} · ${layerName(layers[l], l)}`);
+    button.onclick = () => { close(); if (ctx.show.layers === layers) moveGridClip(from, l, id); };
+    buttons.append(button);
+  }
+  const cancel = el("button", "btn", t("Abbrechen"));
+  cancel.onclick = close;
+  box.append(head, el("p", "am-hint", t("In welche Ebene?")), buttons, el("div", "report-btns"));
+  box.lastElementChild!.append(cancel);
+  wrap.append(box);
+  wrap.addEventListener("pointerdown", e => { if (e.target === wrap) close(); });
+  window.addEventListener("keydown", key, true);
+  document.body.append(wrap);
+  (buttons.firstElementChild as HTMLElement | null)?.focus();
+}
 
 /** Zeile einer Ebene: ihre ausgewählten Clips, soweit es sie gibt (Generator fertig bzw. Grafik vorhanden). */
 function layerClips(l: number): { id: string; name: string }[] {
@@ -331,15 +397,37 @@ $("text-add").addEventListener("click", () => addText(fxPanel.layer));
 
 function rebuildGrid(): void {
   const grid = $("grid");
+  draggedClip = null;
+  grid.querySelector<HTMLCanvasElement>("canvas.thumbs")?.style.removeProperty("transform");
   grid.querySelectorAll(".lrow").forEach(r => r.remove());
   clipCells = [];
   rowClips = [];
   const n = ctx.show.layers.length;
-  let maxCols = 1;
-  for (let l = 0; l < n; l++) maxCols = Math.max(maxCols, layerClips(l).length + 1);
+  const groups = ctx.show.layers.map((_, l) => layerClips(l));
+  const maxCols = Math.max(1, ...groups.map(clips => clips.length + 1));
   grid.style.setProperty("--cols", String(maxCols));
   for (let l = n - 1; l >= 0; l--) {
     const row = el("div", "lrow"); row.dataset.layer = String(l);
+    const canDrop = (e: DragEvent) => draggedClip && draggedClip.stack === ctx.show.canvas &&
+      !showLock.locked && !mapMode.active && e.dataTransfer?.types.includes("application/x-vj-link-clip");
+    row.addEventListener("dragover", e => {
+      if (!canDrop(e)) return;
+      e.preventDefault();
+      e.dataTransfer!.dropEffect = "move";
+      row.classList.add("clip-drop");
+    });
+    row.addEventListener("dragleave", e => {
+      if (!(e.relatedTarget instanceof Node) || !row.contains(e.relatedTarget)) row.classList.remove("clip-drop");
+    });
+    row.addEventListener("drop", e => {
+      row.classList.remove("clip-drop");
+      if (!canDrop(e) || !draggedClip) return;
+      e.preventDefault();
+      const from = draggedClip;
+      draggedClip = null;
+      const before = (e.target as HTMLElement).closest<HTMLElement>(".cell[data-clip]")?.dataset.clip;
+      moveGridClip(from.layer, l, from.id, before);
+    });
     const name = el("div", "lname");
     name.title = t("Klicken, um Effekte und Grafik dieser Ebene zu bearbeiten");
     name.addEventListener("click", e => {
@@ -386,7 +474,7 @@ function rebuildGrid(): void {
     name.append(op, color, blend, drive);
     row.append(name);
     clipCells[l] = [];
-    const clips = layerClips(l);
+    const clips = groups[l]!;
     rowClips[l] = clips.map(c => c.id);
     clips.forEach((clip, c) => {
       const b = el("button", clip.id.startsWith("img:") || isVideoClip(clip.id) ? "cell media" : "cell");
@@ -394,7 +482,26 @@ function rebuildGrid(): void {
       if (isVideoClip(clip.id)) b.append(el("span", "vbadge", "VIDEO"));
       if (isCamClip(clip.id)) b.append(el("span", "vbadge cam", t("LIVE-KAMERA")));
       b.dataset.ctl = `clip.${l + 1}.${clip.id}`;
-      b.title = t("{name} · Klicken zum Starten oder Stoppen", { name: clip.name });
+      b.dataset.clip = clip.id;
+      b.draggable = true;
+      b.title = t("{name} · Klick startet oder stoppt · Ziehen oder Rechtsklick verschiebt", { name: clip.name });
+      b.addEventListener("dragstart", e => {
+        if (!e.dataTransfer || showLock.locked || mapMode.active) { e.preventDefault(); return; }
+        draggedClip = { layer: l, id: clip.id, stack: ctx.show.canvas };
+        e.dataTransfer.setData("application/x-vj-link-clip", clip.id);
+        e.dataTransfer.effectAllowed = "move";
+      });
+      b.addEventListener("dragend", () => {
+        draggedClip = null;
+        grid.querySelector(".clip-drop")?.classList.remove("clip-drop");
+      });
+      b.addEventListener("contextmenu", e => { e.preventDefault(); showClipDestinations(l, clip.id, clip.name); });
+      b.addEventListener("keydown", e => {
+        if (e.key !== "F10" || !e.shiftKey) return;
+        e.preventDefault();
+        e.stopPropagation();
+        showClipDestinations(l, clip.id, clip.name);
+      });
       b.addEventListener("click", ev => {
         if ((ev.target as HTMLElement).closest(".cell-x, .cell-edit")) return;
         const layer = ctx.show.layers[l]!;
@@ -497,6 +604,7 @@ window.addEventListener("drop", e => {
 const typing = (t: EventTarget | null) => t instanceof HTMLElement && !!t.closest("input,select,textarea");
 const MAP_KEYS: Record<string, MapProtocol> = { KeyK: "key", KeyM: "midi", KeyD: "dmx", KeyO: "osc" };
 window.addEventListener("keydown", e => {
+  if (e.target instanceof Element && e.target.closest("dialog, [role=dialog]")) return;
   // ⇧⌘K/M/D/O (Windows: ⇧Strg) öffnet den Mapping-Modus
   if (e.shiftKey && (e.metaKey || e.ctrlKey) && e.code === "KeyL") { e.preventDefault(); if (showLock.locked) showLock.hint(); else { mapMode.close(); modMode.open(); } return; }
   if (e.shiftKey && (e.metaKey || e.ctrlKey) && MAP_KEYS[e.code]) { e.preventDefault(); if (showLock.locked) showLock.hint(); else mapMode.open(MAP_KEYS[e.code]!); return; }
@@ -511,7 +619,7 @@ const heldKeys = new Set<string>();
 const releaseKey = (code: string) => { if (heldKeys.delete(code)) mappings.dispatch(ctx, { p: "key", code, label: "" }, 0); };
 window.addEventListener("keyup", e => {
   if (heldKeys.has(e.code)) { releaseKey(e.code); return; }
-  if (mapMode.active || typing(e.target)) return;
+  if (mapMode.active || typing(e.target) || (e.target instanceof Element && e.target.closest("dialog, [role=dialog]"))) return;
   mappings.dispatch(ctx, { p: "key", code: e.code, label: "" }, 0);
 });
 // Flash/White-Flash dürfen nicht hängen bleiben, wenn man beim Halten ins Ausgangsfenster klickt oder ⌘-Tab drückt
@@ -703,7 +811,7 @@ function openSettings(sec = "audio"): void {
   });
   auto.addEventListener("change", () => { settings.autoUpdate = auto.checked; saveSettings(); });
   $("open-licenses").addEventListener("click", () => bridge?.openLicenses());
-  $("open-source").addEventListener("click", () => bridge?.openWeb("https://github.com/skyplayser/VJ-LInk-dev"));
+  $("open-source").addEventListener("click", () => bridge?.openWeb("https://github.com/skyplayser/VJ-LINK/tree/main/source"));
 }
 /** Vor dem ersten Ausgang einmal den Sicherheitshinweis zeigen (Blitze, Laser-Looks im Nebel, Plan B). */
 function safetyAck(): Promise<boolean> {
@@ -834,6 +942,75 @@ function buildCatalog(): void {
 
 // ---- Ausgabe --------------------------------------------------------------------------
 let outLayout: OutputLayout = defaultLayout();
+const outputTests: Record<number, OutputTest> = {};
+const outputStats = new Map<number, OutputStats>();
+bridge?.onOutputStats?.((id, stats) => {
+  outputStats.set(id, stats);
+  const line = document.querySelector<HTMLElement>(`[data-output-stats="${id}"]`);
+  if (line) line.textContent = outputStatsText(stats);
+});
+function outputStatsText(stats: OutputStats): string {
+  return t("{fps} FPS · {ms} ms CPU · {gaps} Pausen > 50 ms", { fps: stats.fps.toFixed(0), ms: stats.frameMs.toFixed(1), gaps: stats.longGaps });
+}
+
+/** Ausgabeprofile: Anordnung, Mapping, Bildflächen und Namen aller Ausgänge, unabhängig vom Projekt. */
+let outputProfiles: OutputProfile[] = parseProfiles(settings.outputProfiles);
+const nowDisplays = () => displays.filter(d => !d.window && !d.ndi).map(d => ({ id: d.id, label: d.label, ...displayPixels(d) }));
+function renderProfiles(): void {
+  const box = $("output-profiles");
+  const row = el("div", "prof-row");
+  const pick = el("select"); pick.setAttribute("aria-label", t("Ausgabeprofil"));
+  pick.append(new Option(outputProfiles.length ? t("Profil wählen …") : t("Noch kein Profil gespeichert"), ""));
+  for (const p of outputProfiles) pick.append(new Option(p.name, p.name));
+  const load = el("button", "btn small-btn", t("Laden")), del = el("button", "btn small-btn", t("Löschen"));
+  const sync = () => { load.disabled = del.disabled = !pick.value; };
+  pick.addEventListener("change", sync); sync();
+  load.addEventListener("click", () => {
+    const p = outputProfiles.find(x => x.name === pick.value); if (!p) return;
+    const r = applyProfile(p, nowDisplays());
+    outLayout = r.layout;
+    renderDisplays(); outputTab.render(); fitPreview();
+    toast(r.missing.length ? t("„{name}“ geladen · fehlt: {list}", { name: p.name, list: r.missing.join(", ") }) : t("„{name}“ geladen", { name: p.name }));
+  });
+  del.addEventListener("click", () => {
+    outputProfiles = outputProfiles.filter(x => x.name !== pick.value);
+    settings.outputProfiles = outputProfiles; saveSettings(); renderProfiles();
+  });
+  row.append(pick, load, del);
+  const saveRow = el("div", "prof-row");
+  const name = el("input"); name.type = "text"; name.maxLength = PROFILE_NAME_MAX; name.placeholder = t("Name, z. B. Club A");
+  const save = el("button", "btn small-btn", t("Speichern"));
+  const doSave = () => {
+    const n = name.value.trim(); if (!n) { name.focus(); return; }
+    const p: OutputProfile = { name: n, layout: structuredClone(outLayout), displays: nowDisplays() };
+    const exists = outputProfiles.some(x => x.name === n);
+    if (!exists && outputProfiles.length >= MAX_PROFILES) { toast(t("Höchstens {n} Profile", { n: MAX_PROFILES })); return; }
+    outputProfiles = exists ? outputProfiles.map(x => x.name === n ? p : x) : [...outputProfiles, p];
+    settings.outputProfiles = outputProfiles; saveSettings(); renderProfiles();
+    toast(exists ? t("„{name}“ überschrieben", { name: n }) : t("„{name}“ gespeichert", { name: n }));
+  };
+  save.addEventListener("click", doSave);
+  name.addEventListener("keydown", e => { if (e.key === "Enter") doSave(); });
+  saveRow.append(name, save);
+  box.replaceChildren(row, saveRow);
+}
+
+/** Showpaket für USB (Projektmenü): Projekt mit allen Medien in einen neuen Ordner, danach geprüft. */
+async function runPackage(check: boolean): Promise<void> {
+  if (!check) toast(t("Showpaket wird geschrieben und geprüft …"));
+  let result: ShowPackageResult | null | undefined;
+  try { result = check ? await bridge?.verifyShowPackage?.() : await bridge?.exportShowPackage?.(currentJson()); }
+  catch (error) { result = { error: (error as Error).message }; }
+  if (!result) return;
+  if (result.error || result.missing?.length) {
+    toast([result.error, result.missing?.length ? t("Fehlende Medien: {names}", { names: result.missing.join(", ") }) : ""].filter(Boolean).join(" · "));
+  } else toast(t("Showpaket vollständig · {file}", { file: result.file ?? "" }));
+}
+$("proj-pkg-export").addEventListener("click", () => { closeProjMenu(); void runPackage(false); });
+$("proj-pkg-check").addEventListener("click", () => { closeProjMenu(); void runPackage(true); });
+$("proj-pkg-export").hidden = !bridge?.exportShowPackage;
+$("proj-pkg-check").hidden = !bridge?.verifyShowPackage;
+
 const resPanel = new ResPanel($<HTMLButtonElement>("res-btn"), () => outLayout, () => fitPreview());
 const outputTab = new OutputTab(() => outLayout, l => { outLayout = l; }, () => displays, () => fitPreview(), {
   // Projektionsmapping: Raster-Testbild auf die Leinwände
@@ -853,20 +1030,103 @@ async function refreshDisplays(): Promise<void> {
   renderDisplays();
 }
 bridge?.onDisplays(d => { displays = d; renderDisplays(); outputTab.render(); fitPreview(); });
+// NDI-Ausgang läuft: nur die Statuszeile aktualisieren (Auswahlfelder bleiben offen)
+bridge?.onNdiStat?.(st => {
+  const d = displays.find(x => x.ndi && x.id === st.id); if (!d?.ndi) return;
+  d.ndi.sentFps = st.sentFps; d.ndi.conns = st.conns;
+  const line = document.querySelector<HTMLElement>(`#displays .ndi-state[data-id="${st.id}"]`); if (line) line.textContent = ndiStateText(d);
+});
+
+/** Statuszeile des NDI-Ausgangs. */
+function ndiStateText(d: DisplayInfo): string {
+  const n = d.ndi!;
+  if (!n.runtime) return t("NDI-Laufzeit fehlt: einmal von NDI installieren (kostenlos), dann hier öffnen.");
+  if (n.error) return t("NDI startet nicht ({error}).", { error: n.error });
+  if (!d.open) return t("Erscheint im Netz als „RECHNERNAME ({name})“, z. B. in VD-Link, OBS oder Resolume.", { name: n.name });
+  if (n.sentFps === undefined) return t("Startet …");
+  return t("Sendet als „{name}“ · {fps} Bilder/s · Empfänger: {n}", { name: n.name, fps: n.sentFps, n: n.conns ?? 0 });
+}
+
+/** Zeile eines NDI-Ausgangs: Name, Größe (fest oder frei), Bildrate, Stand, Marken-Hinweis mit Link zu NDI. */
+function renderNdiRow(d: DisplayInfo, row: HTMLElement): void {
+  const n = d.ndi!;
+  const info = el("div");
+  info.append(el("b", "", n.count > 1 ? t("NDI®-Ausgang {n}", { n: n.index + 1 }) : t("NDI®-Ausgang")));
+  info.append(el("small", "", t("{w} × {h} Pixel · {fps} Bilder/s", { w: d.width, h: d.height, fps: n.fps })));
+  const state = el("small", "muted ndi-state", ndiStateText(d)); state.dataset.id = String(d.id); info.append(state);
+  const refresh = (list: DisplayInfo[]) => { displays = list; renderDisplays(); outputTab.render(); fitPreview(); };
+  // Name im Netz („RECHNERNAME (Name)“), z. B. „VJ-Link Wand“ und „VJ-Link Decke“
+  const name = el("input"); name.type = "text"; name.className = "win-size ndi-name"; name.maxLength = 40; name.value = n.label;
+  name.title = t("Name der NDI-Quelle im Netz");
+  name.addEventListener("change", async () => refresh(await bridge!.ndiOutputSettings!(d.id, { name: name.value })));
+  const size = el("select"); size.title = t("Bildgröße des NDI-Ausgangs");
+  for (const [w, h] of WINDOW_SIZES) size.append(new Option(`${w} × ${h}${h > w ? t(" (hoch)") : ""}`, `${w}x${h}`));
+  const cur = `${d.width}x${d.height}`;
+  const fixed = WINDOW_SIZES.some(([w, h]) => `${w}x${h}` === cur);
+  size.append(new Option(t("Eigene Größe …"), "custom"));
+  size.value = fixed ? cur : "custom";
+  const fps = el("select"); fps.title = t("Bildrate des NDI-Ausgangs");
+  for (const f of NDI_FPS_CHOICES) fps.append(new Option(t("{fps} Bilder/s", { fps: f }), String(f)));
+  fps.value = String(n.fps);
+  // Freie Größe, z. B. 2816 × 640 für eine LED-Wand mit LED-Prozessor
+  const cw = el("input"), ch = el("input");
+  for (const [inp, v, lab] of [[cw, d.width, t("Breite")], [ch, d.height, t("Höhe")]] as const) {
+    inp.type = "number"; inp.min = String(NDI_MIN_SIZE); inp.max = String(NDI_MAX_SIZE); inp.step = "1"; inp.value = String(v); inp.title = lab; inp.className = "win-size ndi-px";
+  }
+  const custom = el("span", "ndi-custom"); custom.append(cw, document.createTextNode(" × "), ch); custom.hidden = size.value !== "custom";
+  const apply = async () => {
+    if (size.value === "custom") {
+      custom.hidden = false;
+      const w = Math.round(Number(cw.value)), h = Math.round(Number(ch.value));
+      if (!(w >= NDI_MIN_SIZE && h >= NDI_MIN_SIZE && w <= NDI_MAX_SIZE && h <= NDI_MAX_SIZE)) { toast(t("Größe zwischen {a} und {b} Pixeln", { a: NDI_MIN_SIZE, b: NDI_MAX_SIZE })); return; }
+      refresh(await bridge!.ndiOutputSettings!(d.id, { w, h, fps: Number(fps.value) }));
+      return;
+    }
+    const [w, h] = size.value.split("x").map(Number);
+    refresh(await bridge!.ndiOutputSettings!(d.id, { w: w!, h: h!, fps: Number(fps.value) }));
+  };
+  size.addEventListener("change", () => { if (size.value === "custom") { custom.hidden = false; cw.focus(); } else void apply(); });
+  fps.addEventListener("change", () => void apply());
+  cw.addEventListener("change", () => void apply()); ch.addEventListener("change", () => void apply());
+  const sel = el("div", "ndi-sel"); size.className = fps.className = "win-size"; sel.append(name, size, custom, fps); info.append(sel);
+  // Pflicht laut NDI: Marken-Hinweis neben der NDI-Auswahl, mit Link zu ndi.video
+  if (n.index === n.count - 1) {
+    const tm = el("small", "muted ndi-tm", t("NDI® ist eine eingetragene Marke der Vizrt NDI AB. VJ-Link ist kein Produkt von NDI.") + " ");
+    const home = el("a", "", "ndi.video"); home.href = "#"; home.addEventListener("click", e => { e.preventDefault(); bridge?.openNdiPage?.("home"); });
+    tm.append(home); info.append(tm);
+    // Weitere Ausgänge, z. B. getrennte Quellen für Wand und Decke
+    const more = el("div", "ndi-sel");
+    if (n.count < NDI_MAX && bridge?.ndiAdd) { const add = el("button", "btn small-btn", t("+ NDI-Ausgang")); add.title = t("Weitere NDI-Quelle, z. B. für eine zweite LED-Fläche"); add.addEventListener("click", async () => refresh(await bridge!.ndiAdd!())); more.append(add); }
+    if (n.count > 1 && bridge?.ndiRemove) { const rem = el("button", "btn small-btn", t("Letzten entfernen")); rem.addEventListener("click", async () => refresh(await bridge!.ndiRemove!())); more.append(rem); }
+    if (more.childElementCount) info.append(more);
+  }
+  let b: HTMLButtonElement;
+  if (!n.runtime && !d.open) {
+    b = el("button", "btn", t("NDI-Laufzeit laden"));
+    b.title = t("Öffnet die Download-Seite von NDI. Nach der Installation hier „Senden“ klicken.");
+    b.addEventListener("click", () => bridge?.openNdiPage?.("runtime"));
+  } else {
+    b = el("button", "btn", d.open ? t("Schließen") : t("Senden"));
+    b.addEventListener("click", async () => { if (!d.open && !(await safetyAck())) return; refresh(await bridge!.toggleOutput(d.id)); });
+  }
+  row.append(info, b);
+}
 
 function renderDisplays(): void {
   const list = $("displays");
   list.replaceChildren();
+  renderProfiles();
   for (const d of displays) {
     const row = el("div", d.open ? "display open" : "display");
+    if (d.ndi) { if (bridge?.ndiOutputSettings) { renderNdiRow(d, row); list.append(row); } continue; }
     const info = el("div"); info.append(el("b", "", `${d.window ? t("Fenster-Ausgang") : d.label.replace(/^Bildschirm (\d+)$/, (_, n: string) => t("Bildschirm {n}", { n }))}${d.primary ? t(" (Hauptbildschirm)") : ""}`));
-    info.append(el("small", "", t("{w} × {h} Pixel", { w: Math.round(d.width * d.scaleFactor), h: Math.round(d.height * d.scaleFactor) })));
+    info.append(el("small", "", t("{w} × {h} Pixel", displayPixels(d))));
     const b = el("button", "btn", d.open ? t("Schließen") : d.window ? t("Fenster öffnen") : t("Als Ausgang öffnen"));
     b.addEventListener("click", async () => { if (!d.open && !(await safetyAck())) return; displays = await bridge!.toggleOutput(d.id); renderDisplays(); outputTab.render(); fitPreview(); });
     if (d.window) {
       // Fenster-Ausgang: Größe wählen; zum Abgreifen mit OBS, Resolume, Syphon-/NDI-Werkzeugen (Fensteraufnahme)
-      info.querySelector("b")!.title = t("Normales Fenster statt Vollbild – zum Abgreifen per Fensteraufnahme (OBS, Syphon Recorder, NDI-Tools)");
-      info.append(el("small", "muted", t("für OBS, NDI, Syphon (Fensteraufnahme)")));
+      info.querySelector("b")!.title = t("Normales Fenster statt Vollbild – zum Abgreifen per Fensteraufnahme (OBS, Syphon Recorder)");
+      info.append(el("small", "muted", t("für OBS, Syphon (Fensteraufnahme)")));
       const size = el("select"); size.title = t("Bildgröße des Fensters");
       const cur = `${Math.round(d.width * d.scaleFactor)}x${Math.round(d.height * d.scaleFactor)}`;
       for (const [w, h] of WINDOW_SIZES) size.append(new Option(`${w} × ${h}${h > w ? t(" (hoch)") : ""}`, `${w}x${h}`));
@@ -875,10 +1135,56 @@ function renderDisplays(): void {
       size.addEventListener("change", async () => { const [w, h] = size.value.split("x").map(Number); displays = await bridge!.windowOutputSize(w!, h!); renderDisplays(); outputTab.render(); fitPreview(); });
       size.className = "win-size"; info.append(size);
       row.append(info, b);
-    } else row.append(info, b);
+    } else {
+      const role = outLayout.stage?.outputs.find(o => o.display === d.id);
+      if (role?.name) { const label = info.querySelector("b")!; info.prepend(el("b", "", role.name)); label.replaceWith(el("small", "", label.textContent ?? "")); }
+      const dev = outLayout.devices?.[d.id], kind = outLayout.deviceEffects?.[d.id];
+      if (dev) info.append(el("small", "dev-sum", t("Fläche {x}/{y} · {w} × {h}", { ...dev.target })));
+      if (kind && (kind.kind !== "display" || !kind.strobe || !kind.blinder)) {
+        info.append(el("small", "dev-sum", [t("Gerät: {kind}", { kind: kind.kind === "projector" ? t("Beamer") : kind.kind === "led" ? t("LED-Wand") : t("Bildschirm") }),
+          !kind.strobe && !kind.blinder ? t("ohne Strobe und Blinder") : !kind.strobe ? t("ohne Strobe") : !kind.blinder ? t("ohne Blinder") : ""].filter(Boolean).join(" · ")));
+      }
+      if (d.open) {
+        const stats = outputStats.get(d.id);
+        const statLine = el("small", "output-stats", stats ? outputStatsText(stats) : t("Leistung wird gemessen …"));
+        statLine.dataset.outputStats = String(d.id);
+        info.append(statLine);
+      } else {
+        delete outputTests[d.id];
+        outputStats.delete(d.id);
+      }
+      const capture = bridge?.outputPreview;
+      const actions = el("div", "device-row-actions");
+      const settings = el("button", "btn", t("Einstellungen"));
+      settings.title = t("Name, Bildfläche in Pixeln, Einpassen, Strobe und Blinder");
+      settings.onclick = () => editDeviceOutput({
+        display: () => displays.find(item => item.id === d.id),
+        layout: () => outLayout,
+        name: () => outLayout.stage?.outputs.find(o => o.display === d.id)?.name ?? "",
+        save: patch => {
+          if (patch.device !== undefined) {
+            const devices = { ...outLayout.devices };
+            if (patch.device) devices[d.id] = patch.device; else delete devices[d.id];
+            outLayout = { ...outLayout, devices: Object.keys(devices).length ? devices : undefined };
+          }
+          if (patch.effects) outLayout = { ...outLayout, deviceEffects: { ...outLayout.deviceEffects, [d.id]: patch.effects } };
+          if (patch.name !== undefined) {
+            const outs = (outLayout.stage?.outputs ?? []).filter(o => o.display !== d.id);
+            if (patch.name) outs.push({ display: d.id, name: patch.name.slice(0, 60) });
+            outLayout = { ...outLayout, stage: { name: outLayout.stage?.name ?? "", outputs: outs } };
+          }
+          renderDisplays();
+        },
+        test: () => outputTests[d.id],
+        setTest: v => { if (v) outputTests[d.id] = v; else delete outputTests[d.id]; },
+        ...(capture ? { capture: () => capture(d.id) } : {}),
+      });
+      actions.append(settings, b);
+      row.append(info, actions);
+    }
     list.append(row);
   }
-  $("output-note").textContent = displays.filter(d => !d.window).length > 1 ? "" : t("Es ist nur ein Bildschirm angeschlossen. Ein Ausgang darauf verdeckt diese Oberfläche – mit Esc oder „Schließen“ im Hauptfenster beendest du ihn.");
+  $("output-note").textContent = displays.filter(d => !d.window && !d.ndi).length > 1 ? "" : t("Es ist nur ein Bildschirm angeschlossen. Ein Ausgang darauf verdeckt diese Oberfläche – mit Esc oder „Schließen“ im Hauptfenster beendest du ihn.");
 }
 $<HTMLInputElement>("testpattern").addEventListener("change", e => { ctx.show.testCard = (e.target as HTMLInputElement).checked; syncTestUi(); });
 /** Testbild-Knöpfe und Häkchen auf den aktuellen Stand bringen. */
@@ -1246,8 +1552,77 @@ function modFeedback(shown: ShowState, beat: number, bands: readonly number[]): 
 const layerClock = new LayerClock();
 function setPill(id: string, state: "ok" | "off" | "warn", text?: string): void {
   const p = $(id); p.classList.toggle("ok", state === "ok"); p.classList.toggle("warn", state === "warn");
-  if (text !== undefined) { const d = p.querySelector(".dot"); p.replaceChildren(...(d ? [d] : []), document.createTextNode(text)); }
+  if (text !== undefined && p.textContent !== text) { const d = p.querySelector(".dot"); p.replaceChildren(...(d ? [d] : []), document.createTextNode(text)); }
 }
+
+let phoneRunning = false, lastPhoneState = 0;
+const phoneThumbs = new RemoteThumbs(id => library.image(id), id => videoLib.posters.get(id),
+  (clip, data) => bridge?.remoteThumbnail?.(clip, data));
+const phoneNetwork = $<HTMLSelectElement>("phone-network");
+const phoneToggle = $<HTMLInputElement>("on-phone");
+
+let phoneQrLink = "";
+function updatePhoneQr(next: string): void {
+  if (phoneQrLink === next) return;
+  phoneQrLink = next;
+  const figure = $("phone-qr-pairing");
+  const canvas = $<HTMLCanvasElement>("phone-qr");
+  figure.hidden = true;
+  canvas.width = canvas.height = 1;
+  if (!next) return;
+  void import("qrcode-generator").then(({ default: createQr }) => {
+    if (phoneQrLink !== next) return;
+    const qr = createQr(0, "M");
+    qr.addData(next);
+    qr.make();
+    const moduleSize = 6;
+    const margin = 4 * moduleSize;
+    const size = qr.getModuleCount();
+    canvas.width = canvas.height = size * moduleSize + margin * 2;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#000";
+    for (let row = 0; row < size; row++) for (let col = 0; col < size; col++) {
+      if (qr.isDark(row, col)) ctx.fillRect(margin + col * moduleSize, margin + row * moduleSize, moduleSize, moduleSize);
+    }
+    figure.hidden = false;
+  }).catch(() => { /* Die manuelle Kopplung bleibt verfügbar. */ });
+}
+
+function updatePhone(info: RemoteInfo): void {
+  phoneRunning = !!info.url;
+  if (!phoneRunning) phoneThumbs.clear();
+  const previous = info.address ?? phoneNetwork.value;
+  phoneNetwork.replaceChildren(...info.addresses.map(ip => new Option(ip === "127.0.0.1" ? t("127.0.0.1 (nur dieser Rechner)") : ip, ip)));
+  if (info.addresses.includes(previous)) phoneNetwork.value = previous;
+  phoneNetwork.disabled = phoneRunning;
+  phoneToggle.disabled = !info.addresses.length;
+  phoneToggle.checked = phoneRunning;
+  connStatus("phone", info.error ? "err" : phoneRunning ? "live" : "off", info.error ? t("Fehler") : phoneRunning ? t("an") : t("aus"));
+  $("phone-details").hidden = !phoneRunning;
+  $("phone-url").textContent = info.url ?? "";
+  $("phone-code").textContent = info.code ?? "";
+  $("phone-loopback").hidden = info.address !== "127.0.0.1";
+  updatePhoneQr(info.url && info.code && info.address !== "127.0.0.1" ? remotePairingUrl(info.url, info.code) : "");
+  $("phone-status").textContent = info.error ?? (phoneRunning ? "" : t("Mit dem Schalter einschalten, dann den QR-Code mit dem Handy scannen."));
+}
+
+async function refreshPhone(): Promise<void> {
+  if (!bridge?.remoteInfo) { phoneToggle.disabled = true; phoneNetwork.disabled = true; return; }
+  updatePhone(await bridge.remoteInfo());
+}
+
+phoneToggle.addEventListener("click", e => e.stopPropagation());
+phoneToggle.onchange = async () => {
+  if (!bridge?.remoteStart || !bridge.remoteStop) return;
+  phoneToggle.disabled = true;
+  try {
+    updatePhone(await (phoneRunning ? bridge.remoteStop() : bridge.remoteStart(phoneNetwork.value)));
+  } catch (error) { $("phone-status").textContent = (error as Error).message; phoneToggle.checked = phoneRunning; }
+  finally { phoneToggle.disabled = false; }
+};
 
 /**
  * Vorschau im Bedienfenster höchstens 60-mal pro Sekunde zeichnen, auch auf 120/165-Hz-Monitoren: sonst lastet
@@ -1257,13 +1632,14 @@ function setPill(id: string, state: "ok" | "off" | "warn", text?: string): void 
 const PREVIEW_FPS = 60;
 let nextRender = 0, renderTurn = 0;
 function renderDue(t: number): boolean {
-  const step = 1000 / PREVIEW_FPS;
+  const step = 1000 / (displays.some(d => d.open) ? 30 : PREVIEW_FPS);
   if (t < nextRender - 1) return false;
   nextRender = t - nextRender > step ? t + step : nextRender + step;
   return true;
 }
 
 function frame(rafTime: number = performance.now()): void {
+  if (!loaded) { requestAnimationFrame(frame); return; }
   const draw = renderDue(rafTime);
   ctx.show.safeFlash = settings.safeFlash;
   const now = Date.now();
@@ -1280,12 +1656,19 @@ function frame(rafTime: number = performance.now()): void {
   const mic = audioIn.sample();
   if (mic) ctx.show.audio.mic = mic; else delete ctx.show.audio.mic;
   // Bass-Schläge erkennen (Live-Audio oder LJ-Link): z. B. für die Pulsierenden Ringe
-  { const lb = liveBands(ctx.show.audio, ctx.tempo.beatAt(now), now / 1000); kickDet.feed(Math.max(lb[0] ?? 0, lb[1] ?? 0), now); ctx.show.audio.kicks = kickDet.kicks; }
   const beat = ctx.tempo.beatAt(now);
+  const bands = liveBands(ctx.show.audio, beat, now / 1000);
+  kickDet.feed(Math.max(bands[0] ?? 0, bands[1] ?? 0), now);
+  ctx.show.audio.kicks = kickDet.kicks;
   const lt = layerClock.tick(now, ctx.show.layers);
   // Modulationen (LFO, Audio) wirken auf das Bild, die Regler behalten ihren Grundwert
-  const modBands = liveBands(ctx.show.audio, beat, now / 1000);
+  const modBands = bands;
   let shown = modulatedShow(ctx, ctx.mods ?? [], beat, modBands);
+  if (remoteHeld.size) shown = {
+    ...shown,
+    strobe: { ...shown.strobe, flash: shown.strobe.flash || remoteHeld.has("strobe"), whiteFlash: shown.strobe.whiteFlash || remoteHeld.has("white") },
+    blinder: remoteHeld.has("blinder") ? 1 : shown.blinder,
+  };
   if (ctx.show.blackoutFlash) shown = { ...shown, blackout: true };
   if (draw) modFeedback(shown, beat, modBands);
   // Timeline: Effekt-Blöcke (Strobe, Flash, White, W-Flash, Blinder, Blackout) und Helligkeit je Bild
@@ -1303,8 +1686,9 @@ function frame(rafTime: number = performance.now()): void {
   }
   // Projektionsmapping: Live-Vorschauen der Bilder (je Bild abwechselnd eins, nur jedes zweite Bild), dann das bearbeitete groß
   const cv = shown.canvas ?? MAIN_STACK;
+  const renderMonitor = draw && (!!preview.offsetParent || videoLib.items.length > 0); // Der Monitor spielt Videoton ab.
   if (draw) renderTurn++;
-  if (draw && engine && mappingOn() && tileCanvases.size > 1 && renderTurn % 2 === 0) {
+  if (engine && renderMonitor && mappingOn() && tileCanvases.size > 1 && renderTurn % 4 === 0) {
     const ids = [...tileCanvases.keys()].filter(id => id !== cv);
     const id = ids[tileTurn++ % Math.max(1, ids.length)];
     if (id) {
@@ -1313,22 +1697,37 @@ function frame(rafTime: number = performance.now()): void {
     }
   }
   if (draw) {
-    engine?.render(showForImage(shown, cv), beat, now, ctx.tempo.bpm, null, lt);
-    if (mappingOn()) { const c = tileCanvases.get(cv); c?.getContext("2d")?.drawImage(preview, 0, 0, c.width, c.height); }
+    if (renderMonitor) {
+      engine?.render(showForImage(shown, cv), beat, now, ctx.tempo.bpm, null, lt);
+      if (mappingOn() && renderTurn % 2 === 0) { const c = tileCanvases.get(cv); c?.getContext("2d")?.drawImage(preview, 0, 0, c.width, c.height); }
+    }
     thumbs.draw(now);
     gallery.tick(now);
   }
 
-  if (now - lastPublish > 33 && bridge) {
+  if (now - lastPublish > 33 && bridge && displays.some(d => d.open)) {
     lastPublish = now;
     const t = ctx.tempo.snapshot;
     const f: Frame = {
       show: shown, bpm: ctx.tempo.bpm, originMs: t.originMs, beatAtOrigin: t.beatAtOrigin, testPattern: ctx.show.testCard,
       videoDurations: Object.fromEntries(videoLib.items.map(v => [v.id, v.duration])),
-      layout: outLayout, openOutputs: displays.filter(d => d.open).map(d => d.id),
+      layout: outLayout, outputTests,
+      monitorPixels: Object.fromEntries(displays.filter(d => !d.window && !d.ndi).map(d => [d.id, displayPixels(d)])),
+      openOutputs: displays.filter(d => d.open).map(d => d.id),
       layerClock: layerClock.snap(now),
     };
     bridge.publishFrame(JSON.parse(JSON.stringify(f)) as Frame);
+  }
+  if (phoneRunning) phoneThumbs.tick(shown, now, displays.some(d => d.open));
+  if (phoneRunning && now - lastPhoneState > 300) {
+    lastPhoneState = now;
+    const stack = ctx.show.canvas ?? MAIN_STACK;
+    bridge?.remoteState?.({
+      lang: getLang(), bpm: ctx.tempo.bpm, tempoSource: SOURCE_LABEL[ctx.tempo.source] ?? ctx.tempo.source, stack,
+      stackName: imageList(ctx.show).find(im => im.id === stack)?.name ?? t("Hauptbild"),
+      layers: ctx.show.layers.map((l, i) => ({ name: layerName(l, i), active: l.clip, clips: layerClips(i) })),
+      slots: ctx.show.slots, speed: ctx.show.strobe.speed, intensity: ctx.show.strobe.intensity,
+    });
   }
   if (now - lastUi > 100) { lastUi = now; updateUi(now, beat); syncCanvases(); djLink.tick(now, vjStatus); showGpuPrep(now); }
   requestAnimationFrame(frame);
@@ -1524,7 +1923,7 @@ function diagnostics(): DiagSection[] {
       chatUi.diagnostics(),
     ] },
     { title: "Ausgänge", lines: [
-      ...displays.map(d => `${d.primary ? "Haupt" : "Bildschirm"} ${d.width}×${d.height} @${d.scaleFactor}${d.open ? (d.window ? " · Fenster-Ausgang offen" : " · Ausgang offen") : ""}`),
+      ...displays.map(d => `${d.primary ? "Haupt" : "Bildschirm"} ${d.width}×${d.height} @${d.scaleFactor}${d.open ? (d.window ? " · Fenster-Ausgang offen" : d.ndi ? ` · NDI-Ausgang offen (${d.ndi.sentFps ?? "?"} B/s, ${d.ndi.conns ?? 0} Empfänger)` : " · Ausgang offen") : ""}`),
       `Modus ${outLayout.mode}`,
     ] },
     { title: "Projekt", lines: [
@@ -1595,9 +1994,6 @@ function autosave(now: number): void {
   lastSaved = json;
   if (bridge) bridge.saveProject(json);
   else try { localStorage.setItem("vjlink.project", json); } catch { /* Speicher voll oder gesperrt */ }
-}
-function json0(raw: string | null): ReturnType<typeof parseProject> {
-  return raw ? parseProject(raw) : null;
 }
 /**
  * Start-Aufbau für ein leeres oder neues Projekt (core/starter): Text „VJ-Link“ und Logo als Grafiken anlegen,
@@ -1830,26 +2226,28 @@ function showForImage(sh: ShowState, id: string): ShowState {
 
 let fresh = false;
 async function loadProject(): Promise<void> {
+  document.querySelectorAll(".device-dlg, .clip-move").forEach(d => d.remove());
   try {
     let json: string | null = null;
+    let p: ReturnType<typeof parseProject> = null;
     if (bridge) {
       const r = await bridge.loadProject();
-      const pv = json0(r.project);
+      json = r.project;
+      p = json ? parseProject(json) : null;
       // Nur die Grafiken dieses Projekts (die Bibliothek im App-Ordner kann mehr enthalten)
-      const want = new Set((pv?.media ?? []).map(m => m.id));
+      const want = new Set((p?.media ?? []).map(m => m.id));
       for (const m of r.media) if (want.has(m.id)) await library.load(m);
       // Text-Clips: Angaben zum Bearbeiten aus dem Projekt
-      for (const pm of pv?.media ?? []) if (pm.text) { const it = library.items.find(i => i.id === pm.id); if (it) it.text = pm.text; }
+      for (const pm of p?.media ?? []) if (pm.text) { const it = library.items.find(i => i.id === pm.id); if (it) it.text = pm.text; }
       projName = r.file?.name ?? t("Unbenannt"); projRecent = r.recent ?? [];
       baseline = r.fresh ? "" : r.savedHash ?? "";
       fresh = !!r.fresh;
       // Videos: Angaben stehen im Projekt, die Dateien im Bibliotheksordner
-      for (const v of pv?.videos ?? []) await videoLib.add(v);
-      json = r.project;
+      videoLib.restore(p?.videos ?? []);
     } else {
       try { json = localStorage.getItem("vjlink.project"); } catch { json = null; }
+      p = json ? parseProject(json) : null;
     }
-    const p = json ? parseProject(json) : null;
     // Leeres bzw. neues Projekt: Start-Aufbau mit sechs Ebenen, Text und Logo
     let demo = false;
     try { demo = sessionStorage.getItem(DEMO_FLAG) === "1"; sessionStorage.removeItem(DEMO_FLAG); } catch { /* egal */ }
@@ -1882,6 +2280,7 @@ function rebuildDeck(): void { $("deck").replaceChildren(); updateDeck = buildDe
 // Erst laden, wenn alle Teile der Oberfläche stehen (im Browser läuft das Laden ohne Wartezeit durch).
 // Danach die Startanimation (Hauptprozess entscheidet: einmal je Start, Schalter, nicht nach Absturz) mit dem Logo des
 // Startbildschirms als Ziel; den ersten Knopf erst fokussieren, wenn sie vorbei ist.
+void refreshPhone().catch(() => {});
 void loadProject().catch(err => console.error(err)).then(async () => {
   const show = StartScreen.shouldShow();
   const intro = bridge?.introStart ? await bridge.introStart().catch(() => null) : null;
@@ -1913,7 +2312,11 @@ requestAnimationFrame(frame);
   fps: () => engine?.info ?? null,
   /** Nur Entwicklung: Verbindungs-Status für Bilder in Website und Wiki vorspielen (null = echt). */
   demoNet: (d: typeof demoNet) => { demoNet = d; drawConnect(Date.now()); },
+  /** Nur Entwicklung: Handy-Fernsteuerung für Bilder in Website und Wiki vorspielen (startet keinen Server). */
+  demoPhone: (info: RemoteInfo) => updatePhone(info),
   // Test: Auflösung des Ausgabebilds setzen (tests/e2e)
   setRes: (r: OutputRes) => { outLayout.res = { ...r }; fitPreview(); resPanel.sync(); },
+  // Test: Bildfläche eines Ausgangs setzen (tests/e2e, null = ganze Fläche)
+  setDevice: (id: number, d: DeviceOutput | null) => { const devices = { ...outLayout.devices }; if (d) devices[id] = d; else delete devices[id]; outLayout = { ...outLayout, devices: Object.keys(devices).length ? devices : undefined }; },
   demoOutputs: (d: DisplayInfo[], layout?: OutputLayout) => { displays = d; demoDisplays = true; if (layout) outLayout = layout; renderDisplays(); outputTab.render(); fitPreview(); },
 };

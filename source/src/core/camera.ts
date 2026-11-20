@@ -56,7 +56,7 @@ export interface CamSettings {
 export const defaultCam = (): CamSettings => ({ mirror: false, look: "normal", tol: 0.35, bgStamp: 0, cells: 48, onlyFig: false });
 
 export const camClip = (id: string): string => `cam:${id}`;
-export const isCamClip = (clip: string | null | undefined): clip is string => !!clip && clip.startsWith("cam:");
+export const isCamClip = (clip: string | null | undefined): clip is `cam:${string}` => !!clip && clip.startsWith("cam:");
 export const camIdOf = (clip: string): string => clip.slice(4);
 export const isValidCamId = (id: unknown): id is string => typeof id === "string" && /^[a-z0-9]{4,24}$/.test(id);
 

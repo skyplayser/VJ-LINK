@@ -37,7 +37,8 @@ export class Gallery {
   private selected: string = READY_GENERATORS[0]!.id;
   private engine: Engine | null = null;
   private live = el("canvas", "gal-live");
-  private thumbCanvas = el("canvas");
+  private nextDraw = 0;
+  private nextThumb = 0;
   private thumbs = new Map<string, string>();
   private queue: string[] = [];
   private armed = "";
@@ -45,11 +46,13 @@ export class Gallery {
 
   constructor(private d: GalleryDeps, private root: HTMLElement) {
     this.live.width = 640; this.live.height = 360;
-    this.thumbCanvas.width = 256; this.thumbCanvas.height = 144;
+  }
+
+  private start(): void {
     try {
       this.engine = new Engine(this.live, { transparent: false });
-      d.images.attach(this.engine);
-      this.engine.videoSource = (_k, id) => { const p = d.videos.posters.get(id); return p ? { el: p, w: p.width, h: p.height } : null; };
+      this.d.images.attach(this.engine);
+      this.engine.videoSource = (_k, id) => { const p = this.d.videos.posters.get(id); return p ? { el: p, w: p.width, h: p.height } : null; };
     } catch { this.engine = null; }
     this.render();
   }
@@ -65,14 +68,18 @@ export class Gallery {
 
   /** Einmal pro Bild, solange die Galerie offen ist. */
   tick(nowMs: number): void {
-    if (!this.engine || !this.root.offsetParent) return;
+    if (!this.root.offsetParent || nowMs < this.nextDraw) return;
+    this.nextDraw = nowMs + 32;
+    if (!this.live.isConnected) this.start();
+    if (!this.engine) return;
     const beat = this.d.ctx.tempo.beatAt(nowMs);
     const show = this.probeShow(this.section === "effects" ? null : this.selected);
-    // Ein Vorschaubild pro Bild nachziehen, damit die Oberfläche flüssig bleibt
-    let next = this.queue.shift();
+    // JPEG-Auslesen synchronisiert die GPU, deshalb nur einzelne Karten pro Sekunde nachziehen.
+    let next = nowMs >= this.nextThumb ? this.queue.shift() : undefined;
     // Visual wird noch übersetzt: hinten anstellen, sonst würde ein leeres Vorschaubild gespeichert
     if (next && !this.engine.clipReady(next)) { this.queue.push(next); next = undefined; }
     if (next) {
+      this.nextThumb = nowMs + 160;
       this.engine.resize(256, 144);
       this.engine.renderThumbs(this.probeShow(next), beat + 0.37, nowMs + 1500, [{ layer: 0, col: 0, clip: next, x: 0, y: 0, w: 256, h: 144 }]);
       try { this.thumbs.set(next, this.live.toDataURL("image/jpeg", 0.8)); } catch { /* ohne Bild */ }

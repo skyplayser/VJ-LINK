@@ -1747,7 +1747,7 @@ describe("Sprache", () => {
     for (const p of POST_EFFECTS) { const en = POST_EN[p.id]; expect(en?.[0], p.id).toBeTruthy(); expect(en?.[1], p.id).toBeTruthy(); }
     for (const c of Object.keys(CATEGORY_LABEL)) expect(CATEGORY_EN[c as keyof typeof CATEGORY_EN], c).toBeTruthy();
   });
-  it("übersetzt jeden Text im Code und in index.html", () => {
+  it("übersetzt jeden Text im Code und in index.html", async () => {
     const missing: string[] = [];
     const need = (k: string, where: string) => { if (!entry(k)?.en) missing.push(`${where}: ${k}`); };
     const walk = (d: string): string[] => readdirSync(d, { withFileTypes: true })
@@ -1755,14 +1755,20 @@ describe("Sprache", () => {
     for (const f of walk("src")) {
       const src = readFileSync(f, "utf8");
       for (const m of src.matchAll(/(?<![\w.$])t\(\s*("(?:[^"\\\n]|\\.)*")/g)) need(JSON.parse(m[1]!) as string, f);
+      // Handyseite: Statustexte und Fehlermeldungen werden erst beim Anzeigen übersetzt
+      if (f.includes("remote")) for (const m of src.matchAll(/(?:connection|pairError)\(\s*("(?:[^"\\\n]|\\.)+")/g)) need(JSON.parse(m[1]!) as string, f);
     }
-    const html = readFileSync("src/renderer/index.html", "utf8").replace(/&amp;/g, "&");
+    const { REMOTE_COLORS } = await import("../src/core/remote");
+    for (const [name] of REMOTE_COLORS) need(name, "Farben der Handyseite");
+    for (const file of ["src/renderer/index.html", "src/remote/index.html"]) {
+    const html = readFileSync(file, "utf8").replace(/&amp;/g, "&");
     for (const m of html.matchAll(/<[a-z0-9]+([^>]*)>([^<]*)/g)) {
       const attrs = m[1]!, at = (n: string) => new RegExp(`\\s${n}="([^"]*)"`).exec(attrs)?.[1];
       if (/\sdata-i18n(?=[\s=>]|$)/.test(attrs)) need(at("data-i18n") || m[2]!.trim(), "index.html");
       if (/\sdata-i18n-title/.test(attrs)) need(at("title")!, "index.html title");
       if (/\sdata-i18n-aria/.test(attrs)) need(at("aria-label")!, "index.html aria-label");
       if (/\sdata-i18n-ph/.test(attrs)) need(at("placeholder")!, "index.html placeholder");
+    }
     }
     expect(missing).toEqual([]);
   });
@@ -2160,5 +2166,155 @@ describe("Chase (Community-Funktion)", () => {
     expect(modulatable("layer.2.chase.gate")).toBe(true);
     expect(modulatable("layer.2.chase.step")).toBe(false);
     expect(modulatable("layer.2.chase.order")).toBe(false);
+  });
+});
+
+describe("Bildschirmbezogene Ausgabe", () => {
+  const target = { x: 123, y: 71, w: 640, h: 360 };
+
+  it("passt das vollständige Quellbild in Signalpixel ein", async () => {
+    const { devicePlacement } = await import("../src/core/layout");
+    expect(devicePlacement({ target, source: null, fit: "contain" }, 1280, 1024, 1280, 1024)).toEqual({
+      target, image: { x: 218, y: 71, w: 450, h: 360 }, region: [0, 0, 1, 1],
+    });
+  });
+
+  it("beschneidet mittig innerhalb eines oben links definierten Quellausschnitts", async () => {
+    const { devicePlacement } = await import("../src/core/layout");
+    const source = { x: 0.125, y: 0.25, w: 0.5, h: 0.5 };
+    const filled = devicePlacement({ target, source, fit: "cover" }, 1024, 1024, 1280, 1024);
+    expect(filled.image).toEqual(target);
+    expect(filled.region).toEqual([0.125, 0.359375, 0.5, 0.28125]);
+    expect(devicePlacement({ target, source, fit: "stretch" }, 1024, 1024, 1280, 1024).region).toEqual([0.125, 0.25, 0.5, 0.5]);
+  });
+
+  it("begrenzt die Ausgabe nach einem Wechsel der Signalauflösung", async () => {
+    const { devicePlacement } = await import("../src/core/layout");
+    expect(devicePlacement({ target, source: null, fit: "stretch" }, 600, 300, 640, 360).image).toEqual({ x: 123, y: 71, w: 517, h: 289 });
+  });
+
+  it("verwendet bekannte Monitorpixel statt gerundeter Windows-DIP-Größen", async () => {
+    const { displayPixels } = await import("../src/core/frame");
+    const display = { id: 1, label: "LED", width: 853, height: 683, scaleFactor: 1.5, primary: false, open: true };
+    expect(displayPixels(display)).toEqual({ w: 1280, h: 1025 });
+    expect(displayPixels({ ...display, pixels: { w: 1280, h: 1024 } })).toEqual({ w: 1280, h: 1024 });
+  });
+
+  it("speichert Geräte unabhängig und lädt alte Projekte ohne Geräteplatzierung", () => {
+    const legacy = { mode: "canvas" as const, screens: [{ id: 1, label: "LED", x: 0, y: 0, w: 1280, h: 1024 }] };
+    const devices = {
+      1: { target, source: null, fit: "contain" as const },
+      2: { target: { x: 0, y: 0, w: 1920, h: 1080 }, source: { x: 0.25, y: 0, w: 0.5, h: 1 }, fit: "stretch" as const },
+    };
+    const restored = parseProject(serializeProject(ctx(), [], [], [], { ...legacy, devices }))!.outputs;
+    expect(restored.mode).toBe("canvas");
+    expect(restored.screens).toEqual(legacy.screens);
+    expect(restored.devices).toEqual(devices);
+    expect(parseProject(serializeProject(ctx(), [], [], [], legacy))!.outputs.devices).toBeUndefined();
+  });
+});
+
+describe("Strobe und Blinder pro Bildschirm", () => {
+  it("hat getrennte Gerätevorgaben und speichert Überschreibungen ohne eigenes Zielrechteck", async () => {
+    const { defaultDeviceEffects } = await import("../src/core/layout");
+    expect(defaultDeviceEffects()).toEqual({ kind: "display", strobe: true, blinder: true });
+    expect(defaultDeviceEffects("projector")).toEqual({ kind: "projector", strobe: false, blinder: false });
+    expect(defaultDeviceEffects("led")).toEqual({ kind: "led", strobe: true, blinder: true });
+
+    const deviceEffects = { 1: defaultDeviceEffects("projector"), 2: { ...defaultDeviceEffects("led"), blinder: false } };
+    const output = { mode: "mapping" as const, screens: [], deviceEffects };
+    const restored = parseProject(serializeProject(ctx(), [], [], [], output))!.outputs;
+    expect(restored.deviceEffects).toEqual(deviceEffects);
+    expect(restored.devices).toBeUndefined();
+    expect(parseProject(serializeProject(ctx(), []))!.outputs.deviceEffects).toBeUndefined();
+  });
+
+  it("nutzt die Beamer-Vorgaben, wenn Effektwerte fehlen oder ungültig sind", () => {
+    const raw = { version: 1, outputs: { deviceEffects: { "-42": { kind: "projector", strobe: true, blinder: "ja" } } } };
+    expect(parseProject(JSON.stringify(raw))!.outputs.deviceEffects).toEqual({ "-42": { kind: "projector", strobe: true, blinder: false } });
+  });
+});
+
+describe("Clips im Visuals-Raster verschieben", () => {
+  it("verschiebt einen Clip in eine andere Ebene, ohne einen dort laufenden Clip zu ersetzen", async () => {
+    const { moveClip, applyScene } = await import("../src/core/show");
+    const c = ctx(), source = c.show.layers[0]!, target = c.show.layers[1]!;
+    source.clips = ["tunnel", "starfield"];
+    source.clip = "tunnel";
+    target.clips = ["plasma"];
+    target.clip = "plasma";
+    const scene = { name: "Intro", layers: [{ clip: "tunnel", clips: ["tunnel", "starfield"] }, { clip: "plasma", clips: ["plasma"] }] };
+    expect(moveClip(c.show, [scene], 0, 1, "tunnel", "plasma")).toBe(true);
+    expect(source.clips).toEqual(["starfield"]);
+    expect(source.clip).toBeNull();
+    expect(target.clips).toEqual(["tunnel", "plasma"]);
+    expect(target.clip).toBe("plasma");
+    applyScene(c.show, scene);
+    expect(source.clips).toEqual(["starfield"]);
+    expect(target.clips).toEqual(["tunnel", "plasma"]);
+    expect(source.clip).toBe("tunnel");
+  });
+
+  it("sortiert innerhalb der Ebene und lässt bei einem Umzug keine doppelten Clips zurück", async () => {
+    const { moveClip } = await import("../src/core/show");
+    const c = ctx(), source = c.show.layers[0]!, target = c.show.layers[1]!;
+    source.clips = ["tunnel", "starfield"];
+    source.clip = "tunnel";
+    target.clips = ["tunnel"];
+    target.clip = null;
+    expect(moveClip(c.show, [], 0, 0, "tunnel")).toBe(true);
+    expect(source.clips).toEqual(["starfield", "tunnel"]);
+    expect(source.clip).toBe("tunnel");
+    expect(moveClip(c.show, [], 0, 1, "tunnel")).toBe(true);
+    expect(target.clips).toEqual(["tunnel"]);
+    expect(target.clip).toBe("tunnel");
+    expect(moveClip(c.show, [], 0, 1, "tunnel")).toBe(false);
+  });
+});
+
+describe("Ausgangsnamen", () => {
+  it("tauscht beim Neuverbinden Geometrie, Mapping und Effektfreigaben zusammen", async () => {
+    const { remapLayout } = await import("../src/core/outputprofile");
+    const { newSurface, defaultDeviceEffects, fullOutput } = await import("../src/core/layout");
+    const outputs = [{ name: "LED-Wall", display: 10 }, { name: "Beamer", display: 20 }];
+    const base = {
+      mode: "mapping" as const, stage: { name: "Club", outputs }, screens: [],
+      surfaces: [newSurface(10, 1)],
+      devices: { 10: fullOutput(1280, 1024) },
+      deviceEffects: { 10: defaultDeviceEffects("led"), 20: defaultDeviceEffects("projector") },
+    };
+    const next = remapLayout(base, new Map([[10, 20], [20, 10]]));
+    expect(next.stage?.outputs).toEqual([{ name: "LED-Wall", display: 20 }, { name: "Beamer", display: 10 }]);
+    expect(next.devices?.[20]).toEqual(base.devices[10]);
+    expect(next.deviceEffects?.[10]?.strobe).toBe(false);
+    expect(next.surfaces?.[0]?.screen).toBe(20);
+    expect(base.stage.outputs[0]?.display).toBe(10);
+    expect(parseProject(serializeProject(ctx(), [], [], [], next))!.outputs.stage).toEqual(next.stage);
+  });
+});
+
+import { syncScreens as syncScreensNdi } from "../src/core/layout";
+describe("Anordnung folgt der Größe eines Ausgangs (NDI-Ausgang mit freier Größe)", () => {
+  const base = { mode: "canvas" as const, screens: [] };
+  it("neue Fläche merkt sich die eigene Größe", () => {
+    const l = syncScreensNdi(base, [{ id: -2, label: "NDI", w: 1920, h: 1080 }]);
+    expect(l.screens[0]).toMatchObject({ w: 1920, h: 1080, nat: [1920, 1080] });
+  });
+  it("unveränderte Fläche wächst mit, wenn sich die Größe des Ausgangs ändert", () => {
+    const l1 = syncScreensNdi(base, [{ id: -2, label: "NDI", w: 1920, h: 1080 }]);
+    const l2 = syncScreensNdi(l1, [{ id: -2, label: "NDI", w: 2816, h: 640 }]);
+    expect(l2.screens[0]).toMatchObject({ w: 2816, h: 640, nat: [2816, 640] });
+  });
+  it("von Hand geänderte Fläche bleibt", () => {
+    const l1 = syncScreensNdi(base, [{ id: -2, label: "NDI", w: 1920, h: 1080 }]);
+    l1.screens[0]!.w = 1000;
+    const l2 = syncScreensNdi(l1, [{ id: -2, label: "NDI", w: 2816, h: 640 }]);
+    expect(l2.screens[0]).toMatchObject({ w: 1000, h: 1080, nat: [2816, 640] });
+  });
+  it("merkt sich die eigene Größe auch im Projekt", () => {
+    const l = syncScreensNdi(base, [{ id: -2, label: "NDI", w: 2816, h: 640 }]);
+    expect(parseProject(serializeProject(ctx(), [], [], [], l))!.outputs.screens[0]!.nat).toEqual([2816, 640]);
+    const bad = { version: 1, outputs: { mode: "canvas", screens: [{ id: -2, label: "NDI", x: 0, y: 0, w: 100, h: 100, nat: [1, "x"] }] } };
+    expect(parseProject(JSON.stringify(bad))!.outputs.screens[0]!.nat).toBeUndefined();
   });
 });

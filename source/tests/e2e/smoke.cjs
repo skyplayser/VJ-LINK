@@ -34,6 +34,31 @@ let finished = false;
 const getJson = () => new Promise((res, rej) => http.get(`http://127.0.0.1:${PORT}/json`, r => { let b = ""; r.on("data", d => b += d); r.on("end", () => { try { res(JSON.parse(b)); } catch (e) { rej(e); } }); }).on("error", rej));
 
 /** Mittlere Helligkeit (0–255) eines PNG (8 Bit, RGB oder RGBA), ohne Zusatzpakete. */
+/** PNG (8 Bit, RGB/RGBA) entpacken: Breite, Höhe, Kanäle und Pixel zeilenweise. */
+function pngPixels(buf) {
+  const zlib = require("zlib");
+  let w = 0, h = 0, ch = 4; const idat = [];
+  for (let o = 8; o < buf.length; ) {
+    const len = buf.readUInt32BE(o), type = buf.toString("latin1", o + 4, o + 8), d = buf.subarray(o + 8, o + 8 + len);
+    if (type === "IHDR") { w = d.readUInt32BE(0); h = d.readUInt32BE(4); ch = d[9] === 6 ? 4 : d[9] === 2 ? 3 : 0; if (d[8] !== 8 || !ch) return null; }
+    else if (type === "IDAT") idat.push(d);
+    o += 12 + len;
+  }
+  const raw = zlib.inflateSync(Buffer.concat(idat)), stride = w * ch, out = Buffer.alloc(stride * h), prev = Buffer.alloc(stride);
+  for (let y = 0; y < h; y++) {
+    const f = raw[y * (stride + 1)], src = raw.subarray(y * (stride + 1) + 1, (y + 1) * (stride + 1)), row = out.subarray(y * stride, (y + 1) * stride);
+    for (let i = 0; i < stride; i++) {
+      const a = i >= ch ? row[i - ch] : 0, b = prev[i], cc = i >= ch ? prev[i - ch] : 0;
+      let p = 0;
+      if (f === 1) p = a; else if (f === 2) p = b; else if (f === 3) p = (a + b) >> 1;
+      else if (f === 4) { const pa = Math.abs(b - cc), pb = Math.abs(a - cc), pc = Math.abs(a + b - 2 * cc); p = pa <= pb && pa <= pc ? a : pb <= pc ? b : cc; }
+      row[i] = (src[i] + p) & 255;
+    }
+    row.copy(prev);
+  }
+  return { w, h, ch, at: (x, y) => { const i = y * stride + x * ch; return out[i] + out[i + 1] + out[i + 2]; } };
+}
+
 function pngBrightness(buf) {
   const zlib = require("zlib");
   let w = 0, h = 0, ch = 4; const idat = [];
@@ -237,6 +262,26 @@ async function main() {
     let ov = 0; const to = Date.now();
     while (Date.now() - to < 30000) { await wait(400); const sh = await o.send("Page.captureScreenshot", { format: "png", clip: { x: 0, y: 0, width: 400, height: 300, scale: 0.5 } }); ov = sh.result?.data ? pngBrightness(Buffer.from(sh.result.data, "base64")) : 0; if (ov >= 2) break; }
     log("Ausgang öffnen und Bild zeigen", ov >= 2, `nach ${((Date.now() - to) / 1000).toFixed(1)} s`);
+    // 10b) Bildfläche in Signalpixeln: LED-Controller 1280 × 1024, Wand nur 140/56 · 280 × 112 (weißes Testbild)
+    {
+      await c.eval("window.vj.windowOutputSize(1280, 1024), true"); await wait(800);
+      await c.eval("(()=>{ const s = window.__vj.ctx.show; s.testPattern = 'white'; s.testCard = true; window.__vj.setDevice(-1, { target: { x: 140, y: 56, w: 280, h: 112 }, source: null, fit: 'stretch' }); return true })()");
+      let px = null, dpr = 1, cw = 0, okEdges = false, detail = "";
+      for (let i = 0; i < 20 && !okEdges; i++) {
+        await wait(400);
+        [dpr, cw] = JSON.parse(await o.send("Runtime.evaluate", { expression: "JSON.stringify([devicePixelRatio, document.querySelector('canvas').width])", returnByValue: true }).then(r => r.result?.result?.value ?? "[1,0]"));
+        const sh = await o.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false });
+        px = sh.result?.data ? pngPixels(Buffer.from(sh.result.data, "base64")) : null;
+        if (!px) continue;
+        const k = px.w / cw, at = (x, y) => px.at(Math.floor((x + 0.5) * k), Math.floor((y + 0.5) * k));
+        const inside = [[140, 56], [419, 56], [140, 167], [419, 167], [280, 112]].map(([x, y]) => at(x, y));
+        const outside = [[139, 56], [140, 55], [420, 56], [140, 168], [419, 168], [10, 10], [1270, 1014]].map(([x, y]) => at(x, y));
+        okEdges = cw === 1280 && inside.every(v => v > 600) && outside.every(v => v < 30);
+        detail = `Ausgang ${cw} px (Faktor ${dpr}) · innen ${inside.join("/")} · außen ${outside.join("/")}`;
+      }
+      log("Bildfläche 140/56 · 280 × 112 pixelgenau", okEdges, detail);
+      await c.eval("(()=>{ window.__vj.setDevice(-1, null); window.__vj.ctx.show.testCard = false; return true })()");
+    }
     try { o.ws.close(); } catch { /* egal */ }
     await c.eval("window.vj.toggleOutput(-1)"); await wait(1500);
     const left = (await getJson()).filter(p => /output\.html/.test(p.url)).length;

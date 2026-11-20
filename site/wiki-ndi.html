@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-de="NDI®-Ausgang: Visuals ins Netzwerk senden | VJ-Link">NDI® output: send visuals into the network | VJ-Link</title>
+<meta name="description" content="Send VJ-Link as up to four NDI sources with free size and frame rate, e.g. to VD-Link, OBS or Resolume." data-de-content="VJ-Link als bis zu vier NDI-Quellen mit freier Größe und Bildrate senden, z. B. an VD-Link, OBS oder Resolume.">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+<meta name="author" content="SKYPLAYSER / NEXTPHILM">
+<link rel="canonical" href="https://skyplayser.github.io/VJ-LINK/wiki-ndi.html" data-de-href="https://skyplayser.github.io/VJ-LINK/de/wiki-ndi.html">
+<link rel="alternate" hreflang="en" href="https://skyplayser.github.io/VJ-LINK/wiki-ndi.html">
+<link rel="alternate" hreflang="de" href="https://skyplayser.github.io/VJ-LINK/de/wiki-ndi.html">
+<link rel="alternate" hreflang="x-default" href="https://skyplayser.github.io/VJ-LINK/wiki-ndi.html">
+<link rel="icon" href="images/logo.png" type="image/png">
+<link rel="apple-touch-icon" href="images/logo.png">
+<meta name="theme-color" content="#07090c">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="VJ-Link">
+<meta property="og:locale" content="en_US" data-de-content="de_DE">
+<meta property="og:locale:alternate" content="de_DE" data-de-content="en_US">
+<meta property="og:title" content="VJ-Link Wiki – NDI® output: send visuals into the network" data-de-content="VJ-Link Wiki – NDI®-Ausgang: Visuals ins Netzwerk senden">
+<meta property="og:description" content="Send VJ-Link as up to four NDI sources with free size and frame rate, e.g. to VD-Link, OBS or Resolume." data-de-content="VJ-Link als bis zu vier NDI-Quellen mit freier Größe und Bildrate senden, z. B. an VD-Link, OBS oder Resolume.">
+<meta property="og:image" content="https://skyplayser.github.io/VJ-LINK/images/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://skyplayser.github.io/VJ-LINK/wiki-ndi.html" data-de-content="https://skyplayser.github.io/VJ-LINK/de/wiki-ndi.html">
+<meta name="twitter:card" content="summary_large_image">
+<!-- structured-data -->
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="docs-page">
+<header class="top">
+  <div class="wrap dwrap">
+    <a href="./" class="brand" style="display:flex;align-items:center;gap:10px"><img src="images/logo.png" alt="" width="32" height="32"><span>VJ-Link</span><span class="brand-sub">Wiki</span></a>
+    <button class="menu-btn" id="menu" aria-label="Menu" aria-expanded="false">&#9776;</button>
+    <nav id="nav">
+      <a href="./#features" data-de="Funktionen">Features</a>
+      <a href="./#download">Download</a>
+      <a href="wiki.html">Wiki</a>
+      <a href="wiki-help.html" data-de="Hilfe">Help</a>
+      <a href="https://discord.gg/N6DMca4Bjk" rel="noopener">Discord</a>
+      <a href="https://github.com/skyplayser/VJ-LINK">GitHub</a>
+      <a class="lang" id="lang" href="de/wiki-ndi.html" hreflang="de" lang="de" title="Deutsch" data-de-href="../wiki-ndi.html" data-de-hreflang="en" data-de-lang="en" data-de-title="English" data-de="EN" style="text-decoration:none">DE</a>
+    </nav>
+  </div>
+</header>
+<nav class="dtabs" aria-label="Wiki sections" data-de-aria-label="Wiki-Bereiche"><div class="dwrap"><a class="dtab" href="wiki.html" data-de="Start">Start</a><a class="dtab" href="wiki-layers.html" data-de="Visuals">Visuals</a><a class="dtab" href="wiki-mapping.html" data-de="Steuerung">Control</a><a class="dtab" href="wiki-desks.html" data-de="Lichtpulte">Light desks</a><a class="dtab" href="wiki-ljlink.html" data-de="LJ-Link">LJ-Link</a><a class="dtab on" href="wiki-outputs.html" data-de="Ausgänge">Outputs</a><a class="dtab" href="wiki-scenes.html" data-de="Show">Show</a><a class="dtab" href="wiki-help.html" data-de="Hilfe">Help</a></div></nav>
+<div class="docs dwrap">
+  <button class="dside-btn" id="dside-btn" aria-controls="dside" aria-expanded="false"><span aria-hidden="true">&#9776;</span> <span data-de="Inhalt des Wikis">Wiki contents</span></button>
+  <aside class="dside" id="dside"><nav aria-label="Wiki pages" data-de-aria-label="Wiki-Seiten"><p class="dgroup">Start</p><a class="dlink" href="wiki.html" data-de="Übersicht">Overview</a><a class="dlink" href="wiki-quickstart.html" data-de="Schnellstart">Quick start</a><a class="dlink" href="wiki-install.html" data-de="Installieren und aktualisieren">Install and update</a><a class="dlink" href="wiki-interface.html" data-de="Die Oberfläche">The interface</a><a class="dlink" href="wiki-use-cases.html" data-de="Anwendungsfälle">Use cases</a><a class="dlink" href="wiki-features.html" data-de="Alle Funktionen">All features</a><p class="dgroup">Visuals</p><a class="dlink" href="wiki-layers.html" data-de="Ebenen und Clips">Layers and clips</a><a class="dlink" href="wiki-visuals.html" data-de="Die 150 Visuals">The 150 visuals</a><a class="dlink" href="wiki-effects.html" data-de="Effekte">Effects</a><a class="dlink" href="wiki-media.html" data-de="Logos, Videos und Text">Logos, videos and text</a><a class="dlink" href="wiki-camera.html" data-de="Kameras und Personen-Erkennung">Cameras and person detection</a><p class="dgroup" data-de="Steuerung">Control</p><a class="dlink" href="wiki-mapping.html" data-de="Mapping: Tastatur, MIDI, DMX, OSC">Mapping: keyboard, MIDI, DMX, OSC</a><a class="dlink" href="wiki-modulation.html" data-de="Modulation: LFO und Audio">Modulation: LFO and audio</a><a class="dlink" href="wiki-tempo.html" data-de="Tempo und Takt">Tempo and beat</a><a class="dlink" href="wiki-connections.html" data-de="Verbindungen (Tab VERBINDEN)">Connections (CONNECT tab)</a><a class="dlink" href="wiki-phone-remote.html" data-de="Handy-Fernsteuerung">Phone remote</a><a class="dlink" href="wiki-audio.html" data-de="Audio-Eingang">Audio input</a><p class="dgroup" data-de="Lichtpulte">Light desks</p><a class="dlink" href="wiki-desks.html" data-de="Alle Pulte">All desks</a><a class="dlink" href="wiki-desk.html" data-de="Grundlagen und Kanalliste">Basics and channel list</a><a class="dlink" href="wiki-desk-grandma2.html" data-de="grandMA2">grandMA2</a><a class="dlink" href="wiki-desk-grandma3.html" data-de="grandMA3">grandMA3</a><a class="dlink" href="wiki-desk-dot2.html" data-de="dot2">dot2</a><a class="dlink" href="wiki-desk-chamsys.html" data-de="ChamSys MagicQ">ChamSys MagicQ</a><a class="dlink" href="wiki-desk-avolites.html" data-de="Avolites">Avolites</a><a class="dlink" href="wiki-desk-hog.html" data-de="Hog 4">Hog 4</a><a class="dlink" href="wiki-desk-etc.html" data-de="ETC Eos">ETC Eos</a><a class="dlink" href="wiki-desk-onyx.html" data-de="Onyx">Onyx</a><a class="dlink" href="wiki-desk-daslight.html" data-de="Daslight">Daslight</a><a class="dlink" href="wiki-desk-lightkey.html" data-de="Lightkey">Lightkey</a><a class="dlink" href="wiki-desk-qlc.html" data-de="QLC+">QLC+</a><a class="dlink" href="wiki-desk-lightshark.html" data-de="LightShark">LightShark</a><a class="dlink" href="wiki-desk-zero88.html" data-de="Zero 88 FLX">Zero 88 FLX</a><a class="dlink" href="wiki-desk-freestyler.html" data-de="FreeStyler">FreeStyler</a><a class="dlink" href="wiki-desk-dmx-only.html" data-de="Ohne Netzwerk">Without network</a><p class="dgroup">LJ-Link</p><a class="dlink" href="wiki-ljlink.html" data-de="VJ-Link und LJ-Link">VJ-Link and LJ-Link</a><a class="dlink" href="wiki-ljlink-setups.html" data-de="Aufbauten mit LJ-Link">Setups with LJ-Link</a><p class="dgroup" data-de="Ausgänge">Outputs</p><a class="dlink" href="wiki-outputs.html" data-de="Bildschirme und Leinwand">Screens and canvas</a><a class="dlink" href="wiki-output-area.html" data-de="Bildfläche, Geräte und Profile">Image area, devices and profiles</a><a class="dlink on" href="wiki-ndi.html" aria-current="page" data-de="NDI®-Ausgang">NDI® output</a><div class="dsub"><a href="#setting-up" data-de="Einrichten">Setting up</a><a href="#network-and-performance" data-de="Netzwerk und Leistung">Network and performance</a><a href="#troubleshooting" data-de="Fehlerhilfe">Troubleshooting</a></div><a class="dlink" href="wiki-mapping-projection.html" data-de="Projektionsmapping">Projection mapping</a><p class="dgroup">Show</p><a class="dlink" href="wiki-scenes.html" data-de="Szenen und Übergänge">Scenes and transitions</a><a class="dlink" href="wiki-show.html" data-de="SHOW und Timeline">SHOW and timeline</a><a class="dlink" href="wiki-timecode.html" data-de="Timecode">Timecode</a><a class="dlink" href="wiki-projects.html" data-de="Projekte">Projects</a><p class="dgroup" data-de="Hilfe">Help</p><a class="dlink" href="wiki-help.html" data-de="Fehlersuche">Troubleshooting</a><a class="dlink" href="wiki-reference.html" data-de="Referenz">Reference</a><a class="dlink" href="wiki-glossary.html" data-de="Glossar">Glossary</a></nav></aside>
+  <main class="dbody article wiki">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="wiki.html">Wiki</a> › <span data-de="Ausgänge">Outputs</span> › <span data-de="NDI®-Ausgang">NDI® output</span></nav>
+    <h1><span class="kicker" data-de="Ausgänge">Outputs</span><span data-de="NDI®-Ausgang">NDI® output</span></h1>
+    <p class="tag" data-de="Das Bild ins Netz senden.">Send the picture into the network.</p>
+    <p><span data-de="VJ-Link sendet sein Bild als ">VJ-Link sends its picture as an </span><b data-de="NDI®-Quelle">NDI® source</b><span data-de=" ins Netzwerk, etwa an VD-Link (Videowände), OBS, Resolume oder einen NDI-Monitor. Es rechnet das Bild unsichtbar in genau der gewählten Größe, ohne Fenster und ohne Bildschirm, also auch unter Windows ohne virtuellen Monitor. VJ-Link sendet nur; NDI empfangen kann es nicht."> into the network, for example to VD-Link (video walls), OBS, Resolume or an NDI monitor. It renders the picture invisibly in exactly the chosen size, without a window or a screen, so it also works on Windows without a virtual monitor. VJ-Link only sends; it does not receive NDI.</span></p><figure class="ddiag"><svg viewBox="0 0 760 190" role="img" aria-label="NDI output: from VJ-Link into the network" data-de-aria-label="NDI-Ausgang: von VJ-Link ins Netzwerk" xmlns="http://www.w3.org/2000/svg"><line x1="195" y1="95" x2="245" y2="95" stroke="#9aa6b6" stroke-width="2.5" stroke-dasharray="1 5"/><rect x="193" y="85" width="54" height="20" rx="6" fill="#07090c" stroke="#9aa6b6"/><text x="220" y="99" text-anchor="middle" font-size="12" fill="#9aa6b6" data-de="Bilder">frames</text><line x1="415" y1="95" x2="465" y2="95" stroke="#60a5fa" stroke-width="2.5"/><line x1="595" y1="71" x2="617" y2="63" stroke="#60a5fa" stroke-width="2.5"/><line x1="595" y1="95" x2="615" y2="95" stroke="#60a5fa" stroke-width="2.5"/><line x1="595" y1="119" x2="617" y2="127" stroke="#60a5fa" stroke-width="2.5"/><rect x="25" y="60" width="170" height="70" rx="10" fill="#1a1530" stroke="#8b5cf6" stroke-width="1.5"/><text x="110" y="92" text-anchor="middle" font-size="14" font-weight="600" fill="#eef2f7" data-de="VJ-Link">VJ-Link</text><text x="110" y="109" text-anchor="middle" font-size="11.5" fill="#9aa6b6" data-de="NDI-Ausgang, unsichtbar">NDI output, invisible</text><rect x="245" y="60" width="170" height="70" rx="10" fill="#1b1b1b" stroke="#9aa6b6" stroke-width="1.5"/><text x="330" y="92" text-anchor="middle" font-size="14" font-weight="600" fill="#eef2f7" data-de="NDI-Laufzeit">NDI runtime</text><text x="330" y="109" text-anchor="middle" font-size="11.5" fill="#9aa6b6" data-de="eigener Prozess, von NDI">own process, from NDI</text><rect x="465" y="65" width="130" height="60" rx="10" fill="#0f2219" stroke="#22c55e" stroke-width="1.5"/><text x="530" y="92" text-anchor="middle" font-size="14" font-weight="600" fill="#eef2f7" data-de="Netzwerk">Network</text><text x="530" y="109" text-anchor="middle" font-size="11.5" fill="#9aa6b6" data-de="LAN">LAN</text><rect x="615" y="17" width="130" height="46" rx="10" fill="#13233f" stroke="#3b82f6" stroke-width="1.5"/><text x="680" y="45" text-anchor="middle" font-size="14" font-weight="600" fill="#eef2f7" data-de="VD-Link">VD-Link</text><rect x="615" y="72" width="130" height="46" rx="10" fill="#13233f" stroke="#3b82f6" stroke-width="1.5"/><text x="680" y="100" text-anchor="middle" font-size="14" font-weight="600" fill="#eef2f7" data-de="OBS">OBS</text><rect x="615" y="127" width="130" height="46" rx="10" fill="#13233f" stroke="#3b82f6" stroke-width="1.5"/><text x="680" y="155" text-anchor="middle" font-size="14" font-weight="600" fill="#eef2f7" data-de="Resolume …">Resolume …</text></svg></figure><h2 id="setting-up" data-de="Einrichten">Setting up</h2><ol class="dsteps"><li><p><b data-de="NDI-Laufzeit">Install the NDI runtime</b><span data-de=" einmal installieren. VJ-Link nutzt die kostenlose Laufzeit von NDI und liefert sie nicht mit. Sie ist in den "> once. VJ-Link uses the free runtime from NDI and does not ship it. It is part of the </span><a href="https://ndi.video/tools/" rel="noopener">NDI Tools</a><span data-de=" enthalten; fehlt sie, zeigt die NDI-Zeile ">; if it is missing, the NDI row shows </span><b data-de="NDI-Laufzeit laden">Get NDI runtime</b>.</p></li><li><p><b data-de="AUSGABE">OUTPUT</b> → <b data-de="NDI®-Ausgang">NDI® output</b><span data-de=": Name, Größe und Bildrate wählen, dann ">: choose name, size and frame rate, then </span><b data-de="Senden">Send</b>.</p></li><li><p><span data-de="Die Quelle erscheint im Netz als ">The source appears in the network as </span><b data-de="„RECHNERNAME (Name)“">“COMPUTER (name)”</b><span data-de=". Die Zeile zeigt die gesendeten Bilder je Sekunde und die verbundenen Empfänger.">. The row shows the frames per second sent and the connected receivers.</span></p></li><li><p><span data-de="Unter ">Under </span><b data-de="Anordnung">Arrangement</b><span data-de=" ist jeder NDI-Ausgang ein Ausgang wie ein Bildschirm: auf der Leinwand bekommt er seinen Teil, im Mapping eigene Leinwände und Masken."> every NDI output is an output like a screen: on the canvas it gets its part, in mapping its own canvases and masks.</span></p></li></ol><figure class="dfig"><img class="pic" src="images/ndi-outputs-guide.png" alt="Two NDI outputs: “Wall” sends 2816 × 640, “Ceiling” is ready" data-de-alt="Zwei NDI-Ausgänge: „Wand“ sendet 2816 × 640, „Decke“ ist bereit" loading="lazy"></figure><ol class="dguide"><li><b>Name</b><span data-de=" der Quelle im Netz."> of the source in the network.</span></li><li><b data-de="Größe">Size</b><span data-de=": 720p bis 4K, hochkant, oder ">: 720p to 4K, portrait, or </span><b data-de="Eigene Größe …">Custom size …</b><span data-de=", z. B. 2816 × 640 für eine Reihe LED-Module.">, e.g. 2816 × 640 for a row of LED panels.</span></li><li><b data-de="Bildrate">Frame rate</b><span data-de=": 25, 30, 50 oder 60 je Sekunde.">: 25, 30, 50 or 60 per second.</span></li><li><b data-de="Stand">Status</b><span data-de=": Name im Netz, Bilder je Sekunde, Empfänger.">: name in the network, frames per second, receivers.</span></li><li><b data-de="Senden">Send</b> / <b data-de="Schließen">Close</b>.</li><li><b data-de="+ NDI-Ausgang">+ NDI output</b><span data-de=": bis zu vier Quellen, z. B. Wand und Decke mit eigenem LED-Prozessor. ">: up to four sources, e.g. wall and ceiling with their own LED processor. </span><b data-de="Letzten entfernen">Remove last</b><span data-de=" nimmt den letzten weg."> takes the last one away.</span></li><li data-de="Markenhinweis mit Link zu ndi.video.">Trademark notice with a link to ndi.video.</li></ol><div class="adm tip"><p class="adm-t"><span class="adm-i" aria-hidden="true">✓</span><span data-de="Tipp">Tip</span></p><p><span data-de="VJ-Link merkt sich Name, Größe und Bildrate. Ein NDI-Ausgang, der beim Beenden gesendet hat, sendet nach dem nächsten Start wieder; erst ">VJ-Link remembers name, size and frame rate. An NDI output that was sending when VJ-Link quit sends again after the next start; only </span><b data-de="Schließen">Close</b><span data-de=" schaltet ihn dauerhaft aus."> switches it off for good.</span></p></div><h2 id="network-and-performance" data-de="Netzwerk und Leistung">Network and performance</h2><ul><li data-de="NDI läuft in einem eigenen Prozess: ein Fehler dort beendet VJ-Link nicht.">NDI runs in its own process: an error there does not stop VJ-Link.</li><li><span data-de="Vor ">Before </span><b data-de="Senden">Send</b><span data-de=" wird nichts von NDI geladen und nichts geht ins Netz."> nothing of NDI is loaded and nothing goes into the network.</span></li><li data-de="1080p mit 60 Bildern/s braucht je nach Inhalt rund 100–150 Mbit/s. Im WLAN lieber 30 Bilder/s oder 1280 × 720.">1080p at 60 frames per second needs about 100–150 Mbit/s depending on the content. On Wi-Fi rather 30 frames per second or 1280 × 720.</li></ul><h2 id="troubleshooting" data-de="Fehlerhilfe">Troubleshooting</h2><div class="table"><table><thead><tr><th>Problem</th><th data-de="Lösung">Solution</th></tr></thead><tbody><tr><td><span data-de="Die Zeile zeigt ">The row shows </span><b data-de="NDI-Laufzeit laden">Get NDI runtime</b></td><td><span data-de="die NDI-Laufzeit oder die NDI Tools installieren, dann VJ-Link neu starten">install the NDI runtime or the NDI Tools, then restart VJ-Link</span></td></tr><tr><td><span data-de="„Sendet“ mit Bildern, aber kein Empfänger findet die Quelle (macOS)">“Sends” with frames, but no receiver finds the source (macOS)</span></td><td><span data-de="Systemeinstellungen → Datenschutz &amp; Sicherheit → ">System Settings → Privacy &amp; Security → </span><b data-de="Lokales Netzwerk">Local Network</b><span data-de=": VJ-Link erlauben (und den VJ-Link-Helfer, falls aufgeführt)">: allow VJ-Link (and the VJ-Link helper, if listed)</span></td></tr><tr><td><span data-de="Kein Empfänger findet die Quelle (Windows)">No receiver finds the source (Windows)</span></td><td><span data-de="VJ-Link in der Windows-Firewall für private Netzwerke erlauben (Windows fragt beim ersten Mal); NDI braucht mDNS/Bonjour zum Finden">allow VJ-Link in the Windows firewall for private networks (Windows asks the first time); NDI needs mDNS/Bonjour to be found</span></td></tr><tr><td><span data-de="Die Bildrate bricht ein">Frame rate drops</span></td><td><span data-de="30 Bilder/s oder eine kleinere Größe nehmen, lieber Netzwerkkabel statt WLAN">use 30 frames per second or a smaller size, prefer a network cable over Wi-Fi</span></td></tr><tr><td><span data-de="Zwei Quellen mit gleichem Namen">Two sources with the same name</span></td><td><span data-de="nicht möglich: jeder NDI-Ausgang braucht einen eigenen Namen">not possible: every NDI output needs its own name</span></td></tr></tbody></table></div><div class="adm info"><p class="adm-t"><span class="adm-i" aria-hidden="true">i</span><span>Info</span></p><p><span data-de="NDI® ist eine eingetragene Marke der Vizrt NDI AB. VJ-Link ist kein Produkt von NDI und wird von NDI weder unterstützt noch geprüft. VJ-Link liefert keine NDI-Dateien mit; die Bedingungen für die NDI-Teile stehen in ">NDI® is a registered trademark of Vizrt NDI AB. VJ-Link is not a product of NDI and is not endorsed or tested by NDI. VJ-Link ships no NDI files; the terms for the NDI parts are in </span><a href="https://github.com/skyplayser/VJ-LINK/blob/main/source/docs/NDI.md" rel="noopener">docs/NDI.md</a>.</p></div>
+    <div class="adm community"><p class="adm-t"><span class="adm-i" aria-hidden="true">💬</span><span data-de="Fehlt etwas oder stimmt etwas nicht?">Something missing or wrong?</span></p><p><span data-de="Frag auf unserem ">Ask in our </span><a href="https://discord.gg/N6DMca4Bjk" rel="noopener">Discord</a><span data-de=" oder "> or </span><a href="wiki-help.html#report" data-de="melde ein Problem">report a problem</a><span data-de=". Am meisten helfen Berichte von echten Geräten, auch wenn etwas nicht klappt.">. Reports from real gear help most, also when something does not work.</span></p></div>
+    <nav class="dpn"><a class="prev" href="wiki-output-area.html"><small data-de="Zurück">Previous</small><span data-de="← Bildfläche, Geräte und Profile">← Image area, devices and profiles</span></a><a class="next" href="wiki-mapping-projection.html"><small data-de="Weiter">Next</small><span data-de="Projektionsmapping →">Projection mapping →</span></a></nav>
+  </main>
+</div>
+<footer>
+  <div class="wrap">
+    <p data-de="Open Source unter der Eclipse Public License 2.0, ohne Gewährleistung. Die Personen-Erkennung nutzt MediaPipe (Apache-2.0). VJ-Link ist ein unabhängiges Projekt und kein offizielles Produkt der genannten Hersteller; alle Marken gehören ihren Inhabern und werden nur genannt, um die Kompatibilität zu beschreiben. Ableton und Link sind Marken der Ableton AG. NDI® ist eine eingetragene Marke der Vizrt NDI AB; VJ-Link ist kein Produkt von NDI. Art-Net™ Designed by and Copyright Artistic Licence Holdings Ltd.">Open source under the Eclipse Public License 2.0, without warranty. Person detection uses MediaPipe (Apache-2.0). VJ-Link is an independent project and not an official product of, or endorsed by, any of the manufacturers named; all trademarks belong to their owners and are used only to describe compatibility. Ableton and Link are trademarks of Ableton AG. NDI® is a registered trademark of Vizrt NDI AB; VJ-Link is not a product of NDI. Art-Net™ Designed by and Copyright Artistic Licence Holdings Ltd.</p>
+    <p><a href="https://github.com/skyplayser/VJ-LINK">GitHub</a> · <a href="https://github.com/skyplayser/VJ-LINK/releases" data-de="Versionen">Releases</a> · <a href="wiki.html">Wiki</a> · <a href="wiki-help.html" data-de="Hilfe">Help</a> · <a href="https://discord.gg/N6DMca4Bjk" rel="noopener">Discord</a> · <a href="https://github.com/skyplayser/VJ-LINK/issues">Issues</a> · <a href="free-vj-software.html" data-de="Kostenlose VJ-Software">Free VJ software</a> · <a href="grandma-visuals.html" data-de="Visuals mit grandMA">Visuals with grandMA</a> · <a href="projection-mapping-software.html" data-de="Projektionsmapping">Projection mapping</a> · <a href="https://github.com/skyplayser/VJ-LINK/tree/main/source" data-de="Quellcode">Source code</a> · <a href="https://github.com/skyplayser/VJ-LINK/blob/main/LICENSE" data-de="Lizenz">License</a> · <a href="https://skyplayser.github.io/LJ-Link/" data-de-href="https://skyplayser.github.io/LJ-Link/de/" data-de="Probier auch: LJ-Link">Try also: LJ-Link</a> · <a href="impressum.html">Impressum</a> · <a href="datenschutz.html" data-de="Datenschutz">Privacy</a></p>
+    <p class="credit">Idea SKYPLAYSER/NEXTPHILM<br>Prompted with ❤️ made by Claude</p>
+  </div>
+</footer>
+
+<div class="viewer" id="viewer" role="dialog" aria-label="Picture"><img alt=""></div>
+
+<script>
+  (function () {
+    var b = document.getElementById("dside-btn"), s = document.getElementById("dside");
+    if (b && s) b.addEventListener("click", function () { var o = s.classList.toggle("open"); b.setAttribute("aria-expanded", o); });
+    // Keep the current page visible in the side navigation and the current section in the tabs.
+    var on = document.querySelector(".dlink.on"), side = document.getElementById("dside");
+    if (on && side && side.scrollHeight > side.clientHeight) side.scrollTop = on.offsetTop - side.clientHeight / 3;
+    var tab = document.querySelector(".dtab.on");
+    if (tab) tab.parentNode.scrollLeft = tab.offsetLeft - 16;
+    if (location.hash) { var d = document.querySelector(location.hash); if (d && d.tagName === "DETAILS") d.open = true; }
+  })();
+</script>
+<script>
+  (function () {
+    // Language: English at /, German at /de/ (built from data-de). A saved choice wins, otherwise a German
+    // browser goes from / to /de/ on the first visit. The button is a plain link, so search engines see both.
+    var langBtn = document.getElementById("lang");
+    var lang = document.documentElement.lang === "de" ? "de" : "en";
+    var saved = null;
+    try { saved = localStorage.getItem("vj-lang"); } catch (e) { /* private mode */ }
+    var want = saved || ((navigator.language || "en").toLowerCase().indexOf("de") === 0 ? "de" : "en");
+    if (langBtn && want !== lang && (saved || lang === "en")) { location.replace(langBtn.href + location.hash); return; }
+    if (langBtn) langBtn.addEventListener("click", function () {
+      try { localStorage.setItem("vj-lang", lang === "de" ? "en" : "de"); } catch (e) { /* private mode */ }
+    });
+
+    // The download that fits this computer is highlighted and used by the big button.
+    var ua = navigator.userAgent, os = /Windows/.test(ua) ? "win" : /Mac/.test(ua) ? "mac-arm" : null;
+    var card = os && document.querySelector('.dl .card[data-os="' + os + '"]');
+    if (card) {
+      card.classList.add("suggested");
+      var hero = document.getElementById("hero-download");
+      if (hero && os === "win") hero.href = card.querySelector("a").href;
+    }
+
+    // The newest version, from GitHub (only on pages that show it).
+    var heroV = document.getElementById("hero-version"), dlV = document.getElementById("dl-version");
+    if (heroV || dlV) fetch("https://api.github.com/repos/skyplayser/VJ-LINK/releases/latest")
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        if (!j || !j.tag_name) return;
+        var v = j.tag_name.replace(/^v/, ""), de = lang === "de";
+        if (heroV) heroV.textContent = "Version " + v + " · ";
+        if (dlV) dlV.textContent = de ? "Aktuelle Version: " + v + "." : "Current version: " + v + ".";
+      })
+      .catch(function () { /* offline: no version line */ });
+
+    // Phone menu.
+    var menu = document.getElementById("menu"), nav = document.getElementById("nav");
+    if (menu && nav) {
+      menu.onclick = function () { var open = nav.classList.toggle("open"); menu.setAttribute("aria-expanded", open); };
+      nav.addEventListener("click", function (e) { if (e.target.tagName === "A") nav.classList.remove("open"); });
+    }
+
+    // Pictures open large.
+    var viewer = document.getElementById("viewer");
+    if (viewer) {
+      document.querySelectorAll(".gallery img, .split img, .dfig img").forEach(function (img) {
+        img.addEventListener("click", function () { viewer.querySelector("img").src = img.src; viewer.classList.add("open"); });
+      });
+      viewer.onclick = function () { viewer.classList.remove("open"); };
+      document.addEventListener("keydown", function (e) { if (e.key === "Escape") viewer.classList.remove("open"); });
+    }
+  })();
+</script>
+</body>
+</html>

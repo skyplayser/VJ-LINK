@@ -1,17 +1,22 @@
-import { existsSync, promises as fsp, unlinkSync, writeFileSync } from "node:fs";
+import { existsSync, promises as fsp, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import { BrowserWindow, Menu, app, dialog, ipcMain, nativeImage, powerMonitor, powerSaveBlocker, protocol, screen, session, shell, systemPreferences, type Display, type MenuItemConstructorOptions } from "electron";
 import path from "node:path";
+import { PhoneRemote } from "./remote";
+import type { RemoteState } from "../core/remote";
 import { Network } from "./network";
 import { Storage } from "./storage";
 import { LinkClient } from "./link";
-import { ProjectFiles } from "./projectfile";
+import { ProjectFiles, verifyShowPackage } from "./projectfile";
+import { monitorPixels } from "./monitor-pixels";
 import { Updater } from "./updater";
 import { ChatNet } from "./suitechat";
 import { CHAT_PORT } from "../core/suitechat";
 import { detectLauncher, type LauncherInfo } from "./suite/launcher-detect";
 import { introEnabled, introWanted, parseOwnIntro, parseSuiteIntro, type IntroOwn } from "../core/intro";
-import { PROJECT_EXT } from "../core/projectfile";
-import { WINDOW_OUTPUT, WINDOW_SIZES, type ControlEvent, type DisplayInfo, type Frame, type MediaEvent, type NetConfig } from "../core/frame";
+import { PROJECT_EXT, projectRefs } from "../core/projectfile";
+import { NdiSender } from "./ndi/ndi";
+import { NDI_FPS, NDI_HOME_URL, findRuntime, ndiRuntimeUrl } from "./ndi/ndi-paths";
+import { NDI_OUTPUT, WINDOW_OUTPUT, WINDOW_SIZES, type ControlEvent, type DisplayInfo, type Frame, type MediaEvent, type NetConfig, type OutputStats, NDI_MAX, NDI_MAX_SIZE, NDI_MIN_SIZE, isNdiOutput } from "../core/frame";
 import { LANGS, detectLang, setLang, t, type Lang } from "../core/i18n";
 
 // Eigenes Protokoll für Videos: streamt aus dem Bibliotheksordner, spulbar, für WebGL freigegeben.
@@ -93,13 +98,19 @@ app.on("open-url", (e, url) => {
 });
 
 const rendererFile = (name: string) => path.join(__dirname, "..", "renderer", name);
+const phone = new PhoneRemote(rendererFile("remote"), command => {
+  if (control && !control.isDestroyed()) control.webContents.send("control", { type: "remote", command });
+}, clip => {
+  if (control && !control.isDestroyed()) control.webContents.send("control", { type: "remote-thumbnail", clip });
+});
 
-function secureWindow(opts: Electron.BrowserWindowConstructorOptions): BrowserWindow {
+function secureWindow(opts: Electron.BrowserWindowConstructorOptions, prefs: Electron.WebPreferences = {}): BrowserWindow {
   const win = new BrowserWindow({
     ...opts,
     backgroundColor: "#0C0E13",
     icon: ICON,
     webPreferences: {
+      ...prefs,
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true, sandbox: true, nodeIntegration: false, backgroundThrottling: false,
     },
@@ -133,6 +144,8 @@ function createControl(): void {
     x: wa.x + Math.round((wa.width - width) / 2), y: wa.y + Math.round((wa.height - height) / 2),
     width, height, minWidth: 900, minHeight: 600, title: "VJ-Link",
   });
+  control.webContents.on("did-start-loading", () => phone.clearState());
+  control.webContents.on("render-process-gone", () => phone.clearState());
   control.loadFile(rendererFile("index.html"));
   control.webContents.on("did-finish-load", () => {
     applyScale(); switching = false; updateTitle();
@@ -180,7 +193,7 @@ function createControl(): void {
     farewellTimer = setTimeout(() => { farewellTimer = null; quitNow = true; app.quit(); }, 2000);
     control.webContents.send("farewell");
   });
-  control.on("closed", () => { control = null; for (const w of outputs.values()) w.close(); });
+  control.on("closed", () => { control = null; phone.stop(); for (const w of outputs.values()) w.close(); });
 }
 
 // ---- Projektdateien und Menü --------------------------------------------------------------
@@ -270,8 +283,10 @@ async function fileCommand(cmd: FileCmd, json: string, filePath?: string): Promi
   }
   buildMenu();
   // Ausgänge: Grafiken neu verteilen; Oberfläche lädt das Projekt frisch
-  const media = await storage!.allMedia();
-  for (const w of outputs.values()) if (!w.isDestroyed()) for (const item of media) w.webContents.send("media", { type: "add", item });
+  if (outputs.size) {
+    const media = await storage!.allMedia();
+    for (const w of outputs.values()) if (!w.isDestroyed()) for (const item of media) w.webContents.send("media", { type: "add", item });
+  }
   control.webContents.reload();
   return { ok: true, name: files.name };
 }
@@ -322,7 +337,7 @@ function buildMenu(): void {
       { label: "Discord", click: () => { void shell.openExternal("https://discord.gg/N6DMca4Bjk"); } },
       { type: "separator" },
       { label: t("Lizenzen und Hinweise"), click: () => openLicenses() },
-      { label: t("Quellcode auf GitHub"), click: () => { void shell.openExternal("https://github.com/skyplayser/VJ-LInk-dev"); } },
+      { label: t("Quellcode auf GitHub"), click: () => { void shell.openExternal("https://github.com/skyplayser/VJ-LINK/tree/main/source"); } },
     ] },
   ];
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
@@ -337,7 +352,7 @@ function openLicenses(): void {
 function displayInfo(d: Display): DisplayInfo {
   return {
     id: d.id, label: d.label || t("Bildschirm {n}", { n: d.id }), width: d.size.width, height: d.size.height,
-    scaleFactor: d.scaleFactor, primary: d.id === screen.getPrimaryDisplay().id, open: outputs.has(d.id),
+    scaleFactor: d.scaleFactor, pixels: monitorPixels(d), primary: d.id === screen.getPrimaryDisplay().id, open: outputs.has(d.id),
   };
 }
 /** Fenster-Ausgang: gewünschte Größe in Pixeln (bei offenem Fenster zählt seine echte Größe). */
@@ -348,7 +363,124 @@ function windowInfo(): DisplayInfo {
   const [cw, ch] = w && !w.isDestroyed() ? w.getContentSize() : [winSize[0], winSize[1]];
   return { id: WINDOW_OUTPUT, label: t("Fenster-Ausgang"), width: w ? cw ?? winSize[0] : winSize[0], height: w ? ch ?? winSize[1] : winSize[1], scaleFactor: w ? sf : 1, primary: false, open: !!w, window: true };
 }
-const listDisplays = (): DisplayInfo[] => [...screen.getAllDisplays().map(displayInfo), windowInfo()];
+// NDI®-Ausgänge: je ein unsichtbares Fenster (Offscreen-Rendering) in fester Größe; seine Bilder gehen über einen
+// eigenen NDI-Prozess ins Netz. Bis zu NDI_MAX Ausgänge, z. B. Wand und Decke eines Clubs als zwei Quellen.
+// Größe, Bildrate, Name und „sendet“ merkt sich VJ-Link (ndi.json) und sendet nach dem Neustart wieder.
+// Testinstanzen senden unter anderem Namen, damit sie nie wie das echte VJ-Link aussehen.
+interface NdiOut { size: [number, number]; fps: number; name: string; sending: boolean; sender: NdiSender; shown: string }
+const ndiFile = (): string => path.join(app.getPath("userData"), "ndi.json");
+const ndiDefaultName = (i: number): string => i === 0 ? "VJ-Link" : `VJ-Link ${i + 1}`;
+/** Name im Netz (ohne Rechnername); Testinstanzen hängen „Test“ an. */
+const ndiNetName = (o: NdiOut): string => process.env.VJLINK_DATA ? `${o.name} Test` : o.name;
+const ndiOuts: NdiOut[] = [];
+function newNdiOut(i: number, saved?: Partial<Omit<NdiOut, "sender" | "shown">>): NdiOut {
+  const o: NdiOut = {
+    size: ndiSizeOk(saved?.size?.[0], saved?.size?.[1]) ? [saved!.size![0], saved!.size![1]] : [1920, 1080],
+    fps: (NDI_FPS as readonly number[]).includes(saved?.fps as number) ? saved!.fps! : 30,
+    name: ndiNameOk(saved?.name) ?? ndiDefaultName(i),
+    sending: !!saved?.sending,
+    shown: "",
+    sender: new NdiSender(st => {
+      // Laufend/aus und Fehler: Liste neu; Bildrate und Empfänger je Sekunde nur als kleine Meldung
+      const key = `${st.live}|${st.error ?? ""}|${st.version ?? ""}`;
+      if (key !== o.shown) { o.shown = key; control?.webContents.send("displays", listDisplays()); }
+      else control?.webContents.send("ndi:stat", { id: NDI_OUTPUT - ndiOuts.indexOf(o), sentFps: st.fps, conns: st.conns });
+    }),
+  };
+  return o;
+}
+function ndiSizeOk(w: unknown, h: unknown): boolean {
+  return Number.isInteger(w) && Number.isInteger(h) && (w as number) >= NDI_MIN_SIZE && (h as number) >= NDI_MIN_SIZE && (w as number) <= NDI_MAX_SIZE && (h as number) <= NDI_MAX_SIZE;
+}
+function ndiNameOk(n: unknown): string | null {
+  if (typeof n !== "string") return null;
+  const v = n.replace(/[\x00-\x1f()]/g, "").trim().slice(0, 40);
+  return v || null;
+}
+function loadNdiOutputs(): void {
+  let saved: Partial<NdiOut>[] = [];
+  try { const j = JSON.parse(readFileSync(ndiFile(), "utf8")) as { outputs?: Partial<NdiOut>[] }; if (Array.isArray(j.outputs)) saved = j.outputs.slice(0, NDI_MAX); } catch { /* erster Start */ }
+  ndiOuts.length = 0;
+  (saved.length ? saved : [{}]).forEach((s, i) => ndiOuts.push(newNdiOut(i, s)));
+}
+function saveNdiOutputs(): void {
+  const outputsJson = ndiOuts.map(o => ({ size: o.size, fps: o.fps, name: o.name, sending: o.sending }));
+  try { writeFileSync(ndiFile(), JSON.stringify({ outputs: outputsJson }, null, 1)); } catch { /* Datenordner schreibgeschützt */ }
+}
+const ndiIndex = (id: number): number => isNdiOutput(id) ? NDI_OUTPUT - id : -1;
+function ndiInfo(o: NdiOut, i: number): DisplayInfo {
+  const st = o.sender.state, id = NDI_OUTPUT - i;
+  return {
+    id, label: i ? t("NDI-Ausgang {n}", { n: i + 1 }) : t("NDI-Ausgang"), width: o.size[0], height: o.size[1], scaleFactor: 1, primary: false, open: outputs.has(id),
+    ndi: { index: i, count: ndiOuts.length, runtime: !!findRuntime(), fps: o.fps, name: ndiNetName(o), label: o.name, ...(st.live ? { sentFps: st.fps, conns: st.conns } : {}), ...(st.version ? { version: st.version } : {}), ...(st.error ? { error: st.error } : {}) },
+  };
+}
+const listDisplays = (): DisplayInfo[] => [...screen.getAllDisplays().map(displayInfo), windowInfo(), ...ndiOuts.map(ndiInfo)];
+
+function setNdiSettings(id: number, s: { w?: unknown; h?: unknown; fps?: unknown; name?: unknown }): DisplayInfo[] {
+  const i = ndiIndex(id), o = ndiOuts[i];
+  if (!o) return listDisplays();
+  const size: [number, number] = ndiSizeOk(s.w, s.h) ? [s.w as number, s.h as number] : o.size;
+  const fps = (NDI_FPS as readonly number[]).includes(s.fps as number) ? s.fps as number : o.fps;
+  const name = s.name === undefined ? o.name : ndiNameOk(s.name) ?? ndiDefaultName(i);
+  // Zwei Ausgänge mit gleichem Namen wären im Netz nicht zu unterscheiden
+  if (ndiOuts.some((x, j) => j !== i && x.name === name)) return listDisplays();
+  const restart = fps !== o.fps || name !== o.name;
+  o.size = size; o.fps = fps; o.name = name;
+  saveNdiOutputs();
+  const win = outputs.get(id);
+  if (win && !win.isDestroyed()) {
+    win.setContentSize(size[0], size[1]);
+    win.webContents.setFrameRate(fps);
+    if (restart) void o.sender.start(ndiNetName(o), fps);
+  }
+  return listDisplays();
+}
+
+/** Weiteren NDI-Ausgang anlegen bzw. den letzten entfernen (der erste bleibt immer). */
+function addNdiOutput(): DisplayInfo[] {
+  if (ndiOuts.length < NDI_MAX) { ndiOuts.push(newNdiOut(ndiOuts.length)); saveNdiOutputs(); }
+  return listDisplays();
+}
+function removeNdiOutput(): DisplayInfo[] {
+  if (ndiOuts.length > 1) {
+    const id = NDI_OUTPUT - (ndiOuts.length - 1);
+    outputs.get(id)?.close();
+    ndiOuts.pop()?.sender.kill();
+    saveNdiOutputs();
+  }
+  return listDisplays();
+}
+
+/** NDI-Ausgang öffnen: erst wenn die Laufzeit von NDI da ist; dann rendern und senden. */
+function openNdiOutput(id: number): void {
+  const o = ndiOuts[ndiIndex(id)];
+  if (!o) return;
+  if (!findRuntime()) { o.sender.state = { live: false, fps: 0, conns: 0, error: "runtime-missing" }; return; }
+  const win = secureWindow({ width: o.size[0], height: o.size[1], useContentSize: true, show: false, title: `VJ-Link ${t("NDI-Ausgang")} ${o.name}` },
+    { offscreen: { deviceScaleFactor: 1 } });
+  win.webContents.setFrameRate(o.fps);
+  // VJLINK_DEBUG: gemalte und weitergegebene Bilder je Sekunde, Zeit fürs Kopieren
+  const dbg = process.env.VJLINK_DEBUG ? { paints: 0, copied: 0, ms: 0, at: Date.now() } : null;
+  win.webContents.on("paint", (_e, _dirty, image) => {
+    const { width, height } = image.getSize();
+    if (dbg) { dbg.paints++; if (Date.now() - dbg.at >= 1000) { console.log(`[ndi] ${o.name}: gemalt ${dbg.paints}/s, gesendet ${dbg.copied}/s, kopieren ${(dbg.ms / Math.max(1, dbg.copied)).toFixed(1)} ms`); dbg.paints = dbg.copied = dbg.ms = 0; dbg.at = Date.now(); } }
+    // Nur wenn NDI frei ist: sonst entfällt das Kopieren des Bildes (bei 4K rund 33 MB je Bild).
+    if (width !== o.size[0] || height !== o.size[1] || !o.sender.ready()) return;
+    const t0 = dbg ? performance.now() : 0;
+    o.sender.frame(image.toBitmap(), width, height);
+    if (dbg) { dbg.copied++; dbg.ms += performance.now() - t0; }
+  });
+  win.on("closed", () => o.sender.stop());
+  o.sending = true; saveNdiOutputs();
+  void o.sender.start(ndiNetName(o), o.fps);
+  wireOutput(win, id);
+}
+
+/** Nach dem Start: NDI-Ausgänge, die beim letzten Beenden gesendet haben, wieder öffnen. */
+function resumeNdiOutputs(): void {
+  ndiOuts.forEach((o, i) => { const id = NDI_OUTPUT - i; if (o.sending && !outputs.has(id) && findRuntime()) openNdiOutput(id); });
+}
 
 function setWindowSize(w: number, h: number): DisplayInfo[] {
   if (!WINDOW_SIZES.some(([a, b]) => a === w && b === h)) return listDisplays();
@@ -378,7 +510,7 @@ function openWindowOutput(): void {
 function wireOutput(win: BrowserWindow, id: number): void {
   win.loadFile(rendererFile("output.html"), { query: { display: String(id) } });
   win.once("ready-to-show", async () => {
-    win.show();
+    if (!isNdiOutput(id)) win.show();
     // Grafiken zuerst, damit das erste Bild vollständig ist.
     for (const item of (await storage?.allMedia()) ?? []) if (!win.isDestroyed()) win.webContents.send("media", { type: "add", item });
     // Live-Grafiken (Bauchbinde, Wellenform), die gerade gelten
@@ -395,12 +527,13 @@ function wireOutput(win: BrowserWindow, id: number): void {
   });
   outputs.set(id, win);
   keepAwake();
+  control?.webContents.send("displays", listDisplays());
 }
 
 /** Ausgang schließen und kurz danach auf demselben Bildschirm neu öffnen (nach Absturz oder Grafik-Reset). */
 function reopenOutput(id: number, win: BrowserWindow): void {
   win.destroy();
-  setTimeout(() => { if (!outputs.has(id)) { if (id === WINDOW_OUTPUT) openWindowOutput(); else toggleOutput(id); } }, 500);
+  setTimeout(() => { if (!outputs.has(id)) { if (id === WINDOW_OUTPUT) openWindowOutput(); else if (isNdiOutput(id)) openNdiOutput(id); else toggleOutput(id); } }, 500);
 }
 
 /** Solange Ausgänge offen sind, dürfen Bildschirme und Beamer nicht in den Ruhezustand gehen. */
@@ -413,8 +546,14 @@ function keepAwake(): void {
 
 function toggleOutput(id: number): DisplayInfo[] {
   const existing = outputs.get(id);
-  if (existing) { existing.close(); return listDisplays(); }
+  if (existing) {
+    // Nur wer selbst schließt, beendet das Senden auch für den nächsten Start (Beenden der App lässt es an).
+    const o = ndiOuts[ndiIndex(id)];
+    if (o) { o.sending = false; saveNdiOutputs(); }
+    existing.close(); return listDisplays();
+  }
   if (id === WINDOW_OUTPUT) { openWindowOutput(); return listDisplays(); }
+  if (isNdiOutput(id)) { if (ndiOuts[ndiIndex(id)]) openNdiOutput(id); return listDisplays(); }
   const d = screen.getAllDisplays().find(x => x.id === id);
   if (!d) return listDisplays();
   const win = secureWindow({
@@ -470,7 +609,7 @@ app.whenReady().then(async () => {
   app.setAboutPanelOptions({
     applicationName: "VJ-Link", applicationVersion: app.getVersion(),
     copyright: "© 2026 Philipp Spruck / NEXTPHILM · Eclipse Public License 2.0",
-    credits: `${t("Quellcode")}: https://github.com/skyplayser/VJ-LInk-dev\n${t("Lizenzen und Hinweise: Hilfe → Lizenzen und Hinweise")}\n\nArt-Net™ Designed by and Copyright Artistic Licence Holdings Ltd\n${t("Ableton und Link sind Marken der Ableton AG. Kein offizielles Produkt der genannten Hersteller; alle Marken gehören ihren Inhabern.")}`,
+    credits: `${t("Quellcode")}: https://github.com/skyplayser/VJ-LINK/tree/main/source\n${t("Lizenzen und Hinweise: Hilfe → Lizenzen und Hinweise")}\n\nArt-Net™ Designed by and Copyright Artistic Licence Holdings Ltd\n${t("Ableton und Link sind Marken der Ableton AG. Kein offizielles Produkt der genannten Hersteller; alle Marken gehören ihren Inhabern.")}\n${t("NDI® ist eine eingetragene Marke der Vizrt NDI AB. VJ-Link ist kein Produkt von NDI.")} ${NDI_HOME_URL}`,
     website: "https://skyplayser.github.io/VJ-LINK/",
   });
   setLang(await savedLang());
@@ -488,7 +627,9 @@ app.whenReady().then(async () => {
     } catch { return new Response("nicht gefunden", { status: 404 }); }
   });
   if (process.platform === "darwin") app.dock?.setIcon(nativeImage.createFromPath(ICON));
+  loadNdiOutputs();
   createControl();
+  resumeNdiOutputs();
   net = new Network((e: ControlEvent) => { control?.webContents.send("control", e); });
   net.start();
   link = new LinkClient(s => control?.webContents.send("control", { type: "link", ...s }));
@@ -500,7 +641,26 @@ app.whenReady().then(async () => {
   // Launcher einmal je Start prüfen (lokal, < 200 ms), damit der Startbildschirm nicht wartet
   void detectLauncher().then(l => { launcher ??= l; });
 
+  ipcMain.handle("remote:info", e => fromControl(e) ? phone.info() : null);
+  ipcMain.handle("remote:start", (e, address: unknown) => fromControl(e) && typeof address === "string" ? phone.start(address) : null);
+  ipcMain.handle("remote:stop", e => fromControl(e) ? phone.stop() : null);
+  ipcMain.on("remote:thumbnail", (e, clip: unknown, data: unknown) => {
+    if (fromControl(e) && typeof clip === "string" && typeof data === "string") phone.setThumbnail(clip, data);
+  });
+  ipcMain.on("remote:state", (e, state: RemoteState) => { if (fromControl(e)) phone.setState(state); });
   ipcMain.handle("displays:list", () => listDisplays());
+  ipcMain.handle("displays:preview", async (e, id: unknown) => {
+    if (!fromControl(e) || typeof id !== "number" || !screen.getAllDisplays().some(d => d.id === id)) return null;
+    const win = outputs.get(id);
+    if (!win || win.isDestroyed() || !win.isVisible()) return null;
+    try {
+      const image = await win.webContents.capturePage();
+      const { width, height } = image.getSize();
+      if (!width || !height) return null;
+      const scale = Math.min(1, 420 / width, 260 / height);
+      return image.resize({ width: Math.max(1, Math.round(width * scale)), height: Math.max(1, Math.round(height * scale)) }).toDataURL();
+    } catch { return null; } // Ausgang wurde während der Aufnahme geschlossen
+  });
   // macOS fragt beim ersten Mal nach dem Mikrofon (Systemeinstellungen → Datenschutz)
   ipcMain.handle("audio:ask", async e => {
     if (e.sender !== control?.webContents) return false;
@@ -537,11 +697,42 @@ app.whenReady().then(async () => {
     screen.on(ev as "display-added", () => control?.webContents.send("displays", listDisplays()));
   ipcMain.handle("displays:toggle", (_e, id: unknown) => typeof id === "number" ? toggleOutput(id) : listDisplays());
   ipcMain.handle("displays:windowSize", (_e, w: unknown, h: unknown) => typeof w === "number" && typeof h === "number" ? setWindowSize(w, h) : listDisplays());
+  ipcMain.handle("displays:ndi", (_e, id: unknown, cfg: unknown) => typeof id === "number" && cfg && typeof cfg === "object" ? setNdiSettings(id, cfg as Record<string, unknown>) : listDisplays());
+  ipcMain.handle("displays:ndiAdd", () => addNdiOutput());
+  ipcMain.handle("displays:ndiRemove", () => removeNdiOutput());
+  // Feste Adressen von NDI (Website, Download der Laufzeit), nie aus der Oberfläche
+  ipcMain.on("ndi:page", (e, which: unknown) => {
+    if (!fromControl(e)) return;
+    const url = which === "runtime" ? ndiRuntimeUrl() : NDI_HOME_URL;
+    if (process.env.VJLINK_DATA && process.env.VJLINK_TEST_NDI) console.log("NDI-Seite (Test, nicht geöffnet):", url);
+    else void shell.openExternal(url);
+  });
   ipcMain.on("gpu:lost", e => {
     const entry = [...outputs.entries()].find(([, w]) => !w.isDestroyed() && w.webContents === e.sender);
     if (entry) {
       const [id, w] = entry; console.error("Ausgang: WebGL-Kontext verloren", id); reopenOutput(id, w);
     } else if (fromControl(e)) { console.error("Oberfläche: WebGL-Kontext verloren"); setTimeout(() => control?.webContents.reload(), 500); }
+  });
+  ipcMain.on("output:stats", (e, stats: OutputStats) => {
+    const entry = [...outputs].find(([, win]) => win.webContents === e.sender);
+    if (!entry || !stats || ![stats.fps, stats.frameMs, stats.longGaps].every(v => Number.isFinite(v) && v >= 0)) return;
+    control?.webContents.send("output:stats", entry[0], stats);
+  });
+  ipcMain.handle("project:export-show", async (e, json: unknown) => {
+    if (!fromControl(e) || !control || !files || typeof json !== "string") return null;
+    const pick = await dialog.showOpenDialog(control, { properties: ["openDirectory"], title: t("Ordner für USB-Showpaket wählen") });
+    if (pick.canceled || !pick.filePaths[0]) return null;
+    try { return await files.exportShow(json, pick.filePaths[0]); }
+    catch (error) { return { error: (error as Error).message }; }
+  });
+  ipcMain.handle("project:verify-show", async e => {
+    if (!fromControl(e) || !control) return null;
+    const pick = await dialog.showOpenDialog(control, {
+      properties: ["openFile"], title: t("Showpaket prüfen"), filters: [{ name: "VJ-Link", extensions: [PROJECT_EXT] }],
+    });
+    if (pick.canceled || !pick.filePaths[0]) return null;
+    try { return await verifyShowPackage(pick.filePaths[0]); }
+    catch (error) { return { error: (error as Error).message }; }
   });
   ipcMain.on("frame", (e, f: Frame) => {
     if (e.sender !== control?.webContents) return; // nur die Hauptoberfläche darf Bilder liefern
@@ -728,7 +919,9 @@ app.whenReady().then(async () => {
   ipcMain.handle("chat:settings", async (e, c: unknown) => (fromControl(e) && chat && c && typeof c === "object" ? chat.configure(c as Record<string, unknown>) : null));
   ipcMain.handle("project:load", async e => {
     if (!fromControl(e)) return { project: null, media: [] };
-    return { project: await storage!.loadProject(), media: await storage!.allMedia(), ...files!.info() };
+    const project = await storage!.loadProject();
+    const media = project ? await storage!.mediaPayloads(projectRefs(project).mediaIds) : [];
+    return { project, media, ...files!.info() };
   });
   app.on("activate", () => { if (!control) createControl(); });
 });
@@ -742,6 +935,8 @@ app.on("before-quit", () => { quitting = true; });
 // asynchron: einmal kurz aufhalten, damit es hinausgeht, dann wirklich beenden.
 let chatBye = false;
 app.on("will-quit", e => {
+  phone.stop();
+  for (const o of ndiOuts) o.sender.kill();
   // Sauber beendet: nächster Start darf die Startanimation zeigen
   try { unlinkSync(runningLock()); } catch { /* schon weg */ }
   if (chatBye || !chat?.wantsBye) return;

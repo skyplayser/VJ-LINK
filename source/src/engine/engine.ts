@@ -9,7 +9,7 @@ import { TEST_IDS, defaultLaser, layerPalette, mainLayers,
 } from "../core/show";
 import { mediaTransform } from "../core/media";
 import { chaseAt } from "../core/chase";
-import { fitRect, renderSize, type Mask, type OutputRes, type View, type Warp } from "../core/layout";
+import { devicePlacement, fitRect, renderSize, type DeviceEffects, type DeviceOutput, type Mask, type OutputRes, type View, type Warp } from "../core/layout";
 import { clipVideoTime, isVideoClip, loopRange, videoIdOf, type CueRender, type Fit } from "../core/video";
 import { HISTORY_FX, COMPOSITE_FRAG, FINAL_FRAG, GEN_IDS, genFrag, postFrag, IMAGE_FRAG, MASK_FRAG, MESH_FRAG, MESH_VERT, POST_FRAG, POST_IDS, SOLID_FRAG, VERT, WARP_FRAG, DJWAVE_FRAG } from "./shaders";
 import { t } from "../core/i18n";
@@ -118,6 +118,8 @@ export class Engine {
   private vao: WebGLVertexArrayObject;
   private work: [Target | null, Target | null] = [null, null];
   private canvasT: Target | null = null;
+  private deviceT: Target | null = null;
+  private deviceEffects: DeviceEffects | undefined;
   /** Feedback braucht das letzte Bild: pro Ebene (bzw. Vorschauzelle) zwei Texturen im Wechsel. */
   private feedback = new Map<string, { t: [Target, Target]; cur: 0 | 1; used: number }>();
   /** Sichere Blitze: Zustand je Ebene und Blitz-Effekt. */
@@ -475,6 +477,7 @@ export class Engine {
     const gl = this.gl;
     let src: Target = this.work[0]!;
     for (const slot of l.effects) {
+      if (this.deviceEffects?.strobe === false && (FLASH_FX[slot.id] !== undefined || slot.id === "strobe-zoom")) continue;
       const amount = slot.amount * show.fxMaster;
       const eff = POST_IDS.indexOf(slot.id as typeof POST_IDS[number]);
       if (!slot.on || amount < 0.005 || eff < 0) continue;
@@ -546,7 +549,7 @@ export class Engine {
       // Chase: Clip und Sichtbarkeit aus der gemeinsamen Beat-Position (alle Ausgänge gleich)
       const ch = chaseAt(l, beat, this.bpm, show.safeFlash !== false, i);
       if (ch) { if (!ch.visible) continue; if (ch.clip !== l.clip) l = { ...l, clip: ch.clip }; }
-      const op = l.opacity * strobeGate(beat, l.strobe, this.bpm, flashLimit(show));
+      const op = l.opacity * (this.deviceEffects?.strobe === false ? 1 : strobeGate(beat, l.strobe, this.bpm, flashLimit(show)));
       if (op <= 0.001 || !l.clip) continue;
       const img = this.renderLayer(l, `${prefix}${i}`, this.layerTime[i]!, out.w, out.h, show, beat, pulse, bands, i > 0);
       if (!img) continue;
@@ -576,9 +579,10 @@ export class Engine {
    */
   render(show: ShowState, beat: number, nowMs: number, bpm = 120, view: View | null = null, layerTimes: readonly number[] | null = null, warps: readonly Warp[] | null = null,
     /** Eigener Schlüssel für Zwischenbilder, Feedback und Video-Abspieler (z. B. je Bild-Vorschau). */ key = "",
-    /** Masken dieses Ausgangs (Projektionsmapping). */ masks: readonly Mask[] = []): void {
+    /** Masken dieses Ausgangs (Projektionsmapping). */ masks: readonly Mask[] = [], device?: DeviceOutput, effects?: DeviceEffects): void {
     this.lastUse = performance.now();
     if (!this.baseReady()) return;
+    this.deviceEffects = effects;
     const t0 = performance.now();
     const gl = this.gl;
     const sec = nowMs / 1000;
@@ -599,8 +603,14 @@ export class Engine {
     // Projektionsmapping: erst das ganze Bild in Ausgangsgröße, dann jede Leinwand verzerrt daraus zeichnen
     const mapping = !view && !!warps;
     // Gleiches Bild mit fester Auflösung: erst in dieser Größe rechnen, dann eingepasst ausgeben
-    const scaled = !view && !mapping && !!fixed && (w !== outW || h !== outH);
-    const dest = view || mapping || scaled ? (this.canvasT = this.target(this.canvasT, w, h)) : null;
+    const scaled = !device && !view && !mapping && !!fixed && (w !== outW || h !== outH);
+    // Leinwandausschnitt und Mapping (inklusive Masken) vor der Geräteplatzierung fertigstellen.
+    const mirrorSource = !!device && !view && !mapping;
+    const screenImage = device ? (this.deviceT = this.target(this.deviceT, mirrorSource ? w : outW, mirrorSource ? h : outH)) : null;
+    if (!device && this.deviceT) {
+      gl.deleteTexture(this.deviceT.tex); gl.deleteFramebuffer(this.deviceT.fb); this.deviceT = null;
+    }
+    const dest = view || mapping || scaled ? (this.canvasT = this.target(this.canvasT, w, h)) : screenImage;
     // SHOW-Ablauf: im Projektionsmapping auf dem gewählten Bild, sonst auf dem Hauptbild
     const cueImg = mapping ? (show.cueImage ?? "main") : "main";
     const mainCues = !show.blackout && show.cues.length > 0 && cueImg === "main";
@@ -609,7 +619,7 @@ export class Engine {
     this.composeStack(show, mainLayers(show), show.transition?.from ?? null, key, dest, w, h, beat, sec, bpm, nowMs, show.stackGain?.main ?? 1, mainCues);
     if (mainCues) { this.drawCues(show.cues, nowMs, w, h, dest); this.flashAfter(show, beat, sec, bpm, dest, w, h); }
     // „Raster über alle“: auf der ganzen Leinwand rechnen, jeder Ausgang zeigt seinen Teil wie bei den Visuals
-    const spanTest = show.testCard && show.testPattern === "span" && !!dest;
+    const spanTest = show.testCard && show.testPattern === "span" && !!dest && !mirrorSource;
     if (spanTest) this.drawTestCard(show, beat, nowMs, w, h, dest);
     if (dest && view) {
       // Eigenen Ausschnitt der Leinwand ausgeben (GL-Ursprung unten links)
@@ -618,13 +628,13 @@ export class Engine {
       gl.uniform1f(this.loc(this.comp, "uOpacity"), 1);
       gl.uniform4f(this.loc(this.comp, "uRegion"), view.x / view.cw, 1 - (view.y + view.h) / view.ch, view.w / view.cw, view.h / view.ch);
       this.bindTex(0, dest);
-      this.bindTarget(null, 0, 0, outW, outH);
+      this.bindTarget(screenImage, 0, 0, outW, outH);
       gl.disable(gl.BLEND);
       this.draw();
     }
     if (dest && scaled) {
       const r = fitRect(w, h, outW, outH, this.outRes!.fit);
-      this.bindTarget(null, 0, 0, outW, outH);
+      this.bindTarget(screenImage, 0, 0, outW, outH);
       gl.disable(gl.BLEND);
       gl.clearColor(0, 0, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT);
       gl.useProgram(this.comp.p);
@@ -632,7 +642,7 @@ export class Engine {
       gl.uniform1f(this.loc(this.comp, "uOpacity"), 1);
       gl.uniform4f(this.loc(this.comp, "uRegion"), r.region[0], r.region[1], r.region[2], r.region[3]);
       this.bindTex(0, dest);
-      this.bindTarget(null, r.x, r.y, r.w, r.h);
+      this.bindTarget(screenImage, r.x, r.y, r.w, r.h);
       this.draw();
     }
     if (dest && mapping) {
@@ -651,7 +661,7 @@ export class Engine {
         if (show.testCard && !spanTest) this.drawTestCard(show, beat, nowMs, w, h, st);
         srcOf.set(wp.stack, st);
       }
-      this.bindTarget(null, 0, 0, outW, outH);
+      this.bindTarget(screenImage, 0, 0, outW, outH);
       gl.clearColor(0, 0, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT);
       gl.useProgram(this.warp.p);
       gl.uniform1i(this.loc(this.warp, "uTex"), 0);
@@ -659,7 +669,7 @@ export class Engine {
       for (const wp of warps!) {
         const own = wp.stack ? srcOf.get(wp.stack) : undefined;
         this.bindTex(0, own ?? dest);
-        this.bindTarget(null, 0, 0, outW, outH);
+        this.bindTarget(screenImage, 0, 0, outW, outH);
         if (wp.mesh) {
           // Raster-Verzerrung: Dreiecksnetz zeichnen
           gl.useProgram(this.meshP.p);
@@ -679,8 +689,21 @@ export class Engine {
       }
       gl.disable(gl.BLEND);
     }
-    if (show.testCard && !spanTest && !mapping) this.drawTestCard(show, beat, nowMs, outW, outH, null);
-    if (masks.length) this.drawMasks(masks, outW, outH);
+    if (show.testCard && !spanTest && !mapping) this.drawTestCard(show, beat, nowMs, screenImage?.w ?? outW, screenImage?.h ?? outH, screenImage);
+    if (masks.length) this.drawMasks(masks, outW, outH, screenImage);
+    if (device && screenImage) {
+      const { image, region } = devicePlacement(device, screenImage.w, screenImage.h, outW, outH);
+      this.bindTarget(null);
+      gl.disable(gl.BLEND);
+      gl.clearColor(0, 0, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.useProgram(this.comp.p);
+      gl.uniform1i(this.loc(this.comp, "uTex"), 0);
+      gl.uniform1f(this.loc(this.comp, "uOpacity"), 1);
+      gl.uniform4f(this.loc(this.comp, "uRegion"), ...region);
+      this.bindTex(0, screenImage);
+      this.bindTarget(null, image.x, outH - image.y - image.h, image.w, image.h);
+      this.draw();
+    }
     this.dropStaleFeedback();
 
     const ms = performance.now() - t0;
@@ -815,19 +838,19 @@ export class Engine {
     gl.uniform1f(this.loc(this.fin, "uMix"), mix);
     gl.uniform1i(this.loc(this.fin, "uStyle"), show.transition && mix < 1 ? Math.max(0, TRANSITION_IDS.indexOf(show.transition.style)) : 0);
     gl.uniform1f(this.loc(this.fin, "uAspect"), w / Math.max(1, h));
-    gl.uniform1f(this.loc(this.fin, "uGain"), show.master * gain * (deferFlash ? 1 : strobeGain(show.strobe, beat, sec, bpm, flashLimit(show))));
+    gl.uniform1f(this.loc(this.fin, "uGain"), show.master * gain * (deferFlash ? 1 : this.outputStrobeGain(show, beat, sec, bpm)));
     // Strobe White und Blinder wirken auch bei Master 0, aber nicht bei Blackout
-    gl.uniform1f(this.loc(this.fin, "uWhite"), deferFlash ? 0 : Math.max(strobeWhite(show.strobe, beat, sec, bpm, flashLimit(show)), blinderLevel(show)));
+    gl.uniform1f(this.loc(this.fin, "uWhite"), deferFlash ? 0 : this.outputWhite(show, beat, sec, bpm));
     this.bindTex(0, from); this.bindTex(1, t.to);
     this.bindTarget(dest, 0, 0, w, h);
     this.draw();
   }
 
   /** Masken über das fertige Bild des Ausgangs legen. */
-  private drawMasks(masks: readonly Mask[], w: number, h: number): void {
+  private drawMasks(masks: readonly Mask[], w: number, h: number, dest: Target | null): void {
     const gl = this.gl, m = this.maskP;
     gl.useProgram(m.p);
-    this.bindTarget(null, 0, 0, w, h);
+    this.bindTarget(dest, 0, 0, w, h);
     gl.uniform2f(this.loc(m, "uRes"), w, h);
     gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     for (const mk of masks) {
@@ -842,10 +865,20 @@ export class Engine {
     gl.disable(gl.BLEND);
   }
 
+  private outputStrobeGain(show: ShowState, beat: number, sec: number, bpm: number): number {
+    return this.deviceEffects?.strobe === false ? 1 : strobeGain(show.strobe, beat, sec, bpm, flashLimit(show));
+  }
+
+  private outputWhite(show: ShowState, beat: number, sec: number, bpm: number): number {
+    const strobe = this.deviceEffects?.strobe === false ? 0 : strobeWhite(show.strobe, beat, sec, bpm, flashLimit(show));
+    const blinder = this.deviceEffects?.blinder === false ? 0 : blinderLevel(show);
+    return Math.max(strobe, blinder);
+  }
+
   /** Strobe (Abdunkeln), White und Blinder über das fertige Bild inklusive Cues legen. */
   private flashAfter(show: ShowState, beat: number, sec: number, bpm: number, dest: Target | null, w: number, h: number): void {
     const gl = this.gl;
-    const g = strobeGain(show.strobe, beat, sec, bpm, flashLimit(show)), white = Math.max(strobeWhite(show.strobe, beat, sec, bpm, flashLimit(show)), blinderLevel(show));
+    const g = this.outputStrobeGain(show, beat, sec, bpm), white = this.outputWhite(show, beat, sec, bpm);
     if (g >= 0.999 && white <= 0.001) return;
     gl.useProgram(this.solid.p);
     this.bindTarget(dest, 0, 0, w, h);

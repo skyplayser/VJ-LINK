@@ -29,6 +29,18 @@ export class VideoLibrary {
     return item;
   }
 
+  /** Gespeicherte Daten sofort verfügbar machen, Standbilder danach nacheinander laden. */
+  restore(items: readonly VideoItem[]): void {
+    this.items.push(...items);
+    const next = async (index: number): Promise<void> => {
+      const item = items[index];
+      if (!item) return;
+      if (this.items.includes(item)) await this.probe(item);
+      setTimeout(() => void next(index + 1), 100);
+    };
+    if (items.length) setTimeout(() => void next(0), 300);
+  }
+
   /** Datei vom Rechner. Gibt das Video oder eine Fehlermeldung zurück. */
   async importFile(file: File): Promise<VideoItem | string> {
     const name = file.name.replace(/\.[^.]+$/, "").slice(0, 80);
@@ -66,15 +78,23 @@ export class VideoLibrary {
     return new Promise(resolve => {
       const v = document.createElement("video");
       v.crossOrigin = "anonymous"; v.muted = true; v.preload = "auto"; v.src = url;
-      const done = (ok: boolean) => { clearTimeout(timer); v.removeAttribute("src"); v.load(); resolve(ok); };
+      let finished = false;
+      const done = (ok: boolean) => {
+        if (finished) return;
+        finished = true;
+        clearTimeout(timer);
+        v.removeAttribute("src"); v.load(); resolve(ok);
+      };
       const timer = setTimeout(() => done(item.duration > 0), 10000);
       v.addEventListener("error", () => done(false), { once: true });
       v.addEventListener("loadedmetadata", () => {
+        if (finished || !this.items.includes(item)) { done(false); return; }
         item.duration = Number.isFinite(v.duration) ? v.duration : 0;
         item.width = v.videoWidth; item.height = v.videoHeight;
         v.currentTime = Math.min(1.5, item.duration * 0.1);
       }, { once: true });
       v.addEventListener("seeked", () => {
+        if (finished || !this.items.includes(item)) { done(false); return; }
         const c = document.createElement("canvas");
         const k = 320 / Math.max(1, v.videoWidth);
         c.width = 320; c.height = Math.max(1, Math.round(v.videoHeight * k));

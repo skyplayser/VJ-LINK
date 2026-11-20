@@ -139,9 +139,10 @@ export class Storage {
     });
   }
 
-  async allMedia(): Promise<MediaPayload[]> {
+  async allMedia(only?: ReadonlySet<string>): Promise<MediaPayload[]> {
     const out: MediaPayload[] = [];
     for (const e of this.index.values()) {
+      if (only && !only.has(e.id)) continue;
       try {
         const buf = await fs.readFile(path.join(this.mediaDir, e.file));
         const mime = EXT_MIME[e.file.split(".").pop()!] ?? "image/png";
@@ -153,8 +154,7 @@ export class Storage {
 
   /** Nur diese Grafiken (für die Projektdatei). */
   async mediaPayloads(ids: readonly string[]): Promise<MediaPayload[]> {
-    const want = new Set(ids);
-    return (await this.allMedia()).filter(m => want.has(m.id));
+    return this.allMedia(new Set(ids));
   }
 
   /** Datei eines Videos in der Bibliothek, oder null. */

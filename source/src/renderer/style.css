@@ -965,3 +965,56 @@ input[type=range].modded{accent-color:color-mix(in srgb,var(--accent) calc(35% +
 .chat-btn.urgent{background:#FFD60A;border-color:#FFD60A;color:#000;animation:chat-btn-blink 1s step-end infinite}
 @keyframes chat-btn-blink{0%{background:#FFD60A;color:#000}50%{background:var(--raise);color:#FFD60A}}
 @media (prefers-reduced-motion:reduce){.chat-alert,.chat-btn.urgent{animation:none}}
+/* NDI®-Ausgang: Größe und Bildrate nebeneinander, Marken-Hinweis klein darunter */
+.display .ndi-sel{display:flex;gap:6px;flex-wrap:wrap}
+.display .ndi-sel .win-size{display:inline-block}
+.display .ndi-sel{margin-top:6px}
+.display input.ndi-name{width:12em}
+.display input.ndi-px{width:5.5em}
+.display .ndi-custom{display:inline-flex;align-items:center;gap:4px}
+.display .ndi-custom[hidden]{display:none}
+.display small.ndi-state{font-family:inherit;margin-top:4px}
+.display small.ndi-tm{font-family:inherit;margin-top:6px;font-size:11px}
+.display small.ndi-tm a{color:var(--dim);text-decoration:underline}
+
+.device-row-actions{display:flex;flex-direction:column;gap:6px;align-items:stretch}
+.display small.dev-sum{color:var(--text)}
+/* Ausgang einstellen (Dialog im Stil von .report) */
+.device-dlg .report-box{width:min(600px,100%)}
+.device-dlg .report-head h2{text-transform:none;letter-spacing:0;font-size:15px}
+.dev-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.dev-row input[type=text]{flex:1;min-width:160px;padding:5px 8px}
+.dev-row select{padding:4px 6px}
+.dev-lab{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);min-width:72px}
+.dev-nums{display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap}
+.dev-nums[hidden]{display:none}
+.dev-nums label{display:grid;gap:3px}
+.dev-nums .dev-lab{min-width:0}
+.dev-nums input{width:84px;padding:4px 6px;font-variant-numeric:tabular-nums}
+.dev-stage{position:relative;justify-self:center;background:#000;border:1px solid var(--line);border-radius:4px;overflow:hidden;outline:none;touch-action:none}
+.dev-stage:focus-visible{border-color:var(--accent)}
+.dev-stage>*{position:absolute}
+.dev-live{inset:0;width:100%;height:100%;object-fit:fill;opacity:.85}
+.dev-live[hidden]{display:none}
+.dev-pic{background:color-mix(in srgb,var(--accent) 28%,transparent)}
+.dev-area{box-sizing:border-box;border:1px solid var(--accent);cursor:move}
+.dev-grip{right:-1px;bottom:-1px;width:12px;height:12px;background:var(--accent);cursor:nwse-resize}
+.dev-more summary{cursor:pointer;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--dim)}
+.dev-more[open]{display:grid;gap:8px}
+.dev-more .report-check,.device-dlg .report-check{font-weight:400}
+.prof{display:grid;gap:8px;margin-bottom:6px}
+.prof-row{display:flex;gap:8px;align-items:center}
+.prof-row select,.prof-row input{flex:1;min-width:0;padding:5px 8px}
+
+.lrow.clip-drop .lname,.lrow.clip-drop .cell.add{border-color:var(--accent)}
+.clip-move .report-box{width:min(420px,100%)}
+
+.phone-pairing{display:flex;align-items:center;flex-wrap:wrap;gap:16px;margin:4px 0}
+.phone-pairing[hidden]{display:none}
+.phone-manual{display:grid;gap:6px}
+.phone-manual strong{font-family:var(--mono);user-select:all}
+.phone-pairing figure{margin:0}
+.phone-pairing canvas{display:block;width:180px;height:180px;background:#fff;border-radius:5px;image-rendering:pixelated}
+.phone-pairing figcaption{color:var(--dim);margin-top:6px;font-size:12px}
+.phone-manual{flex:1 1 220px;min-width:0}
+.phone-manual strong{overflow-wrap:anywhere}

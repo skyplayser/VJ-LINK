@@ -305,6 +305,33 @@ export function removeClip(l: LayerState, id: string): void {
   if (l.clip === id) l.clip = null;
 }
 
+/** Einen Clip im Raster verschieben. Gespeicherte Szenen behalten ihre Playback-Einstellungen. */
+export function moveClip(state: ShowState, scenes: readonly Scene[], from: number, to: number, id: string, before?: string): boolean {
+  const source = state.layers[from], target = state.layers[to];
+  if (!source?.clips.includes(id) || !target || (from === to && id === before)) return false;
+  const insert = (clips: string[]) => {
+    if (clips.includes(id)) return;
+    const index = before === undefined ? -1 : clips.indexOf(before);
+    clips.splice(index < 0 ? clips.length : index, 0, id);
+  };
+  if (source === target) {
+    source.clips = source.clips.filter(c => c !== id);
+  } else {
+    const playing = source.clip === id;
+    removeClip(source, id);
+    if (playing && !target.clip) target.clip = id;
+  }
+  insert(target.clips);
+  for (const scene of scenes) {
+    const layers = state.canvas && state.canvas !== MAIN_STACK ? scene.stacks?.[state.canvas] : scene.layers;
+    const sourcePatch = layers?.[from], targetPatch = layers?.[to];
+    if (from === to && !sourcePatch?.clips?.includes(id)) continue;
+    if (sourcePatch?.clips) sourcePatch.clips = sourcePatch.clips.filter(c => c !== id);
+    if (targetPatch?.clips) { targetPatch.clips = [...targetPatch.clips]; insert(targetPatch.clips); }
+  }
+  return true;
+}
+
 /** Grafik aus allen Ebenen und Szenen entfernen (wenn sie aus der Bibliothek gelöscht wird). */
 export function forgetClip(state: ShowState, scenes: Scene[], id: string): void {
   for (const st of Object.values(allStacks(state))) for (const l of st) removeClip(l, id);

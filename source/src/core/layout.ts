@@ -1,3 +1,4 @@
+import type { StageProfile } from "./stageprofile";
 import { t } from "./i18n";
 // Ausgänge: entweder zeigt jeder Bildschirm dasselbe Bild („Gleiches Bild“), oder die Bildschirme liegen
 // auf einer gemeinsamen Leinwand und jeder zeigt seinen Ausschnitt („Leinwand“), z. B. zwei Beamer
@@ -6,7 +7,12 @@ import { t } from "./i18n";
 export type OutputMode = "mirror" | "canvas" | "mapping";
 
 /** Lage eines Bildschirms auf der Leinwand, in Leinwand-Pixeln (Ursprung oben links). */
-export interface ScreenRect { id: number; label: string; x: number; y: number; w: number; h: number }
+export interface ScreenRect {
+  id: number; label: string; x: number; y: number; w: number; h: number;
+  /** Eigene Größe des Ausgangs beim letzten Abgleich: Ändert sie sich (z. B. NDI-Ausgang von 1920 × 1080 auf
+   *  2816 × 640) und ist die Fläche noch so groß wie vorher, wächst sie mit. Von Hand geänderte Flächen bleiben. */
+  nat?: [number, number];
+}
 
 /**
  * Projektionsmapping: eine Leinwand (Fläche) auf einem Ausgang. Die vier Ecken liegen im Bild des Beamers
@@ -42,7 +48,7 @@ export interface Mask {
   on: boolean;
 }
 
-export interface OutputLayout { mode: OutputMode; screens: ScreenRect[]; surfaces?: Surface[]; masks?: Mask[]; res?: OutputRes }
+export interface OutputLayout { mode: OutputMode; screens: ScreenRect[]; surfaces?: Surface[]; masks?: Mask[]; res?: OutputRes; devices?: Record<number, DeviceOutput>; deviceEffects?: Record<number, DeviceEffects>; stage?: StageProfile }
 
 // ---- Auflösung des Ausgabebilds ------------------------------------------------------------
 
@@ -103,7 +109,7 @@ export function renderSize(r: OutputRes | undefined, outW: number, outH: number)
  */
 export function fitRect(sw: number, sh: number, dw: number, dh: number, fit: ResFit):
   { x: number; y: number; w: number; h: number; region: [number, number, number, number] } {
-  if (fit === "stretch" || sw < 1 || sh < 1) return { x: 0, y: 0, w: dw, h: dh, region: [0, 0, 1, 1] };
+  if (fit === "stretch" || sw <= 0 || sh <= 0) return { x: 0, y: 0, w: dw, h: dh, region: [0, 0, 1, 1] };
   if (fit === "cover") {
     const s = Math.max(dw / sw, dh / sh);
     const fw = Math.min(1, dw / (sw * s)), fh = Math.min(1, dh / (sh * s));
@@ -214,11 +220,16 @@ export function viewFor(layout: OutputLayout | undefined, openIds: readonly numb
 export function syncScreens(layout: OutputLayout, open: readonly { id: number; label: string; w: number; h: number }[]): OutputLayout {
   const screens = [...layout.screens];
   for (const d of open) {
-    const s = screens.find(x => x.id === d.id);
-    if (s) { s.label = d.label; continue; }
+    const i = screens.findIndex(x => x.id === d.id);
+    const s = screens[i];
+    if (s) {
+      const follow = s.nat ? s.w === s.nat[0] && s.h === s.nat[1] : false;
+      screens[i] = { ...s, label: d.label, ...(follow ? { w: d.w, h: d.h } : {}), nat: [d.w, d.h] };
+      continue;
+    }
     const others = screens.filter(x => open.some(o => o.id === x.id));
     const b = others.length ? canvasBounds(others) : { x: 0, y: 0, w: 0, h: 0 };
-    screens.push({ id: d.id, label: d.label, x: b.x + b.w, y: b.y, w: d.w, h: d.h });
+    screens.push({ id: d.id, label: d.label, x: b.x + b.w, y: b.y, w: d.w, h: d.h, nat: [d.w, d.h] });
   }
   return { ...layout, screens };
 }
@@ -339,4 +350,49 @@ export function inMask(pts: readonly (readonly [number, number])[], x: number, y
     if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside;
   }
   return inside;
+}
+
+export interface PixelRect { x: number; y: number; w: number; h: number }
+
+export const DEVICE_KINDS = ["display", "projector", "led"] as const;
+export type DeviceKind = typeof DEVICE_KINDS[number];
+export interface DeviceEffects {
+  kind: DeviceKind;
+  strobe: boolean;
+  blinder: boolean;
+}
+
+export function defaultDeviceEffects(kind: DeviceKind = "display"): DeviceEffects {
+  return { kind, strobe: kind !== "projector", blinder: kind !== "projector" };
+}
+
+/** Ziel in Signalpixeln, Quelle relativ zum Bild dieses Ausgangs (jeweils oben links). */
+export interface DeviceOutput {
+  target: PixelRect;
+  source: PixelRect | null;
+  fit: ResFit;
+}
+
+export function fullOutput(w: number, h: number): DeviceOutput {
+  return { target: { x: 0, y: 0, w, h }, source: null, fit: "contain" };
+}
+
+export function limitOutputRect(rect: PixelRect, w: number, h: number): PixelRect {
+  const x = Math.min(w - 1, Math.max(0, rect.x));
+  const y = Math.min(h - 1, Math.max(0, rect.y));
+  return { x, y, w: Math.min(w - x, Math.max(1, rect.w)), h: Math.min(h - y, Math.max(1, rect.h)) };
+}
+
+/** Exakte Lage des Bilds (oben links) und zugehöriger Texturausschnitt (unten links). */
+export function devicePlacement(config: DeviceOutput, sw: number, sh: number, ow: number, oh: number):
+  { target: PixelRect; image: PixelRect; region: [number, number, number, number] } {
+  const target = limitOutputRect(config.target, ow, oh);
+  const src = config.source ?? { x: 0, y: 0, w: 1, h: 1 };
+  const r = fitRect(sw * src.w, sh * src.h, target.w, target.h, config.fit);
+  const [x, y, w, h] = r.region;
+  return {
+    target,
+    image: { x: target.x + r.x, y: target.y + target.h - r.y - r.h, w: r.w, h: r.h },
+    region: [src.x + x * src.w, 1 - src.y - src.h + y * src.h, w * src.w, h * src.h],
+  };
 }

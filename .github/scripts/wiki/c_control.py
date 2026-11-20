@@ -309,6 +309,48 @@ def _():
             ("Everything that talks to VJ-Link, in one place.", "Alles, was mit VJ-Link spricht, an einem Ort."), body)
 
 
+@page("wiki-phone-remote.html", "Phone remote", "Handy-Fernsteuerung")
+def _():
+    body = SEC(
+        P("Control VJ-Link from a phone in the same Wi-Fi: start clips (with preview pictures), change colours and the colour slots, tap the tempo, set strobe speed and intensity, and hold strobe, strobe white and blinder. Nothing to install: the phone opens a page that VJ-Link serves itself, only in the local network.",
+          "VJ-Link vom Handy im selben WLAN steuern: Clips starten (mit Vorschaubildern), Farben und Farbslots wechseln, das Tempo tappen, Strobe-Geschwindigkeit und -Intensität einstellen und Strobe, Strobe White und Blinder halten. Nichts zu installieren: das Handy öffnet eine Seite, die VJ-Link selbst anbietet, nur im lokalen Netzwerk."),
+        GUIDE("phone-remote-guide.png", "CONNECT → Phone remote, switched on", "VERBINDEN → Handy-Fernsteuerung, eingeschaltet", [
+            ("**Phone remote** in the list of connections.", "**Handy-Fernsteuerung** in der Liste der Verbindungen."),
+            ("**Switch**: on starts the remote. After every start of VJ-Link it is off.", "**Schalter**: an startet die Fernsteuerung. Nach jedem Start von VJ-Link ist sie aus."),
+            ("**Network address**: the Wi-Fi or LAN of this computer that the phone is in (127.0.0.1 = this computer only).", "**Netzwerkadresse**: das WLAN oder LAN dieses Rechners, in dem das Handy ist (127.0.0.1 = nur dieser Rechner)."),
+            ("**QR code**: scan it with the phone camera; it opens the page and pairs at once.", "**QR-Code**: mit der Handykamera scannen; das öffnet die Seite und koppelt sofort."),
+            ("Or type the **address** into the phone browser …", "Oder die **Adresse** im Handy-Browser eintippen …"),
+            ("… and enter the 8-digit **pairing code**.", "… und den 8-stelligen **Kopplungscode** eingeben."),
+        ]),
+        IMG("phone-page.png", "The remote on the phone", "Die Fernsteuerung auf dem Handy",
+            ("On the phone: clips per layer with preview pictures, colours and slots, strobe sliders, and at the bottom tempo, TAP and the hold buttons.", "Auf dem Handy: Clips je Ebene mit Vorschaubildern, Farben und Slots, Strobe-Regler und unten Tempo, TAP und die Halte-Knöpfe.")),
+        H2("What the phone can do", "Was das Handy kann"),
+        TABLE([("Control", "Bedienelement"), ("What it does", "Was es macht")], [
+            [("**Clips**", "**Clips**"), ("choose a layer, tap a clip to start it; **Stop layer** stops it", "Ebene wählen, Clip antippen startet ihn; **Ebene stoppen** hält sie an")],
+            [("**Colours**", "**Farben**"), ("choose slot A–E, tap a colour; **Apply to layer** gives the selected layer this slot", "Slot A–E wählen, Farbe antippen; **Auf Ebene anwenden** gibt der gewählten Ebene diesen Slot")],
+            [("**TAP**", "**TAP**"), ("tap the tempo", "Tempo tappen")],
+            [("**Strobe, Strobe White, Blinder**", "**Strobe, Strobe White, Blinder**"), ("active while the finger is on the button; ends by itself after about one second without signal (e.g. Wi-Fi gone). Safe flashes and the per-device settings still apply", "aktiv, solange der Finger auf dem Knopf ist; endet von selbst nach rund einer Sekunde ohne Signal (z. B. WLAN weg). Sichere Blitze und die Einstellungen je Gerät gelten weiter")],
+        ]),
+        H2("Security", "Sicherheit"),
+        UL(("Off by default and after every start; on only while the switch is on.", "Standardmäßig aus und nach jedem Start; an nur, solange der Schalter an ist."),
+           ("Reachable only at the chosen local address, on a free port; no internet, no cloud.", "Nur an der gewählten lokalen Adresse erreichbar, auf einem freien Port; kein Internet, keine Cloud."),
+           ("Pairing with an 8-digit code, a few attempts per half minute; a new pairing ends the old one.", "Kopplung mit 8-stelligem Code, wenige Versuche pro halbe Minute; eine neue Kopplung beendet die alte."),
+           ("The connection is not encrypted (http). Use it only in your own, trusted network, not in an open guest Wi-Fi.", "Die Verbindung ist nicht verschlüsselt (http). Nur im eigenen, vertrauenswürdigen Netzwerk nutzen, nicht in einem offenen Gäste-WLAN.")),
+        H2("Troubleshooting", "Fehlerhilfe"),
+        TABLE([("Problem", "Problem"), ("Solution", "Lösung")], [
+            [("The phone does not open the page", "Das Handy öffnet die Seite nicht"), ("phone and computer must be in the same network; choose the matching network address; some guest Wi-Fis block devices from each other", "Handy und Rechner müssen im selben Netz sein; die passende Netzwerkadresse wählen; manche Gäste-WLANs trennen Geräte voneinander")],
+            [("macOS: the page loads on the computer, but not on the phone", "macOS: die Seite lädt am Rechner, aber nicht am Handy"), ("allow incoming connections for VJ-Link in the macOS firewall", "in der macOS-Firewall eingehende Verbindungen für VJ-Link erlauben")],
+            [("“Session ended. Please pair again.”", "„Sitzung beendet. Bitte erneut koppeln.“"), ("the remote was switched off or another phone paired; scan the QR code again", "die Fernsteuerung wurde ausgeschaltet oder ein anderes Handy hat gekoppelt; den QR-Code erneut scannen")],
+            [("No QR code", "Kein QR-Code"), ("with 127.0.0.1 there is none (the phone cannot reach it); choose the Wi-Fi or LAN address", "bei 127.0.0.1 gibt es keinen (das Handy erreicht ihn nicht); die WLAN- oder LAN-Adresse wählen")],
+        ]),
+    )
+    return (("Phone remote: clips, colours and strobe from the phone", "Handy-Fernsteuerung: Clips, Farben und Strobe vom Handy"),
+            ("Control VJ-Link from a phone in the local Wi-Fi: clips with previews, colours, tap tempo, strobe and blinder; pairing by QR code.",
+             "VJ-Link vom Handy im lokalen WLAN steuern: Clips mit Vorschau, Farben, Tap-Tempo, Strobe und Blinder; Kopplung per QR-Code."),
+            ("Control", "Steuerung"), ("Phone remote", "Handy-Fernsteuerung"),
+            ("Clips, colours and strobe from the phone.", "Clips, Farben und Strobe vom Handy."), body)
+
+
 @page("wiki-audio.html", "Audio input", "Audio-Eingang")
 def _():
     body = SEC(

@@ -6,7 +6,7 @@ import { decodeImage } from "./medialib";
 import { VideoPool } from "./videopool";
 import { CameraPool } from "./campool";
 import { PersonMasks } from "./segment";
-import { masksFor, viewFor, warpFor } from "../core/layout";
+import { devicePlacement, limitOutputRect, masksFor, renderSize, viewFor, warpFor, type DeviceOutput } from "../core/layout";
 import { layerTimesAt } from "../core/show";
 import { t } from "../core/i18n";
 
@@ -30,7 +30,24 @@ engine.camMask = (id, v) => masks.mask(id, v);
 setInterval(() => { cams.sweep(); masks.sweep(); }, 1000);
 engine.videoDuration = id => durations.get(id) ?? 0;
 setInterval(() => videos.sweep(), 1000);
-bridge?.onFrame(f => { frame = f; cams.sources = f.show.cameras ?? []; for (const [id, d] of Object.entries(f.videoDurations ?? {})) durations.set(id, d); });
+let layoutKey = "";
+let view: ReturnType<typeof viewFor> = null;
+let warps: ReturnType<typeof warpFor> = null;
+let outputMasks: ReturnType<typeof masksFor> = [];
+bridge?.onFrame(f => {
+  const oldPixels = frame?.monitorPixels?.[displayId], pixels = f.monitorPixels?.[displayId];
+  frame = f;
+  if (oldPixels?.w !== pixels?.w || oldPixels?.h !== pixels?.h) fit();
+  const key = JSON.stringify([f.layout, f.openOutputs]);
+  if (key !== layoutKey) {
+    layoutKey = key;
+    view = viewFor(f.layout, f.openOutputs ?? [], displayId);
+    warps = warpFor(f.layout, displayId);
+    outputMasks = masksFor(f.layout, displayId);
+  }
+  cams.sources = f.show.cameras ?? [];
+  for (const [id, d] of Object.entries(f.videoDurations ?? {})) durations.set(id, d);
+});
 bridge?.onMedia(async e => {
   if (e.type === "remove") { engine.removeMedia(e.id); return; }
   if (e.type === "raw") { engine.setRaw(e.id, e.w, e.h, e.data); return; }
@@ -39,7 +56,8 @@ bridge?.onMedia(async e => {
 
 function fit(): void {
   const dpr = window.devicePixelRatio || 1;
-  engine.resize(Math.round(window.innerWidth * dpr), Math.round(window.innerHeight * dpr));
+  const pixels = frame?.monitorPixels?.[displayId];
+  engine.resize(pixels?.w ?? Math.round(window.innerWidth * dpr), pixels?.h ?? Math.round(window.innerHeight * dpr));
 }
 window.addEventListener("resize", fit);
 fit();
@@ -48,6 +66,7 @@ fit();
 const overlay = document.createElement("canvas");
 overlay.style.cssText = "position:fixed;inset:0;width:100vw;height:100vh;display:none;pointer-events:none";
 document.body.appendChild(overlay);
+const overlaySource = document.createElement("canvas");
 const IDENT_COLORS = ["#e8364f", "#2f9bff", "#2fd07a", "#ffb020", "#b05cff", "#18d3d3", "#ff6ad5", "#9aa4b8"];
 
 /** Wer bin ich: Nummer (wie im AUSGABE-Tab), Name und Lage auf der Leinwand. */
@@ -91,10 +110,11 @@ function plate(c: CanvasRenderingContext2D, lines: string[], x: number, y: numbe
 }
 
 /** Beschriftung je nach Testbild; Vollflächen (Weiß, Farben, Graustufen) bleiben ohne. */
-function drawOverlay(f: Frame): void {
+function drawOverlay(f: Frame, device: DeviceOutput | undefined): void {
   const w = canvas.width, h = canvas.height, p = f.show.testPattern ?? "bars";
-  overlay.width = w; overlay.height = h;
-  const c = overlay.getContext("2d")!;
+  const source = device ? overlaySource : overlay;
+  source.width = w; source.height = h;
+  const c = source.getContext("2d")!;
   c.clearRect(0, 0, w, h);
   const me = whoAmI(f);
   const m = Math.min(w, h), fs = Math.max(16, Math.round(m / 11)), maxW = w * 0.86;
@@ -124,20 +144,60 @@ function drawOverlay(f: Frame): void {
       c.fillText(txt, w / 2, h * 0.42 + m * 0.36 + fs * (1.1 + i * 0.7));
     }
   }
+  if (device) {
+    const src = f.layout?.mode === "mirror" ? renderSize(f.layout.res, w, h) : { w, h };
+    const { image, region: [x, bottom, rw, rh] } = devicePlacement(device, src.w, src.h, w, h);
+    overlay.width = w; overlay.height = h;
+    overlay.getContext("2d")!.drawImage(source, x * w, (1 - bottom - rh) * h, rw * w, rh * h, image.x, image.y, image.w, image.h);
+  }
+}
+
+function drawPixelTest(key: string, edge: boolean, device?: DeviceOutput): void {
+  if (key === testKey) return;
+  testKey = key;
+  const { width: w, height: h } = canvas;
+  overlay.width = w; overlay.height = h;
+  overlay.style.display = "block";
+  const c = overlay.getContext("2d")!;
+  c.fillStyle = "#000";
+  c.fillRect(0, 0, w, h);
+  if (!edge) return;
+  const r = device ? limitOutputRect(device.target, w, h) : { x: 0, y: 0, w, h };
+  c.fillStyle = "#fff";
+  c.fillRect(r.x, r.y, r.w, 1);
+  c.fillRect(r.x, r.y + r.h - 1, r.w, 1);
+  c.fillRect(r.x, r.y, 1, r.h);
+  c.fillRect(r.x + r.w - 1, r.y, 1, r.h);
 }
 
 let testKey = "";
-function loop(): void {
+let sampleStart = 0, sampleFrames = 0, longGaps = 0, lastTick = 0;
+function loop(tick: number): void {
+  if (lastTick && tick - lastTick > 50) longGaps++;
+  lastTick = tick;
+  sampleStart ||= tick;
   const now = Date.now();
   if (frame) {
-    // Beschriftung nur neu zeichnen, wenn sich Testbild, Größe oder Anordnung ändern
-    const mappingMode = frame.layout?.mode === "mapping" && frame.show.testPattern !== "ident";
-    const key = frame.show.testCard && !mappingMode ? `${frame.show.testPattern}|${canvas.width}x${canvas.height}|${JSON.stringify(frame.layout ?? null)}|${frame.openOutputs?.join(",")}` : "";
-    if (key !== testKey) { testKey = key; overlay.style.display = key ? "block" : "none"; if (key) drawOverlay(frame); }
-    const lt = frame.layerClock ? layerTimesAt(frame.layerClock, now, frame.show.layers) : null;
-    engine.outRes = frame.layout?.res ?? null;
-    engine.render(frame.show, frameBeat(frame, now), now, frame.bpm, viewFor(frame.layout, frame.openOutputs ?? [], displayId), lt,
-      warpFor(frame.layout, displayId), "", masksFor(frame.layout, displayId));
+    if (!frame.monitorPixels?.[displayId]) fit();
+    const device = frame.layout?.devices?.[displayId];
+    const test = frame.outputTests?.[displayId];
+    const pixelTest = test === "black" || test === "active-edge";
+    if (pixelTest) {
+      drawPixelTest(`${test}|${canvas.width}x${canvas.height}|${layoutKey}`, test === "active-edge", device);
+    } else {
+      const f = test ? { ...frame, show: { ...frame.show, testCard: true, testPattern: test } } : frame;
+      const mappingMode = f.layout?.mode === "mapping" && f.show.testPattern !== "ident";
+      const key = f.show.testCard && !mappingMode ? `${f.show.testPattern}|${canvas.width}x${canvas.height}|${layoutKey}` : "";
+      if (key !== testKey) { testKey = key; overlay.style.display = key ? "block" : "none"; if (key) drawOverlay(f, device); }
+      const lt = f.layerClock ? layerTimesAt(f.layerClock, now, f.show.layers) : null;
+      engine.outRes = f.layout?.res ?? null;
+      engine.render(f.show, frameBeat(f, now), now, f.bpm, view, lt, warps, "", outputMasks, device, f.layout?.deviceEffects?.[displayId]);
+    }
+    sampleFrames++;
+    if (tick - sampleStart >= 1000) {
+      bridge?.publishOutputStats?.({ fps: sampleFrames * 1000 / (tick - sampleStart), frameMs: pixelTest ? 0 : engine.info.frameMs, longGaps });
+      sampleStart = tick; sampleFrames = 0; longGaps = 0;
+    }
   } else {
     engine.gl.clearColor(0, 0, 0, 1); engine.gl.clear(engine.gl.COLOR_BUFFER_BIT);
   }

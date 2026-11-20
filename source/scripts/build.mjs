@@ -10,7 +10,10 @@ const pkgVersion = JSON.parse((await import("node:fs")).readFileSync(new URL("..
 const common = { bundle: true, sourcemap: true, logLevel: "info", define: { APP_VERSION: JSON.stringify(pkgVersion) } };
 
 await build({ ...common, entryPoints: ["src/main/main.ts"], outfile: "dist/main/main.js",
-  platform: "node", format: "cjs", target: "node22", external: ["electron"] });
+  platform: "node", format: "cjs", target: "node22", external: ["electron", "koffi"] });
+// NDI®-Prozess (utilityProcess): koffi bleibt außen vor (natives Modul aus node_modules)
+await build({ ...common, entryPoints: ["src/main/ndi/ndi-worker.ts"], outfile: "dist/main/ndi-worker.js",
+  platform: "node", format: "cjs", target: "node22", external: ["electron", "koffi"] });
 await build({ ...common, entryPoints: ["src/main/preload.ts"], outfile: "dist/main/preload.js",
   platform: "node", format: "cjs", target: "node22", external: ["electron"] });
 await build({ ...common, loader: { ".png": "dataurl" }, entryPoints: { app: "src/renderer/app.ts", output: "src/renderer/output.ts" },
@@ -19,6 +22,10 @@ await build({ ...common, loader: { ".png": "dataurl" }, entryPoints: { app: "src
 await cp("src/renderer/index.html", "dist/renderer/index.html");
 await cp("src/renderer/output.html", "dist/renderer/output.html");
 await cp("src/renderer/style.css", "dist/renderer/style.css");
+await mkdir("dist/renderer/remote", { recursive: true });
+for (const name of ["index.html", "remote.css"]) await cp(`src/remote/${name}`, `dist/renderer/remote/${name}`);
+await build({ ...common, entryPoints: ["src/remote/remote.ts"], outfile: "dist/renderer/remote/remote.js",
+  platform: "browser", format: "iife", target: ["chrome90", "safari15", "firefox90"] });
 // Startanimation der Link-Suite (Baustein aus dem Suite-Launcher): Stil und Bilder; das Skript bündelt esbuild
 await mkdir("dist/renderer/intro", { recursive: true });
 await cp("src/renderer/intro/program-intro.css", "dist/renderer/intro/program-intro.css");
@@ -42,7 +49,7 @@ await cp("vendor/mediapipe/LICENSE", "dist/renderer/vendor/mediapipe/LICENSE");
   const parts = [`VJ-Link ${pkgVersion} – Licenses and third-party notices
 
 VJ-Link: Copyright (c) 2026 Philipp Spruck / NEXTPHILM. Licensed under the Eclipse Public License 2.0 (text below).
-Source code: https://github.com/skyplayser/VJ-LInk-dev
+Source code: https://github.com/skyplayser/VJ-LINK/tree/main/source
 
 Art-Net™ Designed by and Copyright Artistic Licence Holdings Ltd
 Ableton and Link are trademarks of Ableton AG. VJ-Link is an independent project and not an official product of, or
@@ -58,11 +65,16 @@ VJ-Link ships no codec of its own.`];
     if (!key || info.dev) continue;
     const dir = key; // node_modules/<name>
     const name = key.replace(/^.*node_modules\//, "");
+    // Optionale Pakete anderer Systeme (z. B. koffi für Linux) sind nicht installiert und kommen nicht in die App
+    if (info.optional && !(await readdir(dir).then(() => true, () => false))) continue;
     let text = null;
     try {
       const f = (await readdir(dir)).find(x => /^(licen[cs]e|copying)(\.|$)/i.test(x));
       if (f) text = await readFile(`${dir}/${f}`, "utf8");
     } catch { /* fehlt */ }
+    // Die nativen Teile von koffi (@koromix/koffi-<system>) stehen unter der Lizenz von koffi
+    if (!text && name.startsWith("@koromix/koffi-")) text = await readFile("node_modules/koffi/LICENSE.txt", "utf8");
+    if (!text && name === "qrcode-generator") text = await readFile("vendor/licenses/MIT-qrcode-generator.txt", "utf8");
     if (!text && name === "@mediapipe/tasks-vision") text = await readFile("vendor/mediapipe/LICENSE", "utf8");
     if (!text) { missing.push(name); continue; }
     parts.push(`${name} ${info.version} (${info.license})${name.startsWith("@mediapipe/") ? "\nIncludes the MediaPipe Selfie Segmenter model (vendor/mediapipe/selfie_segmenter.tflite), Apache-2.0." : ""}\n\n${text.trim()}`);
@@ -79,6 +91,21 @@ VJ-Link ships no codec of its own.`];
 ${(await readFile("vendor/licenses/MIT-inigo-quilez.txt", "utf8")).trim()}
 
 ${(await readFile("vendor/licenses/MIT-feather.txt", "utf8")).trim()}`);
+  // NDI®: keine NDI-Dateien in der App; Hinweis, MIT-Text der SDK-Header und die Bedingungen für die NDI-Teile (docs/NDI.md)
+  {
+    const ndiDoc = await readFile("docs/NDI.md", "utf8");
+    const terms = ndiDoc.slice(ndiDoc.indexOf("### Bedingungen für die NDI-Teile")).replace(/^### /, "").trim();
+    parts.push(`NDI®
+
+NDI® is a registered trademark of Vizrt NDI AB. VJ-Link is not a product of NDI. https://ndi.video/
+VJ-Link contains no NDI software. Its NDI output loads the NDI runtime that the user installs from NDI
+(https://ndi.video/tools/); that runtime is under NDI's own license. The declarations in src/main/ndi/ndi-lib.ts follow
+the NDI SDK header files, which NDI publishes under the MIT license:
+
+${(await readFile("vendor/licenses/MIT-ndi-sdk-headers.txt", "utf8")).trim()}
+
+${terms}`);
+  }
   parts.push(`Logo lettering: Inter Display (https://github.com/rsms/inter), converted to outlines.\n\n${(await readFile("assets/fonts/Inter-OFL.txt", "utf8")).trim()}`);
   await writeFile("dist/THIRD_PARTY_LICENSES.txt", parts.join(sep) + "\n");
   // Lizenzseite im Windows-Installer

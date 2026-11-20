@@ -3,6 +3,7 @@
 import { app } from "electron";
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import type { ShowPackageResult } from "../core/frame";
 import { mediaFolderName, projectHash, packProject, projectRefs, unpackProject, PROJECT_EXT } from "../core/projectfile";
 import type { Storage } from "./storage";
 import { t } from "../core/i18n";
@@ -72,13 +73,14 @@ export class ProjectFiles {
   async clearRecent(): Promise<void> { this.state.recent = []; app.clearRecentDocuments(); await this.persist(); }
 
   /** Speichern nach `file`. Videos kommen in den Medienordner daneben (nur neue oder geänderte werden kopiert). */
-  async save(projectJson: string, file: string): Promise<FileResult> {
+  async save(projectJson: string, file: string, updateCurrent = true): Promise<FileResult> {
     if (!file.toLowerCase().endsWith(`.${PROJECT_EXT}`)) file += `.${PROJECT_EXT}`;
     const refs = projectRefs(projectJson);
     const images = await this.storage.mediaPayloads(refs.mediaIds);
     const base = path.basename(file, `.${PROJECT_EXT}`);
     const folderName = mediaFolderName(base);
-    const missing: string[] = [];
+    const included = new Set(images.map(image => image.id));
+    const missing = refs.mediaIds.filter(id => !included.has(id));
     if (refs.videos.length) {
       const folder = path.join(path.dirname(file), folderName);
       await fs.mkdir(folder, { recursive: true });
@@ -95,11 +97,29 @@ export class ProjectFiles {
     const tmp = `${file}.tmp`;
     await fs.writeFile(tmp, text);
     await fs.rename(tmp, file);
+    if (!updateCurrent) return { ok: true, name: base, path: file, missing };
     this.state.current = file; this.state.savedHash = projectHash(projectJson); this.state.fresh = false;
     this.remember(file);
     await this.persist();
     this.dirty = false;
     return { ok: true, name: this.name, path: file, missing };
+  }
+
+  async exportShow(projectJson: string, parent: string): Promise<ShowPackageResult> {
+    const folder = await fs.mkdtemp(path.join(parent, "VJ-Link-Show-"));
+    try {
+      const file = path.join(folder, `Show.${PROJECT_EXT}`);
+      const result = await this.save(projectJson, file, false);
+      const checked = await verifyShowPackage(file);
+      if (result.missing?.length || checked.error || checked.missing?.length) {
+        await fs.rm(folder, { recursive: true, force: true });
+        return { error: checked.error, missing: [...new Set([...(result.missing ?? []), ...(checked.missing ?? [])])] };
+      }
+      return { file };
+    } catch (error) {
+      await fs.rm(folder, { recursive: true, force: true });
+      throw error;
+    }
   }
 
   /** Projektdatei öffnen: Grafiken und Videos in die Bibliothek, Projekt als Arbeitsstand. Danach Oberfläche neu laden. */
@@ -136,4 +156,20 @@ export class ProjectFiles {
     this.dirty = false;
     return { ok: true, name: this.name };
   }
+}
+
+/** Prüft ausschließlich Dateien im ausgewählten Paket, unabhängig von der lokalen Medienbibliothek. */
+export async function verifyShowPackage(file: string): Promise<ShowPackageResult> {
+  const stat = await fs.stat(file);
+  if (!stat.isFile() || stat.size > FILE_MAX_BYTES) return { error: t("Die Projektdatei kann nicht geprüft werden.") };
+  const pkg = unpackProject(await fs.readFile(file, "utf8"));
+  if (typeof pkg === "string") return { error: pkg };
+  const images = new Set(pkg.images.map(image => image.id));
+  const missing = projectRefs(pkg.projectJson).mediaIds.filter(id => !images.has(id));
+  for (const v of pkg.videos) {
+    const candidate = pkg.mediaFolder && path.join(path.dirname(file), pkg.mediaFolder, `${v.id}.${v.ext}`);
+    const video = candidate ? await fs.stat(candidate).catch(() => null) : null;
+    if (!video?.isFile() || !video.size) missing.push(v.name);
+  }
+  return { file, missing };
 }

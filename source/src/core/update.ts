@@ -1,7 +1,7 @@
 // Updates: Wie bei LJ-Link fragt der Hauptprozess GitHub nach der neuesten Veröffentlichung, lädt das passende
 // Installationspaket und ersetzt die App. Hier liegt nur, was sich ohne Netz und Dateisystem prüfen lässt.
 
-/** Öffentliches Repo mit den Veröffentlichungen und Installern (der Quellcode liegt in skyplayser/VJ-LInk-dev). */
+/** Öffentliches Repo mit den Veröffentlichungen und Installern (der Quellcode jeder offiziellen Version liegt dort im Ordner source/; das Entwicklungs-Repo skyplayser/VJ-LInk-dev ist privat). */
 export const UPDATE_REPO = "skyplayser/VJ-LINK";
 export const RELEASES_PAGE = `https://github.com/${UPDATE_REPO}/releases`;
 

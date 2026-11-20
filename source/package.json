@@ -1,6 +1,6 @@
 {
   "name": "vj-link",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "productName": "VJ-Link",
   "description": "Einfache VJ-Software für LJs: Lichtpult, OSC und LJ-Link steuern die Visuals.",
   "private": true,
@@ -13,12 +13,14 @@
     "web": "npm run build && node scripts/serve.mjs",
     "check": "npm run typecheck && npm test",
     "test:e2e": "npm run build && node tests/e2e/smoke.cjs dev release/e2e",
-    "dist:mac": "npm run build && electron-builder --mac --arm64 --x64 --publish never && node scripts/rename-dist.mjs",
-    "dist:win": "npm run build && electron-builder --win --x64 --publish never && node scripts/rename-dist.mjs"
+    "dist:mac": "node scripts/koffi-native.mjs mac && npm run build && electron-builder --mac --arm64 --x64 --publish never && node scripts/rename-dist.mjs",
+    "dist:win": "node scripts/koffi-native.mjs win && npm run build && electron-builder --win --x64 --publish never && node scripts/rename-dist.mjs"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "1.2.2",
     "bonjour-service": "1.4.4",
+    "koffi": "3.3.8",
+    "qrcode-generator": "2.0.4",
     "ws": "^8.18.0"
   },
   "devDependencies": {
@@ -49,7 +51,10 @@
       "LICENSE"
     ],
     "asar": true,
+    "npmRebuild": false,
+    "afterPack": "scripts/after-pack.cjs",
     "mac": {
+      "files": ["!node_modules/@koromix/koffi-win32-*/**"],
       "category": "public.app-category.entertainment",
       "icon": "build/icon.icns",
       "target": [
@@ -63,9 +68,10 @@
       "extendInfo": {
         "NSCameraUsageDescription": "VJ-Link zeigt das Kamerabild als Clip (Silhouette, Masken, Looks). Camera input as a clip.",
         "NSMicrophoneUsageDescription": "VJ-Link wertet den Audio-Eingang für Equalizer und Takt aus. Audio input for equalizers and beat.",
-        "NSLocalNetworkUsageDescription": "VJ-Link empfängt Art-Net, sACN und OSC, verbindet sich mit LJ-Link und nimmt am Suite-Chat teil. Art-Net, sACN, OSC, LJ-Link and the suite chat.",
+        "NSLocalNetworkUsageDescription": "VJ-Link empfängt Art-Net, sACN und OSC, verbindet sich mit LJ-Link, nimmt am Suite-Chat teil und sendet den NDI-Ausgang. Art-Net, sACN, OSC, LJ-Link, the suite chat and the NDI output.",
         "NSBonjourServices": [
-          "_ljlink._tcp"
+          "_ljlink._tcp",
+          "_ndi._tcp"
         ]
       }
     },
@@ -73,6 +79,7 @@
       "title": "VJ-Link ${version}"
     },
     "win": {
+      "files": ["!node_modules/@koromix/koffi-darwin-*/**"],
       "icon": "build/icon.ico",
       "target": [
         {
@@ -106,6 +113,6 @@
   "license": "EPL-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/skyplayser/VJ-LInk-dev.git"
+    "url": "https://github.com/skyplayser/VJ-LINK.git"
   }
 }

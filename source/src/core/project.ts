@@ -5,7 +5,7 @@ import { POST_BY_ID } from "./effects";
 import { isValidMediaId, type MediaItem } from "./media";
 import { parseMappings, type Mapping } from "./mapping";
 import { FITS, newCue, type Cue, type VideoItem, type VideoSettings } from "./video";
-import { MAX_RES, RES_FITS, defaultLayout, parseAspect, type OutputLayout, type OutputRes } from "./layout";
+import { DEVICE_KINDS, defaultDeviceEffects, type DeviceEffects, MAX_RES, RES_FITS, defaultLayout, limitOutputRect, parseAspect, type DeviceOutput, type OutputLayout, type OutputRes } from "./layout";
 import { parseMods, type Modulation } from "./modulation";
 import { parseTextSpec } from "./text";
 import { CHASE_ORDERS } from "./chase";
@@ -153,6 +153,9 @@ function layout(v: unknown): OutputLayout {
   const screens = (Array.isArray(v.screens) ? v.screens : []).filter(isObj).slice(0, 16).map(s => ({
     id: num(s.id, 0, -1e12, 1e12), label: str(s.label, t("Bildschirm"), 60),
     x: num(s.x, 0, -32768, 32768), y: num(s.y, 0, -32768, 32768), w: num(s.w, 1920, 16, 16384), h: num(s.h, 1080, 16, 16384),
+    // Eigene Größe des Ausgangs beim letzten Abgleich (Fläche wächst mit, solange sie nicht von Hand geändert wurde)
+    ...(Array.isArray(s.nat) && s.nat.length === 2 && s.nat.every(v => typeof v === "number" && Number.isInteger(v) && v >= 16 && v <= 16384)
+      ? { nat: [s.nat[0], s.nat[1]] as [number, number] } : {}),
   }));
   const cl = (x: unknown, d: number) => num(x, d, -0.5, 1.5);
   const surfaces = (Array.isArray(v.surfaces) ? v.surfaces : []).filter(isObj).slice(0, 64).map((s, i) => {
@@ -181,7 +184,39 @@ function layout(v: unknown): OutputLayout {
     aspect: typeof r.aspect === "string" && parseAspect(r.aspect) ? r.aspect.trim().slice(0, 12) : "16:9",
     fit: oneOf(r.fit, RES_FITS, "contain"),
   } : undefined;
-  return { mode: oneOf(v.mode, ["mirror", "canvas", "mapping"] as const, "mirror"), screens, surfaces, masks, ...(res ? { res } : {}) };
+  const devices: Record<number, DeviceOutput> = {};
+  if (isObj(v.devices)) for (const [id, d] of Object.entries(v.devices).slice(0, 64)) {
+    if (!/^-?[0-9]+$/.test(id) || !Number.isSafeInteger(Number(id)) || !isObj(d) || !isObj(d.target)) continue;
+    const px = (value: unknown, fallback: number) => Math.round(num(value, fallback, 0, 65536));
+    const target = limitOutputRect({ x: px(d.target.x, 0), y: px(d.target.y, 0), w: px(d.target.w, 1), h: px(d.target.h, 1) }, 65536, 65536);
+    let source = null;
+    if (isObj(d.source)) {
+      const x = num(d.source.x, 0, 0, 0.9999), y = num(d.source.y, 0, 0, 0.9999);
+      source = { x, y, w: num(d.source.w, 1, 0.0001, 1 - x), h: num(d.source.h, 1, 0.0001, 1 - y) };
+    }
+    devices[Number(id)] = { target, source, fit: oneOf(d.fit, RES_FITS, "contain") };
+  }
+  const deviceEffects: Record<number, DeviceEffects> = {};
+  if (isObj(v.deviceEffects)) for (const [id, d] of Object.entries(v.deviceEffects).slice(0, 64)) {
+    if (!/^-?[0-9]+$/.test(id) || !Number.isSafeInteger(Number(id)) || !isObj(d)) continue;
+    const defaults = defaultDeviceEffects(oneOf(d.kind, DEVICE_KINDS, "display"));
+    deviceEffects[Number(id)] = {
+      kind: defaults.kind,
+      strobe: typeof d.strobe === "boolean" ? d.strobe : defaults.strobe,
+      blinder: typeof d.blinder === "boolean" ? d.blinder : defaults.blinder,
+    };
+  }
+  const roles = new Map<number, string>();
+  const stage = isObj(v.stage) ? v.stage : null;
+  if (Array.isArray(stage?.outputs)) for (const o of stage.outputs.slice(0, 32)) {
+    if (!isObj(o) || typeof o.display !== "number" || !Number.isSafeInteger(o.display) || o.display === -1 || o.display === -2) continue;
+    const name = str(o.name, "", 60).trim();
+    if (name && !roles.has(o.display)) roles.set(o.display, name);
+  }
+  return { mode: oneOf(v.mode, ["mirror", "canvas", "mapping"] as const, "mirror"), screens, surfaces, masks,
+    ...(res ? { res } : {}), ...(Object.keys(devices).length ? { devices } : {}),
+    ...(Object.keys(deviceEffects).length ? { deviceEffects } : {}),
+    ...(stage ? { stage: { name: str(stage.name, "", 60).trim(), outputs: [...roles].map(([display, name]) => ({ display, name })) } } : {}) };
 }
 
 /** Leinwand-IDs: kurz und schlicht. */
@@ -335,3 +370,6 @@ export function applyProject(c: ControlContext, p: ProjectFile): void {
   // An Ort und Stelle ersetzen (die Oberfläche hält die Liste)
   if (c.mods) c.mods.splice(0, c.mods.length, ...(p.mods ?? [])); else c.mods = [...(p.mods ?? [])];
 }
+
+/** Ausgabe-Anordnung prüfen (auch für Ausgabeprofile außerhalb des Projekts). */
+export const parseLayout = (v: unknown): OutputLayout => layout(isObj(v) ? v : {});

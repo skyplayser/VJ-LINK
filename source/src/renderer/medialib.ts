@@ -6,7 +6,7 @@ import { t } from "../core/i18n";
 
 const MAX_SIDE = 2048;
 
-export interface DecodedImage { src: TexImageSource; w: number; h: number; /** Hintergrund laut Ecken, wenn das Bild keine Transparenz hat. */ background?: "white" | "black" }
+export interface DecodedImage { src: HTMLCanvasElement | HTMLImageElement; w: number; h: number; /** Hintergrund laut Ecken, wenn das Bild keine Transparenz hat. */ background?: "white" | "black" }
 
 /** Ecken prüfen: ganz deckend und einheitlich hell bzw. dunkel → wahrscheinlich ein Logo auf weißem/schwarzem Grund. */
 function detectBackground(img: CanvasImageSource, w: number, h: number): "white" | "black" | undefined {
@@ -63,6 +63,8 @@ export class MediaLibrary {
     this.engines.push(engine);
     for (const [id, d] of this.images) engine.setMedia(id, d.src, d.w, d.h);
   }
+
+  image(id: string): DecodedImage | undefined { return this.images.get(id); }
 
   /** Bereits gespeicherte oder neu importierte Grafik übernehmen. */
   async load(p: MediaPayload): Promise<MediaItem | null> {

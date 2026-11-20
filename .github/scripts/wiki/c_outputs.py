@@ -1,5 +1,5 @@
 from wikilib import *
-from figs import FIT
+from figs import FIT, OUTPUT_AREA
 
 group("Outputs", "Ausgänge")
 
@@ -48,9 +48,11 @@ def _():
         ADM("note", ("With **Canvas** the arrangement of the screens sets the size, so this setting does not apply there. With **projection mapping** the picture is rendered in this size and then spread onto the canvases. The setting is saved with the project.",
                      "Bei **Leinwand** bestimmt die Anordnung der Bildschirme die Größe, dort gilt diese Einstellung nicht. Beim **Projektionsmapping** wird das Bild in dieser Größe gerechnet und dann auf die Leinwände verteilt. Die Einstellung wird mit dem Projekt gespeichert.")),
         H2("Window output", "Fenster-Ausgang"),
-        P("Instead of full screen, an output can be a normal window with a fixed picture size (720p up to 4K, also portrait). Capture it in OBS (NDI and Syphon via OBS plugins or other tools; not built in). It also works as a projector in canvas and projection mapping.",
-          "Statt Vollbild kann ein Ausgang ein normales Fenster mit fester Bildgröße sein (720p bis 4K, auch hochkant). Greif es in OBS ab (NDI und Syphon über OBS-Plugins oder Zusatzprogramme, nicht eingebaut). Es funktioniert auch wie ein Beamer in Leinwand und Projektionsmapping."),
-        ADM("note", ("Native Syphon, Spout and NDI are planned. Until then the window output is the way to get the picture into other programs.", "Natives Syphon, Spout und NDI sind geplant. Bis dahin ist der Fenster-Ausgang der Weg, das Bild in andere Programme zu bringen.")),
+        P("Instead of full screen, an output can be a normal window with a fixed picture size (720p up to 4K, also portrait and 1280 × 1024). Capture it in OBS or with Syphon tools. It also works as a projector in canvas and projection mapping.",
+          "Statt Vollbild kann ein Ausgang ein normales Fenster mit fester Bildgröße sein (720p bis 4K, auch hochkant und 1280 × 1024). Greif es in OBS oder mit Syphon-Werkzeugen ab. Es funktioniert auch wie ein Beamer in Leinwand und Projektionsmapping."),
+        ADM("note", ("NDI® is built in: see [NDI output](wiki-ndi.html). Native Syphon and Spout are planned.", "NDI® ist eingebaut: siehe [NDI-Ausgang](wiki-ndi.html). Natives Syphon und Spout sind geplant.")),
+        P("Only part of a screen in use, for example by an LED controller? See [image area, devices and profiles](wiki-output-area.html).",
+          "Nur ein Teil eines Bildschirms genutzt, etwa von einem LED-Controller? Siehe [Bildfläche, Geräte und Profile](wiki-output-area.html)."),
         H2("Test patterns", "Testbilder"),
         P("Nine test patterns to step through: color bars, grid, grid across all, numbers, grey scale, white, red, green and blue, each with the resolution, name and position of every output. Also on a key or desk channel: test pattern, next, previous.",
           "Neun Testbilder zum Durchschalten: Farbbalken, Raster, Raster über alle, Nummern, Graustufen, Weiß, Rot, Grün und Blau, jeweils mit Auflösung, Name und Lage jedes Ausgangs. Auch auf Taste oder Pult-Kanal: Testbild, Nächstes, Voriges."),
@@ -63,6 +65,141 @@ def _():
              "Visuals auf beliebig vielen Bildschirmen, Beamern und LED-Wänden in jeder Auflösung, eine Leinwand über alle, Fenster-Ausgang für OBS und Testbilder."),
             ("Outputs", "Ausgänge"), ("Screens and canvas", "Bildschirme und Leinwand"),
             ("Projectors, LED walls and capture.", "Beamer, LED-Wände und Abgreifen."), body)
+
+
+@page("wiki-output-area.html", "Image area, devices and profiles", "Bildfläche, Geräte und Profile")
+def _():
+    body = SEC(
+        P("Every output has its own settings: a **name**, the **image area** in signal pixels, how the picture is **fitted** into it, and the **device type** with strobe and blinder. A typical case: an LED controller reports itself as a 1280 × 1024 monitor, but the LED wall only uses a small part of it. VJ-Link then draws the picture exactly into that part and leaves the rest black, while a projector next to it keeps showing the full picture.",
+          "Jeder Ausgang hat eigene Einstellungen: einen **Namen**, die **Bildfläche** in Signalpixeln, wie das Bild darin **eingepasst** wird, und den **Gerätetyp** mit Strobe und Blinder. Typischer Fall: Ein LED-Controller meldet sich als Monitor mit 1280 × 1024, die LED-Wand nutzt davon aber nur einen kleinen Teil. VJ-Link zeichnet das Bild dann genau in diesen Teil und lässt den Rest schwarz, während ein Beamer daneben weiter das ganze Bild zeigt."),
+        OUTPUT_AREA(),
+        H2("The output rows", "Die Ausgangszeilen"),
+        GUIDE("outputs-rows-guide.png", "Output tab with a projector and an LED controller", "Tab Ausgabe mit Beamer und LED-Controller", [
+            ("**Name** of the output (here “LED wall”), below it the real screen and its resolution in pixels.", "**Name** des Ausgangs (hier „LED-Wand“), darunter der echte Bildschirm und seine Auflösung in Pixeln."),
+            ("**Image area** of this output, if it does not use the full screen.", "**Bildfläche** dieses Ausgangs, wenn er nicht den ganzen Bildschirm nutzt."),
+            ("**Device type**: the projector gets no strobe and no blinder.", "**Gerätetyp**: der Beamer bekommt weder Strobe noch Blinder."),
+            ("**Settings** opens the dialog for this output.", "**Einstellungen** öffnet den Dialog für diesen Ausgang."),
+            ("**Open as output** / **Close**. An open output also shows its frame rate and how long a frame takes.", "**Als Ausgang öffnen** / **Schließen**. Ein offener Ausgang zeigt außerdem seine Bildrate und wie lange ein Bild dauert."),
+        ]),
+        H2("Setting up an output", "Einen Ausgang einstellen"),
+        GUIDE("output-area-guide.png", "Settings of the output “LED wall”: area 140/56 · 280 × 112", "Einstellungen des Ausgangs „LED-Wand“: Fläche 140/56 · 280 × 112", [
+            ("**Name**, e.g. “LED wall left”. Empty: the name of the screen.", "**Name**, z. B. „LED-Wand links“. Leer: der Name des Bildschirms."),
+            ("**Preview** of the screen (black) with the image area (frame). Drag the area to move it; arrow keys move by 1 pixel, with ⇧ by 10.", "**Vorschau** des Bildschirms (schwarz) mit der Bildfläche (Rahmen). Die Fläche ziehen verschiebt sie; Pfeiltasten verschieben um 1 Pixel, mit ⇧ um 10."),
+            ("The **corner** changes the size; with ⌥ the arrow keys do the same.", "Die **Ecke** ändert die Größe; mit ⌥ tun das auch die Pfeiltasten."),
+            ("**X, Y, width, height** in signal pixels, counted from top left. **Full area** resets to the whole screen.", "**X, Y, Breite, Höhe** in Signalpixeln, von oben links gezählt. **Ganze Fläche** setzt auf den ganzen Bildschirm zurück."),
+            ("**Fit**: **Fit** (black bars), **Fill** (cropped) or **Stretch** (distorted).", "**Einpassen**: **Ganz zeigen** (schwarze Ränder), **Füllen** (beschnitten) oder **Strecken** (verzerrt)."),
+            ("**Device**: screen, projector or LED wall, with **strobe** and **blinder** on or off for this output.", "**Gerät**: Bildschirm, Beamer oder LED-Wand, mit **Strobe** und **Blinder** an oder aus für diesen Ausgang."),
+            ("**Show a frame on the output**: a 1-pixel white edge exactly around the area, to find it on the wall. It ends when the dialog closes.", "**Rahmen auf dem Ausgang zeigen**: ein 1 Pixel breiter weißer Rand genau um die Fläche, um sie auf der Wand zu finden. Er endet, wenn der Dialog schließt."),
+            ("**More**: show only a part of the picture, and a test pattern for this output alone.", "**Mehr**: nur einen Ausschnitt des Bilds zeigen, und ein Testbild nur für diesen Ausgang."),
+            ("**Done**. Every change is live at once; **Reset** sets everything back.", "**Fertig**. Jede Änderung wirkt sofort; **Zurücksetzen** stellt alles zurück."),
+        ]),
+        TABLE([("Setting", "Einstellung"), ("What it does", "Was sie macht"), ("Saved", "Gespeichert")], [
+            [("**Name**", "**Name**"), ("shown in the output list, in profiles and in error messages", "erscheint in der Ausgangsliste, in Profilen und in Meldungen"), ("with the project", "im Projekt")],
+            [("**Image area**", "**Bildfläche**"), ("where on the screen signal the picture goes; outside stays black. Pixel exact: at 1:1 nothing is blurred", "wohin auf dem Bildschirmsignal das Bild kommt; außerhalb bleibt es schwarz. Pixelgenau: bei 1:1 wird nichts weichgezeichnet"), ("with the project", "im Projekt")],
+            [("**Fit**", "**Einpassen**"), ("how the picture fills the area when the aspect ratio differs", "wie das Bild die Fläche füllt, wenn das Seitenverhältnis abweicht"), ("with the project", "im Projekt")],
+            [("**Device, strobe, blinder**", "**Gerät, Strobe, Blinder**"), ("projectors: off by default; screens and LED walls: on", "Beamer: standardmäßig aus; Bildschirme und LED-Wände: an"), ("with the project", "im Projekt")],
+            [("**Crop** (More)", "**Ausschnitt** (Mehr)"), ("this output shows only part of its picture, e.g. the upper half for a banner", "dieser Ausgang zeigt nur einen Teil seines Bilds, z. B. die obere Hälfte für ein Banner"), ("with the project", "im Projekt")],
+            [("**Test pattern here** (More)", "**Testbild hier** (Mehr)"), ("black or a test pattern on this output only, while the others keep running", "Schwarz oder ein Testbild nur auf diesem Ausgang, während die anderen weiterlaufen"), ("no", "nein")],
+        ]),
+        ADM("tip", ("The image area works with every arrangement: same picture, canvas and projection mapping. The picture of the output is finished first (canvas part, mapping, masks) and then placed into the area.",
+                    "Die Bildfläche funktioniert mit jeder Anordnung: gleiches Bild, Leinwand und Projektionsmapping. Erst wird das Bild des Ausgangs fertig gerechnet (Leinwand-Ausschnitt, Mapping, Masken), dann in die Fläche gelegt.")),
+        ADM("warn", ("Strobe and blinder off for a projector also means: strobe, strobe white, colour strobe and the blinder never reach this output, whatever the desk sends. Safe flashes still apply to all other outputs.",
+                     "Strobe und Blinder aus beim Beamer heißt: Strobe, Strobe White, Farb-Strobe und Blinder erreichen diesen Ausgang nie, egal was das Pult schickt. Sichere Blitze gelten weiter für alle anderen Ausgänge.")),
+        H2("Output profiles", "Ausgabeprofile"),
+        P("A profile remembers the arrangement, mapping, image areas, device types and names of all outputs, independent of the project. Save one per venue or setup, e.g. “Club A” and “Wedding”, and load it with any project.",
+          "Ein Profil merkt sich Anordnung, Mapping, Bildflächen, Gerätetypen und Namen aller Ausgänge, unabhängig vom Projekt. Speichere eines je Ort oder Aufbau, z. B. „Club A“ und „Hochzeit“, und lade es zu jedem Projekt."),
+        GUIDE("output-profiles-guide.png", "Output profiles “Club A” and “Wedding”", "Ausgabeprofile „Club A“ und „Hochzeit“", [
+            ("**Choose** a saved profile.", "Ein gespeichertes Profil **wählen**."),
+            ("**Load** it, or **Delete** it.", "**Laden** oder **Löschen**."),
+            ("**Name** for the current setup.", "**Name** für den aktuellen Aufbau."),
+            ("**Save**: a profile with the same name is overwritten.", "**Speichern**: ein Profil mit gleichem Namen wird überschrieben."),
+        ]),
+        P("When loading, VJ-Link finds the screens again in this order:", "Beim Laden findet VJ-Link die Bildschirme in dieser Reihenfolge wieder:"),
+        STEPS(("same screen ID and name,", "gleiche Bildschirm-ID und gleicher Name,"),
+              ("same name and resolution (e.g. after plugging into another port),", "gleicher Name und gleiche Auflösung (z. B. nach dem Umstecken),"),
+              ("same ID and resolution,", "gleiche ID und gleiche Auflösung,"),
+              ("same name, then same resolution.", "gleicher Name, dann gleiche Auflösung.")),
+        P("A screen that cannot be found is named in a message (“missing: LED wall”); its settings are left out until you load the profile again with that screen connected.",
+          "Ein Bildschirm, der nicht gefunden wird, steht in einer Meldung („fehlt: LED-Wand“); seine Einstellungen bleiben weg, bis du das Profil mit angeschlossenem Bildschirm erneut lädst."),
+        H2("Recipe: LED wall via an LED controller", "Rezept: LED-Wand über LED-Controller"),
+        STEPS(("Connect the LED controller (sending card, video processor) to the computer like a monitor. In the controller software, note where the wall sits in its input: X, Y, width and height in pixels.",
+               "Den LED-Controller (Sendekarte, Videoprozessor) wie einen Monitor an den Rechner anschließen. In der Software des Controllers ablesen, wo die Wand in seinem Eingang liegt: X, Y, Breite und Höhe in Pixeln."),
+              ("**OUTPUT**: the controller appears as a screen, e.g. 1280 × 1024. Click **Settings** next to it.", "**AUSGABE**: der Controller erscheint als Bildschirm, z. B. 1280 × 1024. Daneben **Einstellungen** klicken."),
+              ("Name it “LED wall”, enter X, Y, width and height (e.g. 140, 56, 280, 112), device **LED wall**.", "Namen „LED-Wand“ geben, X, Y, Breite und Höhe eintragen (z. B. 140, 56, 280, 112), Gerät **LED-Wand**."),
+              ("**Open as output**, tick **Show a frame on the output**: the white edge must sit exactly on the outer pixels of the wall. Correct with the arrow keys, 1 pixel per press.",
+               "**Als Ausgang öffnen**, **Rahmen auf dem Ausgang zeigen** anhaken: der weiße Rand muss genau auf den äußeren Pixeln der Wand liegen. Mit den Pfeiltasten korrigieren, 1 Pixel pro Druck."),
+              ("Choose **Fit**: **Fit** keeps the aspect ratio (black bars), **Stretch** fills the wall exactly (distorted), **Fill** crops.", "**Einpassen** wählen: **Ganz zeigen** hält das Seitenverhältnis (schwarze Ränder), **Strecken** füllt die Wand genau (verzerrt), **Füllen** schneidet ab."),
+              ("Want the wall to show its own part instead of the full picture? Use **Canvas** or **More → Show only part of the picture**.", "Soll die Wand einen eigenen Teil statt des ganzen Bilds zeigen? **Leinwand** nutzen oder **Mehr → Nur einen Ausschnitt des Bilds zeigen**."),
+              ("Save everything as an **output profile** for this venue.", "Alles als **Ausgabeprofil** für diesen Ort speichern.")),
+        ADM("tip", ("Even sharper: set **Resolution → Pixels** in VISUALS to the size of the area (e.g. 280 × 112). Then the picture is rendered in exactly that size and lands 1:1 on the wall pixels, which also saves graphics power.",
+                    "Noch schärfer: in VISUALS **Auflösung → Pixel** auf die Größe der Fläche stellen (z. B. 280 × 112). Dann wird das Bild genau in dieser Größe gerechnet und landet 1:1 auf den Pixeln der Wand; das spart auch Grafikleistung.")),
+        H2("Troubleshooting", "Fehlerhilfe"),
+        TABLE([("Problem", "Problem"), ("Solution", "Lösung")], [
+            [("The picture sits a few pixels off on the wall", "Das Bild sitzt ein paar Pixel daneben"), ("switch on **Show a frame on the output** and move the area with the arrow keys until the edge sits on the outer LEDs", "**Rahmen auf dem Ausgang zeigen** einschalten und die Fläche mit den Pfeiltasten verschieben, bis der Rand auf den äußeren LEDs liegt")],
+            [("Windows shows 1279 or 1281 pixels instead of 1280", "Windows zeigt 1279 oder 1281 statt 1280 Pixel"), ("VJ-Link reads the exact resolution from the monitor, also with display scaling (125 %, 150 %). If the controller reports a wrong size, set the resolution in the Windows display settings", "VJ-Link liest die genaue Auflösung vom Monitor, auch mit Anzeigeskalierung (125 %, 150 %). Meldet der Controller eine falsche Größe, die Auflösung in den Windows-Anzeigeeinstellungen einstellen")],
+            [("The picture on the wall is blurry", "Das Bild auf der Wand ist unscharf"), ("set the output resolution to the size of the area (VISUALS → Resolution → Pixels) and choose **Stretch**", "die Ausgabeauflösung auf die Größe der Fläche stellen (VISUALS → Auflösung → Pixel) und **Strecken** wählen")],
+            [("No strobe on the projector", "Kein Strobe auf dem Beamer"), ("intended: projectors get no strobe or blinder by default. Tick **Strobe** in the settings of the output if the venue allows it", "gewollt: Beamer bekommen standardmäßig weder Strobe noch Blinder. In den Einstellungen des Ausgangs **Strobe** anhaken, wenn der Ort es erlaubt")],
+            [("After loading a profile an output is missing", "Nach dem Laden eines Profils fehlt ein Ausgang"), ("connect the screen and load the profile again; the message names the missing outputs", "den Bildschirm anschließen und das Profil erneut laden; die Meldung nennt die fehlenden Ausgänge")],
+        ]),
+    )
+    return (("Image area, devices and output profiles", "Bildfläche, Geräte und Ausgabeprofile"),
+            ("Per output: image area in pixels for LED controllers, fit, device type with strobe and blinder, and output profiles per venue.",
+             "Je Ausgang: Bildfläche in Pixeln für LED-Controller, Einpassen, Gerätetyp mit Strobe und Blinder, und Ausgabeprofile je Ort."),
+            ("Outputs", "Ausgänge"), ("Image area, devices and profiles", "Bildfläche, Geräte und Profile"),
+            ("LED controllers, projectors, profiles.", "LED-Controller, Beamer, Profile."), body)
+
+
+@page("wiki-ndi.html", "NDI® output", "NDI®-Ausgang")
+def _():
+    body = SEC(
+        P("VJ-Link sends its picture as an **NDI® source** into the network, for example to VD-Link (video walls), OBS, Resolume or an NDI monitor. It renders the picture invisibly in exactly the chosen size, without a window or a screen, so it also works on Windows without a virtual monitor. VJ-Link only sends; it does not receive NDI.",
+          "VJ-Link sendet sein Bild als **NDI®-Quelle** ins Netzwerk, etwa an VD-Link (Videowände), OBS, Resolume oder einen NDI-Monitor. Es rechnet das Bild unsichtbar in genau der gewählten Größe, ohne Fenster und ohne Bildschirm, also auch unter Windows ohne virtuellen Monitor. VJ-Link sendet nur; NDI empfangen kann es nicht."),
+        DIAGRAM(760, 190, {
+            "vj": (110, 95, 170, 70, "pc", ("VJ-Link", "VJ-Link"), ("NDI output, invisible", "NDI-Ausgang, unsichtbar")),
+            "rt": (330, 95, 170, 70, "tab", ("NDI runtime", "NDI-Laufzeit"), ("own process, from NDI", "eigener Prozess, von NDI")),
+            "net": (530, 95, 130, 60, "net", ("Network", "Netzwerk"), ("LAN", "LAN")),
+            "a": (680, 40, 130, 46, "dj", ("VD-Link", "VD-Link"), None),
+            "b": (680, 95, 130, 46, "dj", ("OBS", "OBS"), None),
+            "c": (680, 150, 130, 46, "dj", ("Resolume …", "Resolume …"), None),
+        }, [("vj", "rt", "same", ("frames", "Bilder")), ("rt", "net", "cable", None), ("net", "a", "cable", None), ("net", "b", "cable", None), ("net", "c", "cable", None)],
+            label=("NDI output: from VJ-Link into the network", "NDI-Ausgang: von VJ-Link ins Netzwerk")),
+        H2("Setting up", "Einrichten"),
+        STEPS(("**Install the NDI runtime** once. VJ-Link uses the free runtime from NDI and does not ship it. It is part of the [NDI Tools](https://ndi.video/tools/); if it is missing, the NDI row shows **Get NDI runtime**.",
+               "**NDI-Laufzeit** einmal installieren. VJ-Link nutzt die kostenlose Laufzeit von NDI und liefert sie nicht mit. Sie ist in den [NDI Tools](https://ndi.video/tools/) enthalten; fehlt sie, zeigt die NDI-Zeile **NDI-Laufzeit laden**."),
+              ("**OUTPUT** → **NDI® output**: choose name, size and frame rate, then **Send**.", "**AUSGABE** → **NDI®-Ausgang**: Name, Größe und Bildrate wählen, dann **Senden**."),
+              ("The source appears in the network as **“COMPUTER (name)”**. The row shows the frames per second sent and the connected receivers.", "Die Quelle erscheint im Netz als **„RECHNERNAME (Name)“**. Die Zeile zeigt die gesendeten Bilder je Sekunde und die verbundenen Empfänger."),
+              ("Under **Arrangement** every NDI output is an output like a screen: on the canvas it gets its part, in mapping its own canvases and masks.", "Unter **Anordnung** ist jeder NDI-Ausgang ein Ausgang wie ein Bildschirm: auf der Leinwand bekommt er seinen Teil, im Mapping eigene Leinwände und Masken.")),
+        GUIDE("ndi-outputs-guide.png", "Two NDI outputs: “Wall” sends 2816 × 640, “Ceiling” is ready", "Zwei NDI-Ausgänge: „Wand“ sendet 2816 × 640, „Decke“ ist bereit", [
+            ("**Name** of the source in the network.", "**Name** der Quelle im Netz."),
+            ("**Size**: 720p to 4K, portrait, or **Custom size …**, e.g. 2816 × 640 for a row of LED panels.", "**Größe**: 720p bis 4K, hochkant, oder **Eigene Größe …**, z. B. 2816 × 640 für eine Reihe LED-Module."),
+            ("**Frame rate**: 25, 30, 50 or 60 per second.", "**Bildrate**: 25, 30, 50 oder 60 je Sekunde."),
+            ("**Status**: name in the network, frames per second, receivers.", "**Stand**: Name im Netz, Bilder je Sekunde, Empfänger."),
+            ("**Send** / **Close**.", "**Senden** / **Schließen**."),
+            ("**+ NDI output**: up to four sources, e.g. wall and ceiling with their own LED processor. **Remove last** takes the last one away.", "**+ NDI-Ausgang**: bis zu vier Quellen, z. B. Wand und Decke mit eigenem LED-Prozessor. **Letzten entfernen** nimmt den letzten weg."),
+            ("Trademark notice with a link to ndi.video.", "Markenhinweis mit Link zu ndi.video."),
+        ]),
+        ADM("tip", ("VJ-Link remembers name, size and frame rate. An NDI output that was sending when VJ-Link quit sends again after the next start; only **Close** switches it off for good.",
+                    "VJ-Link merkt sich Name, Größe und Bildrate. Ein NDI-Ausgang, der beim Beenden gesendet hat, sendet nach dem nächsten Start wieder; erst **Schließen** schaltet ihn dauerhaft aus.")),
+        H2("Network and performance", "Netzwerk und Leistung"),
+        UL(("NDI runs in its own process: an error there does not stop VJ-Link.", "NDI läuft in einem eigenen Prozess: ein Fehler dort beendet VJ-Link nicht."),
+           ("Before **Send** nothing of NDI is loaded and nothing goes into the network.", "Vor **Senden** wird nichts von NDI geladen und nichts geht ins Netz."),
+           ("1080p at 60 frames per second needs about 100–150 Mbit/s depending on the content. On Wi-Fi rather 30 frames per second or 1280 × 720.", "1080p mit 60 Bildern/s braucht je nach Inhalt rund 100–150 Mbit/s. Im WLAN lieber 30 Bilder/s oder 1280 × 720.")),
+        H2("Troubleshooting", "Fehlerhilfe"),
+        TABLE([("Problem", "Problem"), ("Solution", "Lösung")], [
+            [("The row shows **Get NDI runtime**", "Die Zeile zeigt **NDI-Laufzeit laden**"), ("install the NDI runtime or the NDI Tools, then restart VJ-Link", "die NDI-Laufzeit oder die NDI Tools installieren, dann VJ-Link neu starten")],
+            [("“Sends” with frames, but no receiver finds the source (macOS)", "„Sendet“ mit Bildern, aber kein Empfänger findet die Quelle (macOS)"), ("System Settings → Privacy & Security → **Local Network**: allow VJ-Link (and the VJ-Link helper, if listed)", "Systemeinstellungen → Datenschutz & Sicherheit → **Lokales Netzwerk**: VJ-Link erlauben (und den VJ-Link-Helfer, falls aufgeführt)")],
+            [("No receiver finds the source (Windows)", "Kein Empfänger findet die Quelle (Windows)"), ("allow VJ-Link in the Windows firewall for private networks (Windows asks the first time); NDI needs mDNS/Bonjour to be found", "VJ-Link in der Windows-Firewall für private Netzwerke erlauben (Windows fragt beim ersten Mal); NDI braucht mDNS/Bonjour zum Finden")],
+            [("Frame rate drops", "Die Bildrate bricht ein"), ("use 30 frames per second or a smaller size, prefer a network cable over Wi-Fi", "30 Bilder/s oder eine kleinere Größe nehmen, lieber Netzwerkkabel statt WLAN")],
+            [("Two sources with the same name", "Zwei Quellen mit gleichem Namen"), ("not possible: every NDI output needs its own name", "nicht möglich: jeder NDI-Ausgang braucht einen eigenen Namen")],
+        ]),
+        ADM("info", ("NDI® is a registered trademark of Vizrt NDI AB. VJ-Link is not a product of NDI and is not endorsed or tested by NDI. VJ-Link ships no NDI files; the terms for the NDI parts are in [docs/NDI.md](https://github.com/skyplayser/VJ-LINK/blob/main/source/docs/NDI.md).",
+                     "NDI® ist eine eingetragene Marke der Vizrt NDI AB. VJ-Link ist kein Produkt von NDI und wird von NDI weder unterstützt noch geprüft. VJ-Link liefert keine NDI-Dateien mit; die Bedingungen für die NDI-Teile stehen in [docs/NDI.md](https://github.com/skyplayser/VJ-LINK/blob/main/source/docs/NDI.md).")),
+    )
+    return (("NDI® output: send visuals into the network", "NDI®-Ausgang: Visuals ins Netzwerk senden"),
+            ("Send VJ-Link as up to four NDI sources with free size and frame rate, e.g. to VD-Link, OBS or Resolume.",
+             "VJ-Link als bis zu vier NDI-Quellen mit freier Größe und Bildrate senden, z. B. an VD-Link, OBS oder Resolume."),
+            ("Outputs", "Ausgänge"), ("NDI® output", "NDI®-Ausgang"),
+            ("Send the picture into the network.", "Das Bild ins Netz senden."), body)
 
 
 @page("wiki-mapping-projection.html", "Projection mapping", "Projektionsmapping")

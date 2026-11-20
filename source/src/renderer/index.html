@@ -19,6 +19,8 @@
       <button role="menuitem" data-proj="open"><span data-i18n>Projekt öffnen …</span> <kbd>⌘O</kbd></button>
       <button role="menuitem" data-proj="save"><span data-i18n>Speichern</span> <kbd>⌘S</kbd></button>
       <button role="menuitem" data-proj="saveAs"><span data-i18n>Speichern unter …</span> <kbd>⇧⌘S</kbd></button>
+      <button role="menuitem" id="proj-pkg-export" data-i18n>Showpaket für USB …</button>
+      <button role="menuitem" id="proj-pkg-check" data-i18n>Showpaket prüfen …</button>
       <button role="menuitem" id="proj-start" data-i18n>Startbildschirm</button>
       <div class="proj-recent" id="proj-recent"></div>
     </div>
@@ -146,6 +148,9 @@
       <p class="muted small" data-i18n>Jeder angeschlossene Bildschirm, Beamer oder LED-Prozessor kann ein Ausgang sein.</p>
       <div id="displays" class="display-list"></div>
       <p class="muted small" id="output-note"></p>
+      <h2 data-i18n>Ausgabeprofile</h2>
+      <div id="output-profiles" class="prof"></div>
+      <p class="muted small" data-i18n>Ein Profil merkt sich Anordnung, Mapping, Bildflächen und Namen aller Ausgänge, unabhängig vom Projekt, z. B. „Club A“ und „Hochzeit“. Fehlt beim Laden ein Bildschirm, findet VJ-Link ihn über Name und Auflösung.</p>
       <h2 data-i18n>Testbild</h2>
       <button class="btn" id="test-quick" data-ctl="test.toggle" aria-pressed="false" data-i18n>Testbild auf allen Ausgängen</button>
       <div class="test-pats" id="test-pats" role="radiogroup" aria-label="Testbild" data-i18n-aria></div>
@@ -253,6 +258,25 @@
         <div class="inline wrap"><button class="btn small-btn" data-open-set="timecode" data-i18n>Timecode-Einstellungen</button></div>
       </div>
     </div>
+    <div class="conn" data-conn="phone">
+      <div class="conn-head" role="tab" tabindex="0" aria-selected="false"><input type="checkbox" class="conn-sw" id="on-phone" aria-label="Handy-Fernsteuerung ein/aus" data-i18n-aria><span class="conn-name"><b data-i18n>Handy-Fernsteuerung</b><small data-i18n>Clips, Farben, Tap und Strobe vom Handy im WLAN</small></span><span class="conn-st" id="st-c-phone"></span></div>
+      <div class="conn-body">
+        <label class="conn-field"><span data-i18n>Netzwerkadresse</span> <select id="phone-network"></select></label>
+        <p id="phone-status" class="am-hint" role="status"></p>
+        <div id="phone-details" class="phone-pairing" hidden>
+          <figure id="phone-qr-pairing" hidden>
+            <canvas id="phone-qr" width="1" height="1" role="img" aria-label="QR-Code zur Handy-Kopplung" data-i18n-aria></canvas>
+            <figcaption data-i18n>Mit der Handykamera scannen</figcaption>
+          </figure>
+          <div class="phone-manual">
+            <div><span data-i18n>Adresse am Handy öffnen</span> <strong id="phone-url"></strong></div>
+            <div><span data-i18n>Kopplungscode</span> <strong id="phone-code"></strong></div>
+            <p id="phone-loopback" class="am-hint" hidden data-i18n>Für den QR-Code eine LAN- oder WLAN-Adresse auswählen.</p>
+          </div>
+        </div>
+        <p class="am-hint" data-i18n>Nur im eigenen, vertrauenswürdigen Netzwerk einschalten: Wer den Kopplungscode hat, kann Clips, Farben, Tempo und Strobe steuern. Nach jedem Start von VJ-Link ist die Fernsteuerung aus.</p>
+      </div>
+    </div>
   </div>
   <div class="conn-detail" id="conn-detail" role="tabpanel"></div>
   </div>
@@ -320,8 +344,10 @@
         <p class="am-hint" data-i18n>Begrenzt Strobe, Strobe White, Ebenen-Strobe, Farb-Strobe und Beat-Invert. Schalte das nur bewusst aus, wenn der Veranstaltungsort schnellere Blitze erlaubt und das Publikum gewarnt ist.</p>
       </section>
       <section class="set-sec" data-sec="update" hidden><div id="set-update"></div>
+        <div id="update-options">
         <label class="report-check"><input type="checkbox" id="auto-update"> <span data-i18n>Automatisch nach Updates suchen</span></label>
         <p class="am-hint" data-i18n>VJ-Link fragt beim Start und danach höchstens einmal pro Stunde bei GitHub nach einer neuen Version. GitHub erhält dabei die IP-Adresse dieses Rechners und die Programmversion. Sonst verlässt nichts dein Netzwerk. Ausgeschaltet suchst du nur, wenn du hier auf „Nach Updates suchen“ klickst.</p>
+        </div>
       </section>
       <section class="set-sec" data-sec="chat" hidden>
         <h3 data-i18n>Suite-Chat – Alpha</h3>
@@ -338,6 +364,7 @@
         <label class="report-check"><input type="checkbox" id="farewell-on"> <span data-i18n>Beim Beenden den Hinweis zu Feedback und Weitersagen zeigen</span></label>
         <h3 data-i18n>Marken</h3>
         <p class="am-hint" data-i18n>VJ-Link ist ein unabhängiges Projekt und kein offizielles Produkt der genannten Hersteller; es wird von ihnen weder unterstützt noch geprüft. Alle genannten Produktnamen und Marken gehören ihren jeweiligen Inhabern und werden nur genannt, um die Kompatibilität zu beschreiben. Ableton und Link sind Marken der Ableton AG.</p>
+        <p class="am-hint" data-i18n>NDI® ist eine eingetragene Marke der Vizrt NDI AB. Der NDI-Ausgang nutzt die NDI-Laufzeit, die du selbst von NDI installierst; VJ-Link liefert keine NDI-Dateien mit. VJ-Link ist kein Produkt von NDI.</p>
         <p class="am-hint">Art-Net™ Designed by and Copyright Artistic Licence Holdings Ltd</p>
       </section>
     </div>

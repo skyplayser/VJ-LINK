@@ -1,47 +1,57 @@
-// Live-Vorschau im Clip-Raster: ein WebGL-Canvas hinter den Zellen, jede Zelle ein eigener Ausschnitt.
+// Live-Vorschauen nur für Zellen im sichtbaren Bereich des Clip-Rasters.
 import { Engine, type ThumbCell } from "../engine/engine";
 import type { ControlContext } from "../core/control";
 
 export class ThumbView {
   private canvas = document.createElement("canvas");
   private engine: Engine | null = null;
-  private frame = 0;
+  private next = 0;
+  private bounds = "";
 
   constructor(private grid: HTMLElement, private layout: () => { cells: HTMLButtonElement[][]; clips: string[][] }, private ctx: ControlContext) {
     this.canvas.className = "thumbs";
     this.canvas.setAttribute("aria-hidden", "true");
     grid.prepend(this.canvas);
     try { this.engine = new Engine(this.canvas, { transparent: true }); }
-    catch { this.canvas.remove(); } // ohne WebGL bleiben die Zellen einfach ohne Bild
+    catch { this.canvas.remove(); }
   }
 
   get gl(): Engine | null { return this.engine; }
 
-  /** Jedes zweite Bild neu zeichnen (30 fps reichen für die Vorschau). */
   draw(nowMs: number): void {
-    if (!this.engine || ++this.frame % 2) return;
-    if (!this.grid.offsetParent) return; // Tab nicht sichtbar
+    if (!this.engine || nowMs < this.next || !this.grid.offsetParent) return;
+    this.next = nowMs + 75;
+    const { clientWidth: w, clientHeight: h, scrollLeft: x, scrollTop: y } = this.grid;
+    if (!w || !h) return;
     const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-    // Größe aus den Zeilen, nicht aus scrollHeight: sonst vergrößert sich die Fläche bei krummem Zoom selbst
-    let cssW = 0, cssH = 0;
-    this.grid.querySelectorAll<HTMLElement>(".lrow").forEach(r => {
-      cssW = Math.max(cssW, r.offsetLeft + r.offsetWidth); cssH = Math.max(cssH, r.offsetTop + r.offsetHeight);
-    });
-    this.canvas.style.width = `${cssW}px`; this.canvas.style.height = `${cssH}px`;
-    this.engine.resize(Math.round(cssW * dpr), Math.round(cssH * dpr));
-    const g = this.grid.getBoundingClientRect();
+    const key = `${w}|${h}|${dpr}`;
+    const box = this.grid.getBoundingClientRect();
+    const left = box.left + this.grid.clientLeft, top = box.top + this.grid.clientTop;
     const out: ThumbCell[] = [];
     const { cells, clips } = this.layout();
-    cells.forEach((row, layer) => row.forEach((cell, col) => {
-      const clip = clips[layer]?.[col];
-      if (!clip) return;
-      const r = cell.getBoundingClientRect();
-      out.push({
-        layer, col, clip,
-        x: Math.round((r.left - g.left + this.grid.scrollLeft) * dpr), y: Math.round((r.top - g.top + this.grid.scrollTop) * dpr),
-        w: Math.round(r.width * dpr), h: Math.round(r.height * dpr),
-      });
-    }));
+    cells.forEach((row, layer) => {
+      const first = row[0]?.getBoundingClientRect();
+      if (!first || first.bottom <= top || first.top >= top + h) return;
+      for (const [col, cell] of row.entries()) {
+        const clip = clips[layer]?.[col];
+        if (!clip) continue;
+        const r = cell.getBoundingClientRect();
+        if (r.left >= left + w) break;
+        if (r.right <= left) continue;
+        out.push({
+          layer, col, clip,
+          x: Math.round((r.left - left) * dpr), y: Math.round((r.top - top) * dpr),
+          w: Math.round(r.width * dpr), h: Math.round(r.height * dpr),
+        });
+      }
+    });
+    if (key !== this.bounds) {
+      this.bounds = key;
+      this.canvas.style.width = `${w}px`; this.canvas.style.height = `${h}px`;
+      this.engine.resize(Math.round(w * dpr), Math.round(h * dpr));
+    }
+    const transform = `translate(${x}px, ${y}px)`;
+    if (this.canvas.style.transform !== transform) this.canvas.style.transform = transform;
     this.engine.renderThumbs(this.ctx.show, this.ctx.tempo.beatAt(nowMs), nowMs, out);
   }
 }

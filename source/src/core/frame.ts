@@ -1,8 +1,23 @@
 // Was die Oberfläche an die Ausgänge schickt: Show-Zustand plus Takt-Ursprung.
-import type { LayerClockSnap, ShowState } from "./show";
+import type { LayerClockSnap, ShowState, TestPattern } from "./show";
 import type { MediaPayload } from "./media";
+import type { RemoteCommand, RemoteInfo, RemoteState } from "./remote";
 import type { Tc, TcFps } from "./timecode";
 import type { OutputLayout } from "./layout";
+
+export type OutputTest = TestPattern | "black" | "active-edge";
+
+export interface OutputStats {
+  fps: number;
+  frameMs: number;
+  longGaps: number;
+}
+
+export interface ShowPackageResult {
+  file?: string;
+  missing?: string[];
+  error?: string;
+}
 
 export interface Frame {
   show: ShowState;
@@ -15,6 +30,8 @@ export interface Frame {
   /** Anordnung der Ausgänge (Gleiches Bild oder Leinwand) und welche Bildschirme offen sind. */
   layout?: OutputLayout;
   openOutputs?: number[];
+  outputTests?: Record<number, OutputTest>;
+  monitorPixels?: Record<number, { w: number; h: number }>;
   /** Gemeinsame Animationszeit der Ebenen (vom Hauptfenster). */
   layerClock?: LayerClockSnap;
 }
@@ -24,6 +41,8 @@ export const frameBeat = (f: Frame, nowMs: number): number =>
 
 // Nachrichten Main → Oberfläche
 export type ControlEvent =
+  | { type: "remote"; command: RemoteCommand }
+  | { type: "remote-thumbnail"; clip: string }
   | { type: "dmx"; source: "artnet" | "sacn"; universe: number; data: Uint8Array }
   | { type: "osc"; address: string; args: (number | string | boolean | null)[]; tags?: string }
   | { type: "lj"; raw: string }
@@ -50,16 +69,54 @@ export interface DisplayInfo {
   width: number;
   height: number;
   scaleFactor: number;
+  pixels?: { w: number; h: number };
   primary: boolean;
   open: boolean;
   /** Fenster-Ausgang: normales Fenster statt Vollbild, zum Abgreifen mit OBS, Resolume, NDI-/Syphon-Werkzeugen usw. */
   window?: boolean;
+  /** NDI®-Ausgang: unsichtbar gerendert und als NDI-Quelle ins Netz gesendet (Laufzeit von NDI, vom Nutzer installiert). */
+  ndi?: NdiInfo;
 }
+
+export function displayPixels(d: DisplayInfo): { w: number; h: number } {
+  return d.pixels ?? { w: Math.round(d.width * d.scaleFactor), h: Math.round(d.height * d.scaleFactor) };
+}
+
+/** Stand des NDI-Ausgangs für die Oberfläche. */
+export interface NdiInfo {
+  /** Nummer des Ausgangs (0 = erster) und Anzahl der NDI-Ausgänge. */
+  index: number;
+  count: number;
+  /** Eingestellter Name (ohne Rechnername und ohne Zusatz für Testinstanzen). */
+  label: string;
+  /** NDI-Laufzeit auf diesem Rechner gefunden. */
+  runtime: boolean;
+  /** Gewählte Bildrate. */
+  fps: number;
+  /** Name im Netz (ohne Rechnername). */
+  name: string;
+  /** Gesendete Bilder je Sekunde und verbundene Empfänger, solange er läuft. */
+  sentFps?: number;
+  conns?: number;
+  version?: string;
+  error?: string;
+}
+
+/** Kennung des ersten NDI-Ausgangs (kein echter Bildschirm); weitere: -3, -4, … */
+export const NDI_OUTPUT = -2;
+/** Höchstens so viele NDI-Ausgänge (je eine Quelle im Netz). */
+export const NDI_MAX = 4;
+export const isNdiOutput = (id: number): boolean => id <= NDI_OUTPUT && id > NDI_OUTPUT - NDI_MAX;
+/** Freie Größe des NDI-Ausgangs in Pixeln, z. B. 2816 × 640 für eine LED-Wand. */
+export const NDI_MIN_SIZE = 16;
+export const NDI_MAX_SIZE = 7680;
+/** Wählbare Bildraten des NDI-Ausgangs. */
+export const NDI_FPS_CHOICES = [25, 30, 50, 60] as const;
 
 /** Kennung des Fenster-Ausgangs (kein echter Bildschirm). */
 export const WINDOW_OUTPUT = -1;
 /** Wählbare Größen des Fenster-Ausgangs (Pixel). */
-export const WINDOW_SIZES: [number, number][] = [[1280, 720], [1920, 1080], [2560, 1440], [3840, 2160], [1080, 1920], [1024, 768], [1920, 1200]];
+export const WINDOW_SIZES: [number, number][] = [[1280, 720], [1920, 1080], [2560, 1440], [3840, 2160], [1080, 1920], [1024, 768], [1280, 1024], [1920, 1200]];
 
 export interface NetConfig {
   sacnUniverse: number;
@@ -92,15 +149,34 @@ export type ProjectFileCmd = "new" | "open" | "save" | "saveAs" | "openPath";
 
 /** Brücke, die das Preload-Skript im Fenster bereitstellt. */
 export interface VjBridge {
+  remoteInfo?(): Promise<RemoteInfo>;
+  remoteStart?(address: string): Promise<RemoteInfo>;
+  remoteStop?(): Promise<RemoteInfo>;
+  remoteState?(state: RemoteState): void;
+  remoteThumbnail?(clip: string, data: string): void;
   onControl(cb: (e: ControlEvent) => void): void;
   publishFrame(f: Frame): void;
   /** Grafikkarte hat den WebGL-Kontext verloren: Hauptprozess öffnet das Fenster neu. */
   gpuLost?(): void;
+  publishOutputStats?(stats: OutputStats): void;
+  onOutputStats?(cb: (id: number, stats: OutputStats) => void): void;
+  exportShowPackage?(json: string): Promise<ShowPackageResult | null>;
+  verifyShowPackage?(): Promise<ShowPackageResult | null>;
   onFrame(cb: (f: Frame) => void): void;
   listDisplays(): Promise<DisplayInfo[]>;
+  outputPreview?(displayId: number): Promise<string | null>;
   toggleOutput(displayId: number): Promise<DisplayInfo[]>;
   /** Größe des Fenster-Ausgangs in Pixeln festlegen (öffnet ihn nicht). */
   windowOutputSize(w: number, h: number): Promise<DisplayInfo[]>;
+  /** NDI®-Ausgang: Bildgröße, Bildrate und Name (gilt sofort, auch während er läuft). */
+  ndiOutputSettings?(id: number, cfg: { w?: number; h?: number; fps?: number; name?: string }): Promise<DisplayInfo[]>;
+  /** Weiteren NDI-Ausgang anlegen bzw. den letzten entfernen. */
+  ndiAdd?(): Promise<DisplayInfo[]>;
+  ndiRemove?(): Promise<DisplayInfo[]>;
+  /** Feste Seiten von NDI im Browser öffnen: Website oder Download der NDI-Laufzeit. */
+  openNdiPage?(which: "home" | "runtime"): void;
+  /** NDI-Ausgang läuft: gesendete Bilder je Sekunde und Empfänger, jede Sekunde. */
+  onNdiStat?(cb: (s: { id: number; sentFps: number; conns: number }) => void): void;
   configure(c: NetConfig): void;
   /** Grafik in der Bibliothek ablegen (wird gespeichert und an alle Ausgänge verteilt). */
   addMedia(p: MediaPayload): void;

@@ -36,6 +36,12 @@ def _():
                      "Das Bild entsteht von unten nach oben: Jede Ebene wird mit ihrem Mischmodus und ihrer Deckkraft auf die darunter gelegt, danach wirken Master und Strobe auf alles.")),
         IMG("library.png", "The library of a layer", "Die Bibliothek einer Ebene",
             ("The library: tap visuals, cameras, videos and graphics to put them into the row of this layer.", "Die Bibliothek: Visuals, Kameras, Videos und Grafiken antippen, um sie in die Zeile dieser Ebene zu legen.")),
+        H2("Moving clips", "Clips verschieben"),
+        P("Drag a clip in the grid onto another place in its row or into another layer. Without a mouse: right-click a clip (or ⇧F10) and choose the layer. A clip that is playing keeps playing in its new layer if nothing plays there yet; saved scenes keep their settings.",
+          "Einen Clip im Raster an eine andere Stelle seiner Zeile oder in eine andere Ebene ziehen. Ohne Maus: Rechtsklick auf den Clip (oder ⇧F10) und die Ebene wählen. Ein laufender Clip läuft in der neuen Ebene weiter, wenn dort noch nichts läuft; gespeicherte Szenen behalten ihre Einstellungen."),
+        GUIDE("clip-move-guide.png", "Moving the clip “VJ-Link logo” into another layer", "Clip „VJ-Link-Logo“ in eine andere Ebene verschieben", [
+            ("The **target layers**; Cancel or Esc leaves the clip where it is.", "Die **Ziel-Ebenen**; Abbrechen oder Esc lässt den Clip, wo er ist."),
+        ]),
         H2("Per layer", "Je Ebene"),
         TABLE([("Setting", "Einstellung"), ("What it does", "Was sie macht")], [
             [("Opacity", "Deckkraft"), ("the fader next to the name and in the fader bar", "der Fader neben dem Namen und in der Fader-Leiste")],
