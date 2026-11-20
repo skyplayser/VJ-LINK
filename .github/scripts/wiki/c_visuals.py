@@ -111,7 +111,7 @@ def _():
             ("How the picture is built from up to eight layers.", "Wie das Bild aus bis zu acht Ebenen entsteht."), body)
 
 
-@page("wiki-visuals.html", "The 150 visuals", "Die 150 Visuals")
+@page("wiki-visuals.html", "The 155 visuals", "Die 155 Visuals")
 def _():
     rows = []
     for c in CAT["cats"]:
@@ -133,11 +133,136 @@ def _():
         ADM("tip", ("Colors: with the color source **Original** each visual shows its own colors. With a slot it takes the show colors from the desk.",
                     "Farben: Mit der Farbquelle **Original** zeigt jedes Visual seine eigenen Farben. Mit einem Slot übernimmt es die Show-Farben vom Pult.")),
     )
-    return (("150 visuals: fractals, 3D, lasers, particles", "150 Visuals: Fraktale, 3D, Laser, Partikel"),
-            ("All 150 VJ-Link visuals in 15 categories: minimal, 3D, fractals, demoscene, sacred geometry, glitch, op art, audio, particles, retro and lasers.",
-             "Alle 150 VJ-Link-Visuals in 15 Kategorien: Minimal, 3D, Fraktale, Demoscene, Heilige Geometrie, Glitch, Op-Art, Audio, Partikel, Retro und Laser."),
-            ("Visuals", "Visuals"), ("The 150 visuals", "Die 150 Visuals"),
+    return (("155 visuals: fractals, 3D, lasers, particles", "155 Visuals: Fraktale, 3D, Laser, Partikel"),
+            ("All 155 VJ-Link visuals in 15 categories: minimal, 3D, fractals, demoscene, sacred geometry, glitch, op art, audio, particles, retro and lasers.",
+             "Alle 155 VJ-Link-Visuals in 15 Kategorien: Minimal, 3D, Fraktale, Demoscene, Heilige Geometrie, Glitch, Op-Art, Audio, Partikel, Retro und Laser."),
+            ("Visuals", "Visuals"), ("The 155 visuals", "Die 155 Visuals"),
             ("Every visual, sorted by category.", "Jedes Visual, nach Kategorie sortiert."), body)
+
+
+@page("wiki-particles.html", "Particle objects and 3D models", "Partikel-Objekte und 3D-Modelle")
+def _():
+    body = SEC(
+        P("A **particle object** is a 3D body made of thousands of short sticks or dots that sit on its surface. On the beat, the bar or the bass they fly apart and come back to the shape. VJ-Link brings five bodies (cross, cube, sphere, torus, star), and you can load your own 3D models as **OBJ** or **STL**.",
+          "Ein **Partikel-Objekt** ist ein 3D-Körper aus Tausenden kurzer Stäbchen oder Punkte, die auf seiner Oberfläche sitzen. Auf den Beat, den Takt oder den Bass fliegen sie auseinander und kehren in die Form zurück. VJ-Link bringt fünf Körper mit (Kreuz, Würfel, Kugel, Torus, Stern), und du kannst eigene 3D-Modelle als **OBJ** oder **STL** laden."),
+        IMG("particle-looks.png", "Four particle objects: cross at rest, cross on bar 1, sphere with the bass, star as dots", "Vier Partikel-Objekte: Kreuz in Ruhe, Kreuz auf Takt 1, Kugel mit dem Bass, Stern aus Punkten",
+            ("Top: the cross at rest and on bar 1, when the sticks fly apart. Bottom: the sphere with the trigger Bass and the color source Rainbow, the star as dots (length 0) with its own angles.",
+             "Oben: das Kreuz in Ruhe und auf Takt 1, wenn die Stäbchen auseinanderfliegen. Unten: die Kugel mit dem Auslöser Bass und der Farbquelle Regenbogen, der Stern aus Punkten (Länge 0) mit eigenen Winkeln.")),
+        ADM("warn", ("Particle objects need a **strong graphics card**. Target: three screens at 60 frames per second on an Apple M2 (or a comparable graphics card) and up, with up to 40 thousand particles. On weaker computers lower **Count**, or set **Length** to 0 (dots).",
+                     "Partikel-Objekte brauchen eine **starke Grafikkarte**. Ziel: drei Bildschirme mit 60 Bildern pro Sekunde ab Apple M2 (oder einer vergleichbaren Grafikkarte), mit bis zu 40 Tausend Partikeln. Auf schwächeren Rechnern **Anzahl** senken oder **Länge** auf 0 stellen (Punkte)."),
+            title=("Strong graphics card", "Starke Grafikkarte")),
+        DIAGRAM(900, 230, {"body": (100, 60, 170, 56, "tab", ("Body", "Körper"), ("built-in or OBJ / STL", "eingebaut oder OBJ / STL")),
+                           "pts": (100, 170, 170, 56, "pc", ("Surface points", "Oberflächenpunkte"), ("position, direction, color", "Lage, Richtung, Farbe")),
+                           "gpu": (340, 115, 170, 56, "pc", ("Sticks or dots", "Stäbchen oder Punkte"), ("graphics card, one pass", "Grafikkarte, ein Durchgang")),
+                           "beat": (560, 50, 180, 50, "dj", ("Beat clock or bass", "Beat-Uhr oder Bass"), ("trigger, explosion, return", "Auslöser, Explosion, Rückkehr")),
+                           "rot": (560, 180, 180, 50, "desk", ("Rotation X / Y / Z", "Drehung X / Y / Z"), ("angle and speed", "Winkel und Tempo")),
+                           "layer": (790, 115, 160, 56, "net", ("Layer", "Ebene"), ("effects, blend, outputs", "Effekte, Mischen, Ausgänge"))},
+                [("body", "pts", "same", None), ("pts", "gpu", "same", None), ("beat", "gpu", "same", None), ("rot", "gpu", "same", None), ("gpu", "layer", "same", None)],
+                cap=("Once, when it is loaded, VJ-Link spreads the particles evenly over the surface of the body. While it plays, the graphics card draws all of them in one pass and moves them with the beat clock or the bass; the layer then adds its effects and blend mode as for every visual.",
+                     "Einmal beim Laden verteilt VJ-Link die Partikel gleichmäßig über die Oberfläche des Körpers. Beim Spielen zeichnet die Grafikkarte alle in einem Durchgang und bewegt sie mit der Beat-Uhr oder dem Bass; danach legt die Ebene wie bei jedem Visual ihre Effekte und ihren Mischmodus darüber.")),
+        H2("Start a particle object", "Ein Partikel-Objekt starten"),
+        STEPS(("Open **GALLERY → 3D and space** or **+ Clips** in a layer row and choose **Particle cross**, **cube**, **sphere**, **torus** or **star**.",
+               "**GALERIE → 3D und Raum** oder **+ Clips** in einer Ebenen-Zeile öffnen und **Partikel-Kreuz**, **-Würfel**, **-Kugel**, **-Torus** oder **-Stern** wählen."),
+              ("Click the clip in the row. It explodes on bar 1 and rotates slowly.", "Den Clip in der Zeile anklicken. Er explodiert auf Takt 1 und dreht sich langsam."),
+              ("Click the layer name: on the right the panel shows the section **Particle object** with all settings.", "Auf den Ebenen-Namen klicken: Rechts zeigt das Panel den Bereich **Partikel-Objekt** mit allen Einstellungen."),
+              ("On an overlay layer use the blend mode **Normal**; with **Add** the particles look pale over bright visuals.", "Auf einer Overlay-Ebene den Mischmodus **Normal** nehmen; mit **Addieren** wirken die Partikel über hellen Visuals blass.")),
+        GUIDE("particle-layer-guide.png", "Layer 2 with the five bodies and a 3D model in its row", "Ebene 2 mit den fünf Körpern und einem 3D-Modell in der Zeile", [
+            ("A **built-in body** in the clip row (here the particle cross, playing).", "Ein **eingebauter Körper** in der Clip-Zeile (hier das Partikel-Kreuz, es läuft)."),
+            ("An **own 3D model** carries the badge **3D**.", "Ein **eigenes 3D-Modell** trägt das Zeichen **3D**."),
+            ("The **preview**: the cross explodes over the rings of layer 1.", "Die **Vorschau**: Das Kreuz explodiert über den Ringen von Ebene 1."),
+            ("The section **Particle object** in the layer panel.", "Der Bereich **Partikel-Objekt** im Ebenen-Panel."),
+        ]),
+        H2("Settings", "Einstellungen"),
+        GUIDE("particle-panel-guide.png", "Particle object, first part: trigger, rotation, explosion", "Partikel-Objekt, erster Teil: Auslöser, Drehung, Explosion", [
+            ("**Trigger**: every beat, bar 1, every 2 or 4 bars, **Bass (audio)** or **Hold (fader)**.", "**Auslöser**: jeder Beat, Takt 1, alle 2 oder 4 Takte, **Bass (Audio)** oder **Halten (Regler)**."),
+            ("The **note** for the chosen trigger (here: bass).", "Der **Hinweis** zum gewählten Auslöser (hier: Bass)."),
+            ("**Rotation** on / off: switches the three rotation speeds.", "**Drehung** an / aus: schaltet die drei Drehtempi."),
+            ("**Explosion**: how far the particles fly (0 = the shape stays closed).", "**Explosion**: wie weit die Partikel fliegen (0 = die Form bleibt geschlossen)."),
+            ("**Return**: how long they take to come back, in beats.", "**Rückkehr**: wie lange sie zum Zurückkommen brauchen, in Beats."),
+            ("**Scatter**: 0 % flies straight out from the surface, 100 % in all directions.", "**Streuung**: 0 % fliegt gerade von der Oberfläche weg, 100 % in alle Richtungen."),
+            ("**Rotation per axis**: speed around X (tilt), Y (turn) and Z (roll) in turns per minute, negative = the other way.", "**Drehung je Achse**: Tempo um X (kippen), Y (drehen) und Z (rollen) in Umdrehungen pro Minute, negativ = andersherum."),
+        ]),
+        GUIDE("particle-panel2-guide.png", "Particle object, second part: angles, particles and the hint", "Partikel-Objekt, zweiter Teil: Winkel, Partikel und Hinweis", [
+            ("**Angle X / Y / Z**: the fixed position of the body (−180° to 180°); the rotation turns on from there.", "**Winkel X / Y / Z**: die feste Lage des Körpers (−180° bis 180°); von dort aus dreht die Drehung weiter."),
+            ("**Angle Z (roll)**; the layer's **Rotation** under Position rolls the picture in addition.", "**Winkel Z (rollen)**; die **Drehung** der Ebene unter Lage rollt das Bild zusätzlich."),
+            ("**Particle size**: thickness of sticks and dots.", "**Partikelgröße**: Dicke der Stäbchen und Punkte."),
+            ("**Length**: 100 % = sticks, 0 = round dots. Dots show fine logos and lettering better.", "**Länge**: 100 % = Stäbchen, 0 = runde Punkte. Punkte zeigen feine Logos und Schrift besser."),
+            ("**Count**: 5 to 200 thousand particles, default 40 thousand.", "**Anzahl**: 5 bis 200 Tausend Partikel, Vorgabe 40 Tausend."),
+            ("The **hint** about the graphics card. **Reset particles** above it restores all defaults.", "Der **Hinweis** zur Grafikkarte. **Partikel zurücksetzen** darüber stellt alle Vorgaben wieder her."),
+        ]),
+        P("A **double click** on a slider sets it to 0. Return, size and count have no 0; a double click sets them to their default. Position, size and rotation of the layer (section **Position**) act on particle objects as on every visual.",
+          "Ein **Doppelklick** auf einen Regler setzt ihn auf 0. Rückkehr, Größe und Anzahl haben keine 0; ein Doppelklick setzt sie auf ihre Vorgabe. Lage, Größe und Drehung der Ebene (Bereich **Lage**) wirken auf Partikel-Objekte wie auf jedes Visual."),
+        H2("Triggers", "Auslöser"),
+        TABLE([("Trigger", "Auslöser"), ("When the particles fly apart", "Wann die Partikel auseinanderfliegen")], [
+            [("Every beat", "Jeder Beat"), ("on every beat; return is at most just under one beat", "auf jeden Beat; die Rückkehr dauert höchstens knapp einen Beat")],
+            [("Bar 1", "Takt 1"), ("on the first beat of every bar; a small pulse on the other beats", "auf den ersten Beat jedes Takts; auf den anderen Beats ein kleiner Puls")],
+            [("Every 2 / 4 bars", "Alle 2 / 4 Takte"), ("every 8 or 16 beats, for build-ups and drops", "alle 8 bzw. 16 Beats, für Aufbau und Drop")],
+            [("Bass (audio)", "Bass (Audio)"), ("the harder the bass, the further they fly; quiet bass keeps the shape closed. Source: audio input or LJ-Link. **Explosion** is the strength, **Return** how fast they gather again.", "je härter der Bass, desto weiter fliegen sie; leiser Bass lässt die Form geschlossen. Quelle: Audio-Eingang oder LJ-Link. **Explosion** ist die Stärke, **Rückkehr** wie schnell sie sich wieder sammeln.")],
+            [("Hold (fader)", "Halten (Regler)"), ("no beat: the **Explosion** fader holds the particles apart directly, e.g. from a fader on the light desk", "kein Takt: Der Regler **Explosion** hält die Partikel direkt auseinander, z. B. von einem Fader am Lichtpult")],
+        ]),
+        P("The beat triggers run on VJ-Link's beat clock (LJ-Link, Ableton Link, MIDI clock or tap), so every output explodes at the same moment.",
+          "Die Takt-Auslöser laufen auf der Beat-Uhr von VJ-Link (LJ-Link, Ableton Link, MIDI-Clock oder Tap); so explodieren alle Ausgänge im selben Moment."),
+        H2("Colors", "Farben"),
+        TABLE([("Color source of the layer", "Farbquelle der Ebene"), ("Particles", "Partikel")], [
+            [("Original", "Original"), ("built-in bodies light grey, own models in the colors of their textures and materials", "eingebaute Körper hellgrau, eigene Modelle in den Farben ihrer Texturen und Materialien")],
+            [("Slot A–E", "Slot A–E"), ("the slot color, with a rim light in the same color", "die Slot-Farbe, mit Randlicht in derselben Farbe")],
+            [("Several slots", "Mehrere Slots"), ("each particle takes one of the chosen slots", "jedes Partikel nimmt einen der gewählten Slots")],
+            [("Gradient, rainbow", "Verlauf, Regenbogen"), ("a mix of slot A and B, or all colors that slowly wander", "eine Mischung aus Slot A und B bzw. alle Farben, die langsam wandern")],
+        ]),
+        H2("Own 3D models (OBJ, STL)", "Eigene 3D-Modelle (OBJ, STL)", "models"),
+        STEPS(("Drag an **.obj** or **.stl** file onto VJ-Link, or use **+ Clips → + Load file**. Keep the **.mtl** file and the textures of an OBJ in the same folder.",
+               "Eine **.obj**- oder **.stl**-Datei auf VJ-Link ziehen oder **+ Clips → + Datei laden** nehmen. Die **.mtl**-Datei und die Texturen einer OBJ im selben Ordner lassen."),
+              ("VJ-Link converts the model once into a point cloud (usually well under a second) and puts it into the layer as a clip with the badge **3D**.",
+               "VJ-Link wandelt das Modell einmal in eine Punktwolke um (meist deutlich unter einer Sekunde) und legt es als Clip mit dem Zeichen **3D** in die Ebene."),
+              ("Set explosion, rotation and particles as for the built-in bodies.", "Explosion, Drehung und Partikel einstellen wie bei den eingebauten Körpern.")),
+        GUIDE("model-library-guide.png", "The library of layer 2 with an own 3D model", "Die Bibliothek von Ebene 2 mit einem eigenen 3D-Modell", [
+            ("**Your 3D models**: every loaded model of this project.", "**Eigene 3D-Modelle**: jedes geladene Modell dieses Projekts."),
+            ("Tap a model to put it into the row of this layer, tap again to take it out (here a self-made demo diamond).", "Ein Modell antippen legt es in die Zeile dieser Ebene, nochmal antippen nimmt es heraus (hier ein selbst gebauter Demo-Diamant)."),
+            ("**×** deletes the model from the library, from all layers, scenes and cues (asks first).", "**×** löscht das Modell aus der Bibliothek, aus allen Ebenen, Szenen und Cues (mit Rückfrage)."),
+            ("**+ Load file** loads more models, videos or graphics.", "**+ Datei laden** lädt weitere Modelle, Videos oder Grafiken."),
+        ]),
+        TABLE([("", ""), ("OBJ", "OBJ"), ("STL", "STL")], [
+            [("Colors", "Farben"), ("textures (map_Kd) and material colors (Kd) from the .mtl, vertex colors", "Texturen (map_Kd) und Materialfarben (Kd) aus der .mtl, Eckfarben"), ("none: the layer colors (slots) color the model", "keine: Die Ebenenfarben (Slots) färben das Modell")],
+            [("Formats", "Formate"), ("text OBJ with polygons, any number of objects and materials", "Text-OBJ mit Vielecken, beliebig vielen Objekten und Materialien"), ("binary and text STL", "binäre und Text-STL")],
+            [("Limits", "Grenzen"), ("up to 80 MB and about 3 million triangles", "bis 80 MB und etwa 3 Millionen Dreiecke"), ("the same", "ebenso")],
+        ]),
+        UL(("The model is centered and scaled to the same size as the built-in bodies; size and position come from the layer (section Position).", "Das Modell wird mittig gesetzt und auf die Größe der eingebauten Körper gebracht; Größe und Lage kommen von der Ebene (Bereich Lage)."),
+           ("Models are kept in the library of the computer and saved with the project. **Save as** and the **show package** copy them into the media folder next to the project file, so the project moves to another computer.", "Modelle liegen in der Bibliothek des Rechners und werden mit dem Projekt gespeichert. **Speichern unter** und das **Showpaket** kopieren sie in den Medienordner neben der Projektdatei, so zieht das Projekt auf einen anderen Rechner um."),
+           ("Logos and lettering: **Length 0** (dots) and a smaller particle size keep fine letters readable.", "Logos und Schrift: **Länge 0** (Punkte) und eine kleinere Partikelgröße halten feine Buchstaben lesbar.")),
+        H2("Change of shape", "Formwechsel"),
+        P("If a layer switches from one particle object to another (click, scene, chase), the particles fly from the old shape into the new one within about one and a half beats. This works between all built-in bodies and own models.",
+          "Wechselt eine Ebene von einem Partikel-Objekt zum nächsten (Klick, Szene, Chase), fliegen die Partikel in etwa anderthalb Beats von der alten in die neue Form. Das geht zwischen allen eingebauten Körpern und eigenen Modellen."),
+        H2("Light desk, MIDI and OSC", "Lichtpult, MIDI und OSC"),
+        P("Every setting is a control of the layer and can be mapped (MAPPING) and [modulated](wiki-modulation.html). The OSC addresses follow the control IDs:",
+          "Jede Einstellung ist ein Regler der Ebene und lässt sich zuweisen (MAPPING) und [modulieren](wiki-modulation.html). Die OSC-Adressen folgen den Regler-IDs:"),
+        TABLE([("Control ID (layer 2)", "Regler-ID (Ebene 2)"), ("Range", "Bereich")], [
+            [("`layer.2.particles.explode`", "`layer.2.particles.explode`"), ("0–100 %", "0–100 %")],
+            [("`layer.2.particles.trigger`", "`layer.2.particles.trigger`"), ("6 steps: beat, bar 1, 2 bars, 4 bars, bass, hold", "6 Stufen: Beat, Takt 1, 2 Takte, 4 Takte, Bass, Halten")],
+            [("`layer.2.particles.ret` · `.scatter`", "`layer.2.particles.ret` · `.scatter`"), ("¼–4 beats · 0–100 %", "¼–4 Beats · 0–100 %")],
+            [("`layer.2.particles.spin`", "`layer.2.particles.spin`"), ("rotation on / off", "Drehung an / aus")],
+            [("`layer.2.particles.rpmX` · `.rpm` · `.rpmZ`", "`layer.2.particles.rpmX` · `.rpm` · `.rpmZ`"), ("−30 to 30 turns per minute (X, Y, Z)", "−30 bis 30 Umdrehungen pro Minute (X, Y, Z)")],
+            [("`layer.2.particles.angX` · `.angY` · `.angZ`", "`layer.2.particles.angX` · `.angY` · `.angZ`"), ("−180° to 180°", "−180° bis 180°")],
+            [("`layer.2.particles.size` · `.length` · `.count`", "`layer.2.particles.size` · `.length` · `.count`"), ("30–300 % · 0–300 % · 5–200 thousand", "30–300 % · 0–300 % · 5–200 Tausend")],
+        ]),
+        H2("Performance", "Leistung"),
+        UL(("All particles are drawn by the graphics card in one pass; the sticks are flat pictures of a capsule (two triangles each), not real cylinders.", "Alle Partikel zeichnet die Grafikkarte in einem Durchgang; die Stäbchen sind flache Bilder einer Kapsel (je zwei Dreiecke), keine echten Zylinder."),
+           ("Every output window draws the picture itself. Three screens therefore cost about three times as much as one.", "Jedes Ausgabefenster zeichnet das Bild selbst. Drei Bildschirme kosten deshalb etwa dreimal so viel wie einer."),
+           ("Measured on an Apple M4 Max: 40 thousand sticks add about 0.5 ms per 1080p window, 200 thousand about 1.3 ms.", "Gemessen auf einem Apple M4 Max: 40 Tausend Stäbchen kosten etwa 0,5 ms zusätzlich je 1080p-Fenster, 200 Tausend etwa 1,3 ms.")),
+        H2("Troubleshooting", "Fehlersuche"),
+        TABLE([("Problem", "Problem"), ("Cause and fix", "Ursache und Lösung")], [
+            [("Stutters on several outputs", "Ruckelt auf mehreren Ausgängen"), ("graphics card too weak: lower **Count**, set **Length** to 0, fewer effects on this layer", "Grafikkarte zu schwach: **Anzahl** senken, **Länge** auf 0, weniger Effekte auf dieser Ebene")],
+            [("Bass trigger does nothing", "Bass-Auslöser tut nichts"), ("no audio: choose an audio input under Settings → Audio or connect LJ-Link; raise **Explosion**", "kein Audio: unter Einstellungen → Audio einen Eingang wählen oder LJ-Link verbinden; **Explosion** erhöhen")],
+            [("Model stays grey", "Modell bleibt grau"), ("STL has no colors, or the .mtl and textures of the OBJ were not in the same folder; use a slot as color source or load the OBJ again from its folder", "STL hat keine Farben, oder .mtl und Texturen der OBJ lagen nicht im selben Ordner; einen Slot als Farbquelle nehmen oder die OBJ aus ihrem Ordner neu laden")],
+            [("Model looks inside out or dark", "Modell wirkt verkehrt oder dunkel"), ("its faces point inward: export it from the 3D program with outward normals", "seine Flächen zeigen nach innen: im 3D-Programm mit nach außen gerichteten Normalen exportieren")],
+            [("Lettering is hard to read", "Schrift schwer lesbar"), ("**Length** 0 (dots), smaller **Particle size**, more **Count**; rotation off and the angles to 0", "**Länge** 0 (Punkte), kleinere **Partikelgröße**, mehr **Anzahl**; Drehung aus und Winkel auf 0")],
+            [("The cloud covers everything", "Die Wolke verdeckt alles"), ("**Explosion** lower or **Scatter** lower; on the bass trigger also less input level", "**Explosion** oder **Streuung** senken; beim Bass-Auslöser auch weniger Eingangspegel")],
+        ]),
+    )
+    return (("Particle objects: 3D bodies of sticks that explode on the beat", "Partikel-Objekte: 3D-Körper aus Stäbchen, die im Takt explodieren"),
+            ("Particle objects in VJ-Link: five built-in bodies and own OBJ/STL models of thousands of sticks or dots, exploding on the beat, the bar or the bass, rotating on three axes.",
+             "Partikel-Objekte in VJ-Link: fünf eingebaute Körper und eigene OBJ/STL-Modelle aus Tausenden Stäbchen oder Punkten, die auf Beat, Takt oder Bass explodieren und sich um drei Achsen drehen."),
+            ("Visuals", "Visuals"), ("Particle objects and 3D models", "Partikel-Objekte und 3D-Modelle"),
+            ("3D bodies of sticks and dots that fly apart on the beat, your own OBJ and STL models included.", "3D-Körper aus Stäbchen und Punkten, die im Takt auseinanderfliegen, auch aus eigenen OBJ- und STL-Modellen."), body)
 
 
 @page("wiki-effects.html", "Effects", "Effekte")

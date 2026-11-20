@@ -21,7 +21,7 @@ def _():
         H2("How this wiki is organised", "So ist das Wiki aufgebaut"),
         P("New here? [All features](wiki-features.html) lists everything VJ-Link can do.", "Neu hier? [Alle Funktionen](wiki-features.html) listet alles, was VJ-Link kann."),
         CARDS(("🚀", "wiki-quickstart.html", "Start", "Start", "Quick start, installation, the interface and use cases.", "Schnellstart, Installation, die Oberfläche und Anwendungsfälle."),
-              ("🎨", "wiki-layers.html", "Visuals", "Visuals", "Layers, the 150 visuals, effects, logos, videos, text and cameras.", "Ebenen, die 150 Visuals, Effekte, Logos, Videos, Text und Kameras."),
+              ("🎨", "wiki-layers.html", "Visuals", "Visuals", "Layers, the 155 visuals, effects, logos, videos, text and cameras.", "Ebenen, die 155 Visuals, Effekte, Logos, Videos, Text und Kameras."),
               ("🎛️", "wiki-mapping.html", "Control", "Steuerung", "Mapping for keyboard, MIDI, DMX and OSC, tempo and modulation.", "Mapping für Tastatur, MIDI, DMX und OSC, Tempo und Modulation."),
               ("💡", "wiki-desks.html", "Light desks", "Lichtpulte", "Every common desk with diagram: grandMA, ChamSys, Avolites, Hog, ETC, Daslight and more.", "Jedes gängige Pult mit Schema: grandMA, ChamSys, Avolites, Hog, ETC, Daslight und mehr."),
               ("🎧", "wiki-ljlink.html", "LJ-Link", "LJ-Link", "The combination with LJ-Link and setups with diagrams.", "Die Kombination mit LJ-Link und Aufbauten mit Schemas."),
@@ -37,8 +37,8 @@ def _():
         ]),
     )
     return (("VJ-Link wiki: guides for visuals and light desks", "VJ-Link-Wiki: Anleitungen für Visuals und Lichtpult"),
-            ("Guides for the free VJ software: install, 150 visuals, light desks over Art-Net and sACN, MIDI mapping, LJ-Link, projection mapping and shows with timecode.",
-             "Anleitungen zur kostenlosen VJ-Software: Installation, 150 Visuals, Lichtpult über Art-Net und sACN, MIDI-Mapping, LJ-Link, Projektionsmapping und Timecode."),
+            ("Guides for the free VJ software: install, 155 visuals, light desks over Art-Net and sACN, MIDI mapping, LJ-Link, projection mapping and shows with timecode.",
+             "Anleitungen zur kostenlosen VJ-Software: Installation, 155 Visuals, Lichtpult über Art-Net und sACN, MIDI-Mapping, LJ-Link, Projektionsmapping und Timecode."),
             ("Wiki", "Wiki"), ("VJ-Link wiki", "VJ-Link-Wiki"),
             ("Everything about VJ-Link, with an honest status for every part.", "Alles über VJ-Link, mit ehrlichem Stand für jeden Teil."), body)
 
@@ -337,7 +337,8 @@ def _():
     body = SEC(
         P("Every feature of VJ-Link 0.0.1 at a glance, with the page that explains it.", "Jede Funktion von VJ-Link 0.0.1 auf einen Blick, mit der Seite, die sie erklärt."),
         area("Picture", "Bild", [
-            [("150 visuals", "150 Visuals"), ("generated live in any resolution, 15 categories, react to beat or audio", "live erzeugt in jeder Auflösung, 15 Kategorien, reagieren auf Beat oder Audio"), ("[Visuals](wiki-visuals.html)", "[Visuals](wiki-visuals.html)")],
+            [("155 visuals", "155 Visuals"), ("generated live in any resolution, 15 categories, react to beat or audio", "live erzeugt in jeder Auflösung, 15 Kategorien, reagieren auf Beat oder Audio"), ("[Visuals](wiki-visuals.html)", "[Visuals](wiki-visuals.html)")],
+            [("Particle objects", "Partikel-Objekte"), ("3D bodies and own OBJ/STL models of sticks that explode on beat, bar or bass, rotation on three axes", "3D-Körper und eigene OBJ/STL-Modelle aus Stäbchen, die auf Beat, Takt oder Bass explodieren, Drehung um drei Achsen"), ("[Particle objects](wiki-particles.html)", "[Partikel-Objekte](wiki-particles.html)")],
             [("50 effects", "50 Effekte"), ("stack of up to six per layer, strength per effect, effect master", "Stapel mit bis zu sechs je Ebene, Stärke je Effekt, Effekt-Master"), ("[Effects](wiki-effects.html)", "[Effekte](wiki-effects.html)")],
             [("Layers", "Ebenen"), ("1–8 layers, opacity, blend modes, position, size, rotation", "1–8 Ebenen, Deckkraft, Mischmodi, Lage, Größe, Drehung"), ("[Layers](wiki-layers.html)", "[Ebenen](wiki-layers.html)")],
             [("Color slots", "Farbslots"), ("five show colors A–E, one or several per layer, gradient, rainbow", "fünf Show-Farben A–E, eine oder mehrere je Ebene, Verlauf, Regenbogen"), ("[Layers](wiki-layers.html#color-slots)", "[Ebenen](wiki-layers.html#color-slots)")],
