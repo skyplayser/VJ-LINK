@@ -48,7 +48,7 @@ export class LibraryPanel {
   show(layer: number, anchor: HTMLElement): void {
     this.layer = layer; this.armedDelete = "";
     this.panel.hidden = false;
-    this.render();
+    this.render(false);
     const r = anchor.getBoundingClientRect(), p = this.panel.getBoundingClientRect();
     const x = Math.min(window.innerWidth - p.width - 8, Math.max(8, r.right - p.width));
     const y = r.top - p.height - 8 > 8 ? r.top - p.height - 8 : Math.min(window.innerHeight - p.height - 8, r.bottom + 8);
@@ -57,11 +57,13 @@ export class LibraryPanel {
 
   close(): void { this.panel.hidden = true; }
 
-  render(): void {
+  /** keepScroll: beim Antippen eines Clips an derselben Stelle der Liste bleiben (mehrere nacheinander wählen). */
+  render(keepScroll = true): void {
     if (this.panel.hidden) return;
     const l = this.ctx.show.layers[this.layer];
     if (!l) { this.close(); return; }
     const box = this.panel;
+    const scroll = keepScroll ? box.querySelector<HTMLElement>(".lib-body")?.scrollTop ?? 0 : 0;
     box.replaceChildren();
     const head = el("div", "lib-head");
     head.append(el("b", "", t("Bibliothek · Ebene {n}", { n: this.layer + 1 })));
@@ -219,5 +221,6 @@ export class LibraryPanel {
     mg.append(imp, txt);
     body.append(mg);
     box.append(body);
+    body.scrollTop = scroll;
   }
 }

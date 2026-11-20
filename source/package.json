@@ -1,6 +1,6 @@
 {
   "name": "vj-link",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "productName": "VJ-Link",
   "description": "Einfache VJ-Software für LJs: Lichtpult, OSC und LJ-Link steuern die Visuals.",
   "private": true,

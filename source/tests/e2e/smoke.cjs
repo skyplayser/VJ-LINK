@@ -320,6 +320,30 @@ async function main() {
   for (let i = 1; i <= 6; i++) { await c.eval(`window.__vj.scene(${i}), true`); await wait(300); }
   log("Kopfzeile, Szenen, Blackout", report.errors.length === hBefore);
 
+  // 11b) „+ Clips“: Antippen eines Clips lässt die Liste an ihrer Stelle (mehrere nacheinander wählen)
+  {
+    const r = await c.eval(`(async () => {
+      const add = document.querySelector('#grid .cell.add'); if (!add) return 'kein + Clips';
+      add.click(); await new Promise(r => setTimeout(r, 300));
+      const body = () => document.querySelector('.lib-panel:not([hidden]) .lib-body'); if (!body()) return 'Menü nicht offen';
+      body().scrollTop = 600; await new Promise(r => setTimeout(r, 100));
+      const top = body().scrollTop, br = body().getBoundingClientRect();
+      const chip = [...body().querySelectorAll('button.lib-chip:not(.add)')].find(b => { const q = b.getBoundingClientRect(); return q.top > br.top + 10 && q.bottom < br.bottom - 10 && !b.disabled; });
+      if (!chip) return 'kein Clip sichtbar';
+      chip.click(); await new Promise(r => setTimeout(r, 200));
+      const first = body().scrollTop;
+      const chip2 = [...body().querySelectorAll('button.lib-chip:not(.add)')].find(b => { const q = b.getBoundingClientRect(); return q.top > br.top + 10 && q.bottom < br.bottom - 10 && !b.disabled; });
+      chip2?.click(); await new Promise(r => setTimeout(r, 200));
+      const second = body().scrollTop;
+      chip2?.click(); chip.click(); await new Promise(r => setTimeout(r, 100));
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      return JSON.stringify([top, first, second]);
+    })()`).catch(e => "eval: " + e.message);
+    let ok = false; try { const [t0, t1, t2] = JSON.parse(r); ok = t0 > 100 && Math.abs(t1 - t0) < 2 && Math.abs(t2 - t0) < 2; } catch { /* Text */ }
+    log("+ Clips: Liste bleibt beim Auswählen an ihrer Stelle", ok, r);
+  }
+
   // 12) Demo-Show 6 s laufen lassen: Bildrate. Vorher speichern, sonst fragt VJ-Link beim Neuladen nach.
   const saveNow = async () => { await c.eval("window.__vj.file('save')").catch(() => 0); await wait(1200); };
   await saveNow();
