@@ -39,6 +39,10 @@ def _():
         H2("Moving clips", "Clips verschieben"),
         P("Drag a clip in the grid onto another place in its row or into another layer. Without a mouse: right-click a clip (or ⇧F10) and choose the layer. A clip that is playing keeps playing in its new layer if nothing plays there yet; saved scenes keep their settings.",
           "Einen Clip im Raster an eine andere Stelle seiner Zeile oder in eine andere Ebene ziehen. Ohne Maus: Rechtsklick auf den Clip (oder ⇧F10) und die Ebene wählen. Ein laufender Clip läuft in der neuen Ebene weiter, wenn dort noch nichts läuft; gespeicherte Szenen behalten ihre Einstellungen."),
+        GUIDE("clip-drag-guide.png", "Dragging a clip from layer 6 into layer 4", "Einen Clip von Ebene 6 in Ebene 4 ziehen", [
+            ("The **clip** being dragged (it turns transparent).", "Der gezogene **Clip** (er wird durchsichtig)."),
+            ("The **target row** is highlighted; drop the clip on a clip to put it before it, or on the row to add it at the end.", "Die **Zielzeile** leuchtet; den Clip auf einem Clip loslassen setzt ihn davor, auf der Zeile hängt ihn hinten an."),
+        ]),
         GUIDE("clip-move-guide.png", "Moving the clip “VJ-Link logo” into another layer", "Clip „VJ-Link-Logo“ in eine andere Ebene verschieben", [
             ("The **target layers**; Cancel or Esc leaves the clip where it is.", "Die **Ziel-Ebenen**; Abbrechen oder Esc lässt den Clip, wo er ist."),
         ]),
@@ -119,6 +123,11 @@ def _():
           "Jedes Visual entsteht live auf der Grafikkarte, in jeder Auflösung, und reagiert auf Beat oder Audio. Der Tab **GALERIE** zeigt alle mit Vorschau; ein Doppelklick startet eines auf der Ziel-Ebene."),
         IMG("gallery.png", "Gallery with the visuals in categories", "Galerie mit den Visuals in Kategorien",
             ("The gallery with filters per category and a live preview on the right.", "Die Galerie mit Filtern je Kategorie und Live-Vorschau rechts.")),
+        GUIDE("gallery-target-guide.png", "Gallery: put a visual into a layer", "Galerie: ein Visual in eine Ebene legen", [
+            ("**Choose a visual**: the live preview and its description appear on the right.", "**Visual wählen**: rechts erscheinen Live-Vorschau und Beschreibung."),
+            ("**Add to layer** adds it to the clip row of the target layer; **Play now** also starts it.", "**In die Ebene legen** fügt es der Clip-Zeile der Ziel-Ebene hinzu; **Jetzt abspielen** startet es auch."),
+            ("**Target layer** with number and name (e.g. “Layer 1 · Space”): where the visual goes.", "**Ziel-Ebene** mit Nummer und Namen (z. B. „Ebene 1 · Raum“): dorthin kommt das Visual."),
+        ]),
         H2("All categories", "Alle Kategorien"),
         TABLE([("Category", "Kategorie"), ("Visuals", "Visuals")], rows),
         ADM("tip", ("Colors: with the color source **Original** each visual shows its own colors. With a slot it takes the show colors from the desk.",
