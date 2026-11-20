@@ -16,7 +16,7 @@
   <a href="README.md">English</a> &nbsp;·&nbsp;
   <a href="https://skyplayser.github.io/VJ-LINK/de/wiki.html">Wiki</a> &nbsp;·&nbsp;
   <a href="https://discord.gg/N6DMca4Bjk">Discord</a> &nbsp;·&nbsp;
-  <a href="https://github.com/skyplayser/VJ-LInk-dev">Quellcode</a>
+  <a href="https://github.com/skyplayser/VJ-LINK/tree/main/source">Quellcode</a>
 </p>
 
 <p align="center">
@@ -48,7 +48,7 @@ Fehlermeldung, wenn du eine schickst.
   Glitch, Op-Art, Organisch und Flüssig, Audio und Equalizer, Partikel, Retro und Synthwave, Geometrie und Tunnel, Licht und
   Raum sowie 16 Laser-Looks für einen Beamer im Nebel. Für VJ-Link geschrieben, alle reagieren auf Beat oder Audio. Einige kleine
   Bausteine folgen veröffentlichten Code-Beispielen unter MIT-Lizenz – siehe „Shader credits“ in
-  [THIRD_PARTY.md](https://github.com/skyplayser/VJ-LInk-dev/blob/grundgeruest/THIRD_PARTY.md).
+  [THIRD_PARTY.md](https://github.com/skyplayser/VJ-LINK/blob/main/source/THIRD_PARTY.md).
 - **50 Effekte** in einem Stapel mit bis zu sechs je Ebene: Feedback, Datamosh, Slit-Scan, VHS, Bloom, Kaleidoskop, Halbton,
   LCD, Pixel-Sort, Luma-Key, Farb-Strobe, Beat-Flip und viele mehr.
 - **Bis zu acht Ebenen** mit Mischmodi, Deckkraft, Position, Größe und Drehung. Jede Ebene wählt ihren Antrieb: Audio, falls
@@ -268,9 +268,9 @@ Kompatibilität zu beschreiben. Ableton und Link sind Marken der Ableton AG.
 ## Lizenz
 
 © 2026 Philipp Spruck / NEXTPHILM. VJ-Link steht unter der [Eclipse Public License 2.0](LICENSE) und wird ohne jede
-Gewährleistung bereitgestellt. Der Quellcode liegt unter [skyplayser/VJ-LInk-dev](https://github.com/skyplayser/VJ-LInk-dev); dieses Repository enthält die
-Veröffentlichungen, die Website und die Dokumentation. Die Lizenzen der verwendeten Bausteine stehen in
-[THIRD_PARTY.md](https://github.com/skyplayser/VJ-LInk-dev/blob/grundgeruest/THIRD_PARTY.md).
+Gewährleistung bereitgestellt. Der Quellcode jeder offiziellen Version liegt in diesem Repository unter [source/](source/),
+neben den Veröffentlichungen, der Website und der Dokumentation. Die Lizenzen der verwendeten Bausteine stehen in
+[source/THIRD_PARTY.md](source/THIRD_PARTY.md).
 
 <br>
 

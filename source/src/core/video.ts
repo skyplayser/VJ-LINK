@@ -1,0 +1,555 @@
+// Videos: als Clip in den Visuals (loopt, auch im Takt) und als Cue im SHOW-Ablauf.
+// Alles hier ist reine Rechnung, damit jedes Fenster (Vorschau, Ausgänge) dieselbe Stelle zeigt.
+import { parseTc, tcToFrames, type TcNow } from "./timecode";
+import { t } from "./i18n";
+
+export const VIDEO_EXTENSIONS = ["mp4", "m4v", "mov", "webm"] as const;
+export const VIDEO_TYPES = ["video/mp4", "video/quicktime", "video/webm", "video/x-m4v"] as const;
+
+export interface VideoItem {
+  id: string;
+  name: string;
+  /** Dateiendung (mp4, mov …), für die Adresse vjmedia://video/<id>.<ext>. */
+  ext: string;
+  /** Sekunden; 0, solange noch nicht gemessen. */
+  duration: number;
+  width: number;
+  height: number;
+}
+
+export const videoClip = (id: string): string => `vid:${id}`;
+export const isVideoClip = (clip: string | null | undefined): clip is string => !!clip && clip.startsWith("vid:");
+export const videoIdOf = (clip: string): string => clip.slice(4);
+
+export type Fit = "fill" | "fit" | "original";
+export const FITS: readonly Fit[] = ["fill", "fit", "original"];
+
+/** Einstellungen eines Videos als Clip in einer Ebene. */
+export interface VideoSettings {
+  /** Loop-Bereich in Sekunden; loopOut 0 = bis zum Ende. */
+  loopIn: number;
+  loopOut: number;
+  /** 0 = normale Geschwindigkeit, sonst wird der Loop auf so viele Beats gedehnt. */
+  beats: number;
+  fit: Fit;
+  /** Ton der Datei abspielen (nur im Hauptfenster). */
+  sound: boolean;
+}
+export const TAKT_BEATS = [0, 4, 8, 16, 32] as const;
+export const defaultVideo = (): VideoSettings => ({ loopIn: 0, loopOut: 0, beats: 0, fit: "fill", sound: false });
+
+/** Wann der Clip in der Ebene gestartet wurde (für alle Fenster gleich). */
+export interface PlayStart { clip: string | null; ms: number; beat: number }
+
+const clampNum = (v: number, lo: number, hi: number): number => (v < lo ? lo : v > hi ? hi : v);
+
+/** Loop-Grenzen innerhalb der Datei. */
+export function loopRange(v: { loopIn: number; loopOut: number }, duration: number): [number, number] {
+  const d = duration > 0 ? duration : 1e9;
+  const a = clampNum(v.loopIn, 0, d);
+  const b = v.loopOut > 0 ? clampNum(v.loopOut, a + 0.05, d) : d;
+  return [a, Math.max(a + 0.05, b)];
+}
+
+/**
+ * Stelle (Sekunden) und Geschwindigkeit eines Clip-Videos.
+ * Im Takt: Der Loop-Bereich dauert genau `beats` Beats und beginnt auf dem Beat, an dem der Clip startete.
+ */
+export function clipVideoTime(v: VideoSettings, start: PlayStart, duration: number, beat: number, nowMs: number, bpm: number): { t: number; rate: number } {
+  const [a, b] = loopRange(v, duration);
+  const len = b - a;
+  if (v.beats > 0 && bpm > 0) {
+    const ph = (beat - start.beat) / v.beats;
+    const f = ph - Math.floor(ph);
+    return { t: a + f * len, rate: len / ((v.beats * 60) / bpm) };
+  }
+  const el = Math.max(0, (nowMs - start.ms) / 1000);
+  return { t: a + (el % len), rate: 1 };
+}
+
+// ---- SHOW-Ablauf ---------------------------------------------------------------------
+
+export type CueKind = "video" | "image" | "camera" | "black" | "scene" | "tcsignal";
+export type TcAction = "start" | "stop" | "locate";
+export type CueStart = "manual" | "after" | "with" | "timecode";
+export type CueEnd = "hold" | "fade" | "next";
+export type CueLoop = "off" | "count" | "untilGo" | "forever";
+export type CueOver = "replace" | "over";
+
+export interface Cue {
+  id: string;
+  name: string;
+  kind: CueKind;
+  /** Clip-ID der Datei: vid:… oder img:… */
+  media: string | null;
+  /** Für VJ-Szenen: Nummer 1… */
+  scene: number;
+  start: CueStart;
+  /** Wartezeit nach dem Auslösen, Sekunden. */
+  wait: number;
+  /** Kürzen: Start und Ende in der Datei (Ende 0 = bis zum Schluss). */
+  trimIn: number;
+  trimOut: number;
+  loop: CueLoop;
+  loopCount: number;
+  /** Nur diesen Bereich wiederholen (sonst den gekürzten ganzen Film). */
+  loopRange: boolean;
+  loopIn: number;
+  loopOut: number;
+  end: CueEnd;
+  fadeIn: number;
+  fadeOut: number;
+  /** Standzeit für Bild und Schwarz in Sekunden, 0 = bis WEITER. */
+  hold: number;
+  /** 0–1 */
+  volume: number;
+  fit: Fit;
+  over: CueOver;
+  /** Start per Timecode, z. B. „00:20:00:00“. */
+  tc: string;
+  /** Timecode-Befehl: eigene Uhr starten (ab Zeit), anhalten oder auf eine Zeit springen. */
+  tcAction: TcAction;
+  tcTarget: string;
+  /** Timeline: an diesen Stellen (Video-Zeit bzw. Sekunden seit Start) eine Szene abrufen. */
+  marks?: SceneMark[];
+  /** Als Timeline bearbeitet (großer Editor unter der Cue-Liste). */
+  timeline?: boolean;
+  /** Timeline-Effekte: Strobe, Flash, White, W-Flash, Blinder, Blackout für eine Dauer. */
+  fx?: FxBlock[];
+}
+
+/** Szenen-Marker in einem Video: Zeit in der Datei (s), Szene (1…), nur die anderen Bilder oder alle. */
+export interface SceneMark {
+  t: number; scene: number; others: boolean;
+  /** Länge in Sekunden (Block wie im Schnittprogramm). Fehlt sie, gilt die Szene bis zur nächsten. Danach: Ausgangsszene. */
+  len?: number;
+  /** Helligkeit der betroffenen Bilder, solange der Block läuft (0–1, fehlt = 1). */
+  level?: number;
+}
+
+/** Effekte auf der Timeline (zweite Spur). */
+export type FxKind = "strobe" | "flash" | "white" | "wflash" | "blinder" | "blackout";
+export const FX_KINDS: readonly FxKind[] = ["strobe", "flash", "white", "wflash", "blinder", "blackout"];
+export const FX_LABEL: Record<FxKind, string> = { strobe: "Strobe", flash: "Flash", white: "White", wflash: "W-Flash", blinder: "Blinder", blackout: "Blackout" };
+export interface FxBlock { t: number; len: number; kind: FxKind }
+
+export function newCue(kind: CueKind, name: string, media: string | null = null, id = newCueId()): Cue {
+  return {
+    id, name, kind, media, scene: 1, start: "manual", wait: 0,
+    trimIn: 0, trimOut: 0, loop: kind === "video" ? "off" : "off", loopCount: 2, loopRange: false, loopIn: 0, loopOut: 0,
+    end: kind === "video" ? "hold" : "hold", fadeIn: 0.5, fadeOut: 1, hold: 0, volume: 1, fit: "fill", over: "replace", tc: "00:00:00:00", tcAction: "start", tcTarget: "00:00:00:00",
+  };
+}
+export function newCueId(): string { return "c" + Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-3); }
+
+export interface ActiveCue {
+  /** Feste Kennung dieses Durchlaufs (für die Abspieler). */
+  uid: string;
+  /** Vom Timecode gesteuert: steht der Timecode, steht das Video. */
+  frozen?: boolean;
+  cueId: string;
+  /** Wann der Cue sichtbar wird (Auslösen + Wartezeit). */
+  startMs: number;
+  /** „bis WEITER“: Zeitpunkt, an dem WEITER den Loop beendet hat. */
+  releasedMs: number | null;
+  /** Ausblenden läuft seit … (ms) über … (s). */
+  fadeOutMs: number | null;
+  fadeOutDur: number;
+  /** Ende schon behandelt (weiter / ausblenden). */
+  endHandled: boolean;
+  /** Szene schon abgerufen. */
+  fired: boolean;
+  /** Timeline: zuletzt gesehene Video-Zeit (für die Szenen-Marker). */
+  lastT?: number;
+  /** Timeline: Szene (1…), die beim Start des Cues lief; in Lücken zwischen Blöcken gilt wieder sie. */
+  baseScene?: number;
+}
+
+export interface CueRun { active: ActiveCue[]; next: number; current: number }
+export interface CueState { list: Cue[]; run: CueRun; /** Letzter gesehener Timecode (Bilder). */ lastTc?: number | null; /** Zeit des letzten WEITER (Doppelklick-Schutz). */ lastGoMs?: number }
+export const newCueState = (): CueState => ({ list: [], run: { active: [], next: 0, current: -1 }, lastTc: null });
+
+/** Was ein Fenster zeichnen muss: Datei, Stelle, Deckkraft. */
+export interface CueRender {
+  key: string;
+  kind: "video" | "image" | "camera" | "black";
+  media: string | null;
+  t: number;
+  rate: number;
+  atMs: number;
+  opacity: number;
+  fit: Fit;
+  over: CueOver;
+  volume: number;
+  /** Loop-Bereich, solange der Cue wiederholt (für den nahtlosen Wechsel der Abspieler). */
+  loop?: [number, number];
+}
+
+/** Loop-Bereich eines Cues in der Datei. */
+export function cueLoopRange(c: Cue, duration: number): [number, number] {
+  const [a, b] = trimmed(c, duration);
+  const la = c.loopRange ? clampNum(c.loopIn || a, a, b - 0.05) : a;
+  const lb = c.loopRange ? clampNum(c.loopOut || b, la + 0.05, b) : b;
+  return [la, lb];
+}
+
+/**
+ * Nahtloser Loop mit zwei Abspielern: Der zweite wartet schon am Loop-Anfang.
+ * „swap“ = jetzt umschalten, „seek“ = Abspieler neu positionieren (zu weit weg), „ok“ = weiterlaufen lassen.
+ */
+export function planLoop(p: { active: number; target: number; rate: number; loop?: [number, number]; standbyReady: boolean }): "swap" | "seek" | "ok" {
+  const r = Math.max(1, p.rate);
+  let drift = p.target - p.active;
+  if (p.loop) {
+    const [a, b] = p.loop;
+    const span = Math.max(0.05, b - a);
+    // Im Loop zählt der Abstand im Kreis: kurz vor dem Ende und kurz nach dem Anfang liegen nah beieinander
+    if (p.active >= a - 0.05 && p.active <= b + 0.05) drift = ((((drift + span / 2) % span) + span) % span) - span / 2;
+    const nearEnd = p.active >= b - 0.06 * r && p.active <= b + 0.5;
+    if (nearEnd && p.standbyReady) return "swap";
+    if (p.active >= b) return "seek"; // zweiter Abspieler noch nicht bereit: springen
+  }
+  return Math.abs(drift) > 0.25 * r ? "seek" : "ok";
+}
+
+/** Länge des gekürzten Films. */
+function trimmed(c: Cue, duration: number): [number, number] {
+  const d = duration > 0 ? duration : 1e9;
+  const a = clampNum(c.trimIn, 0, d);
+  const b = c.trimOut > 0 ? clampNum(c.trimOut, a + 0.05, d) : d;
+  return [a, Math.max(a + 0.05, b)];
+}
+
+/**
+ * Stelle im Video und ob der Cue zu Ende ist.
+ * Loop „bis WEITER“: wiederholt bis zum Loslassen, spielt dann bis zum Ende.
+ */
+export function cueTime(c: Cue, ac: ActiveCue, nowMs: number, duration: number): { t: number; ended: boolean; looping: boolean; endMs: number | null } {
+  const el = (nowMs - ac.startMs) / 1000;
+  if (c.kind !== "video") {
+    const ended = c.hold > 0 && el >= c.hold;
+    // t = Sekunden seit Start (für die Timeline von Bild- und Schwarz-Cues)
+    return { t: Math.max(0, c.hold > 0 ? Math.min(c.hold, el) : el), ended, looping: false, endMs: c.hold > 0 ? ac.startMs + c.hold * 1000 : null };
+  }
+  const [a, b] = trimmed(c, duration);
+  const la = c.loopRange ? clampNum(c.loopIn || a, a, b - 0.05) : a;
+  const lb = c.loopRange ? clampNum(c.loopOut || b, la + 0.05, b) : b;
+  const span = lb - la, intro = lb - a;
+  const linear = (x: number) => ({ t: Math.min(b, a + x), ended: a + x >= b, looping: false, endMs: ac.startMs + (b - a) * 1000 });
+  if (el < 0) return { t: a, ended: false, looping: false, endMs: null };
+  switch (c.loop) {
+    case "off": return linear(el);
+    case "forever": {
+      const t = el < intro ? a + el : la + ((el - intro) % span);
+      return { t, ended: false, looping: el >= intro, endMs: null };
+    }
+    case "count": {
+      const n = Math.max(1, Math.round(c.loopCount));
+      const loopsTotal = intro + (n - 1) * span;
+      if (el < loopsTotal) {
+        const t = el < intro ? a + el : la + ((el - intro) % span);
+        return { t, ended: false, looping: el >= intro, endMs: ac.startMs + (loopsTotal + (b - lb)) * 1000 };
+      }
+      const t = lb + (el - loopsTotal);
+      return { t: Math.min(b, t), ended: t >= b, looping: false, endMs: ac.startMs + (loopsTotal + (b - lb)) * 1000 };
+    }
+    case "untilGo": {
+      const posAt = (x: number) => (x < intro ? a + x : la + ((x - intro) % span));
+      if (ac.releasedMs === null) {
+        return { t: posAt(el), ended: false, looping: el >= intro, endMs: null };
+      }
+      const rel = Math.max(0, (ac.releasedMs - ac.startMs) / 1000);
+      const t0 = posAt(rel);
+      const t = t0 + (el - rel);
+      return { t: Math.min(b, t), ended: t >= b, looping: false, endMs: ac.releasedMs + (b - t0) * 1000 };
+    }
+  }
+}
+
+/** Deckkraft aus Einblenden und Ausblenden. */
+export function cueOpacity(c: Cue, ac: ActiveCue, nowMs: number): number {
+  const el = (nowMs - ac.startMs) / 1000;
+  if (el < 0) return 0;
+  let o = c.fadeIn > 0 ? Math.min(1, el / c.fadeIn) : 1;
+  if (ac.fadeOutMs !== null) {
+    const f = ac.fadeOutDur > 0 ? (nowMs - ac.fadeOutMs) / 1000 / ac.fadeOutDur : 1;
+    o *= Math.max(0, 1 - f);
+  }
+  return o;
+}
+
+export interface CueEnv {
+  /** Länge eines Videos (Sekunden) aus der Bibliothek. */
+  duration(media: string | null): number;
+  /** VJ-Szene abrufen (Index 0…). `othersOnly`: das Bild, auf dem der SHOW-Ablauf läuft, bleibt unberührt. */
+  recallScene(index: number, othersOnly?: boolean): void;
+  /** Timecode-Befehl für die eigene Uhr (Start ab Zeit, Stopp, Springen). */
+  tcCommand?(action: TcAction, target: string): void;
+  /** Aktueller Timecode, falls einer läuft. */
+  timecode?(): TcNow | null;
+  /** Videos folgen dem Timecode (sonst nur Start). */
+  chase?: boolean;
+  /** Gerade aktive Szene (1…, 0 = keine) – Ausgangsszene für die Timeline. */
+  currentScene?(): number;
+}
+
+const byId = (s: CueState, id: string) => s.list.find(c => c.id === id);
+
+/** Cue Nr. `index` starten, plus alle direkt folgenden „mit vorigem“. Gibt den nächsten Index zurück. */
+function startAt(s: CueState, index: number, nowMs: number): void {
+  const first = s.list[index];
+  if (!first) return;
+  // Neuer Programmpunkt: Bisheriges blendet über die Einblendzeit des neuen aus
+  const xf = Math.max(0.05, first.fadeIn);
+  // Szenen und Timecode-Befehle sind unsichtbar: Sie blenden nichts aus
+  if (first.kind !== "scene" && first.kind !== "tcsignal")
+    for (const ac of s.run.active) if (ac.fadeOutMs === null) { ac.fadeOutMs = nowMs; ac.fadeOutDur = xf; }
+  let i = index;
+  do {
+    const c = s.list[i]!;
+    s.run.active.push({ uid: newCueId(), cueId: c.id, startMs: nowMs + Math.max(0, c.wait) * 1000, releasedMs: null, fadeOutMs: null, fadeOutDur: 0, endHandled: false, fired: false });
+    i++;
+  } while (s.list[i] && s.list[i]!.start === "with");
+  s.run.current = index;
+  s.run.next = i;
+}
+
+/** Hauptcue (der zuletzt mit WEITER/automatisch gestartete). */
+function currentActive(s: CueState): ActiveCue | undefined {
+  const cur = s.list[s.run.current];
+  return cur ? s.run.active.find(a => a.cueId === cur.id && a.fadeOutMs === null) : undefined;
+}
+
+/**
+ * WEITER: Hängt der aktuelle Cue in „bis WEITER“, wird erst der Loop beendet.
+ * Sonst startet der nächste Cue. Gibt zurück, was passiert ist.
+ */
+export function cueGo(s: CueState, nowMs: number, env: CueEnv): "released" | "started" | "end" {
+  const cur = s.list[s.run.current], ac = currentActive(s);
+  if (cur && ac && cur.loop === "untilGo" && ac.releasedMs === null) {
+    const tm = cueTime(cur, ac, nowMs, env.duration(cur.media));
+    if (tm.looping) { ac.releasedMs = nowMs; return "released"; }
+  }
+  if (s.run.next >= s.list.length) return "end";
+  startAt(s, s.run.next, nowMs);
+  return "started";
+}
+
+/** Text für den WEITER-Knopf. */
+export function goLabel(s: CueState, nowMs: number, env: CueEnv): string {
+  const cur = s.list[s.run.current], ac = currentActive(s);
+  if (cur && ac && cur.loop === "untilGo" && ac.releasedMs === null && cueTime(cur, ac, nowMs, env.duration(cur.media)).looping)
+    return t("beendet den Loop von „{name}“", { name: cur.name });
+  const n = s.list[s.run.next];
+  return n ? t("startet Cue {n} „{name}“", { n: s.run.next + 1, name: n.name }) : t("Ende des Ablaufs");
+}
+
+/** Zurück: der nächste Cue rückt eins nach oben (laufende Cues bleiben). */
+export function cueBack(s: CueState): void { s.run.next = Math.max(0, s.run.next - 1); }
+
+/** Alles ausblenden (Standard 1 s). Der Ablauf bleibt beim nächsten Cue stehen. */
+export function cueStopAll(s: CueState, nowMs: number, fade = 1): void {
+  for (const ac of s.run.active) if (ac.fadeOutMs === null) { ac.fadeOutMs = nowMs; ac.fadeOutDur = fade; }
+}
+
+/** Einen bestimmten Cue als nächsten setzen (z. B. per Klick in der Liste). */
+export function cueSetNext(s: CueState, index: number): void { s.run.next = Math.max(0, Math.min(s.list.length, index)); }
+
+/** Einmal pro Bild: Enden behandeln, Szenen abrufen, „nach vorigem“ starten, Ausgeblendetes entfernen. */
+/** Länge eines Cues in Sekunden (unendlich bei Endlos-Loop oder „bis WEITER“). */
+function cueLength(c: Cue, duration: number): number {
+  if (c.kind === "video") {
+    if (c.loop === "forever" || c.loop === "untilGo") return Infinity;
+    const [a, b] = trimmed(c, duration);
+    if (c.loop === "count") { const [la, lb] = cueLoopRange(c, duration); return (lb - a) + (Math.max(1, c.loopCount) - 1) * (lb - la) + (b - lb); }
+    return b - a;
+  }
+  return c.hold > 0 ? c.hold : Infinity;
+}
+
+/**
+ * Timecode: Cues mit Start „Timecode“ beginnen, wenn die Zeit erreicht ist.
+ * „Folgen“: Ihre Stelle richtet sich nach dem Timecode (Zurückspulen stoppt sie, Vorspulen springt mit).
+ */
+function tickTimecode(s: CueState, nowMs: number, env: CueEnv): void {
+  const tc = env.timecode?.();
+  if (!tc) { s.lastTc = null; return; }
+  const prev = s.lastTc ?? null;
+  s.lastTc = tc.frames;
+  s.list.forEach((c, i) => {
+    if (c.start !== "timecode") return;
+    const t = parseTc(c.tc, tc.fps);
+    if (!t) return;
+    const startF = tcToFrames(t, tc.fps);
+    const into = (tc.frames - startF) / tc.fps; // Sekunden seit Cue-Start
+    const ac = s.run.active.find(a => a.cueId === c.id && a.fadeOutMs === null);
+    if (env.chase && c.kind !== "scene" && c.kind !== "tcsignal") {
+      const len = cueLength(c, env.duration(c.media));
+      const inside = into >= 0 && into < len + 0.05;
+      if (inside && !ac) {
+        startAt(s, i, nowMs);
+        const n = s.run.active.find(a => a.cueId === c.id && a.fadeOutMs === null);
+        if (n) n.startMs = nowMs - into * 1000;
+      } else if (ac && into < 0) {
+        s.run.active = s.run.active.filter(a => a !== ac); // vor den Start zurückgespult
+      } else if (ac) {
+        ac.startMs = nowMs - into * 1000;
+        ac.frozen = !tc.running;
+      }
+    } else if (prev !== null && prev < startF && tc.frames >= startF && tc.frames - prev < tc.fps * 2 && !ac) {
+      startAt(s, i, nowMs);
+    }
+  });
+}
+
+export function cueTick(s: CueState, nowMs: number, env: CueEnv): void {
+  tickTimecode(s, nowMs, env);
+  for (const ac of [...s.run.active]) {
+    const c = byId(s, ac.cueId);
+    if (!c) { s.run.active = s.run.active.filter(x => x !== ac); continue; }
+    if (c.kind === "scene" || c.kind === "tcsignal") {
+      if (!ac.fired && nowMs >= ac.startMs) {
+        ac.fired = true;
+        if (c.kind === "scene") env.recallScene(c.scene - 1); else env.tcCommand?.(c.tcAction, c.tcTarget);
+      }
+      if (ac.fired) { ac.endHandled = true; ac.fadeOutMs ??= nowMs; ac.fadeOutDur = 0; }
+    } else if (!ac.endHandled && nowMs >= ac.startMs) {
+      const tm = cueTime(c, ac, nowMs, env.duration(c.media));
+      if (c.marks?.length && !ac.frozen) fireMarks(c, ac, tm.t, tm.looping, env);
+      if (tm.ended) {
+        ac.endHandled = true;
+        const isCurrent = s.list[s.run.current]?.id === c.id;
+        if (c.end === "fade" && ac.fadeOutMs === null) { ac.fadeOutMs = nowMs; ac.fadeOutDur = Math.max(0.05, c.fadeOut); }
+        if (isCurrent && (c.end === "next" || s.list[s.run.next]?.start === "after")) startAt(s, s.run.next, nowMs);
+      }
+    }
+  }
+  s.run.active = s.run.active.filter(ac => {
+    if (ac.fadeOutMs === null) return true;
+    return nowMs - ac.fadeOutMs < ac.fadeOutDur * 1000 + 50;
+  });
+}
+
+/** Liste der zu zeichnenden Cues (Reihenfolge = Zeichenreihenfolge). */
+export function cueRenders(s: CueState, nowMs: number, env: CueEnv): CueRender[] {
+  const out: CueRender[] = [];
+  for (const ac of s.run.active) {
+    const c = byId(s, ac.cueId);
+    if (!c || c.kind === "scene" || c.kind === "tcsignal" || nowMs < ac.startMs) continue;
+    const opacity = cueOpacity(c, ac, nowMs);
+    if (opacity <= 0.001) continue;
+    const tm = cueTime(c, ac, nowMs, env.duration(c.media));
+    const held = (c.kind === "video" && tm.ended) || !!ac.frozen;
+    const loops = c.kind === "video" && c.loop !== "off" && !(c.loop === "untilGo" && ac.releasedMs !== null) && tm.looping;
+    out.push({
+      key: ac.uid, kind: c.kind, media: c.media, t: tm.t, rate: held || c.kind !== "video" ? 0 : 1, atMs: nowMs,
+      opacity, fit: c.fit, over: c.over, volume: c.volume,
+      ...(loops ? { loop: cueLoopRange(c, env.duration(c.media)) } : {}),
+    });
+  }
+  return out;
+}
+
+/** Status eines Cues für die Liste. */
+export function cueStatus(s: CueState, c: Cue, nowMs: number, env: CueEnv): { live: boolean; remaining: number | null; progress: number } {
+  const ac = s.run.active.find(a => a.cueId === c.id && a.fadeOutMs === null);
+  if (!ac || nowMs < ac.startMs) return { live: false, remaining: null, progress: 0 };
+  const tm = cueTime(c, ac, nowMs, env.duration(c.media));
+  if (tm.endMs === null) return { live: true, remaining: null, progress: tm.looping ? 1 : 0 };
+  const total = (tm.endMs - ac.startMs) / 1000;
+  const rem = Math.max(0, (tm.endMs - nowMs) / 1000);
+  return { live: true, remaining: rem, progress: total > 0 ? 1 - rem / total : 1 };
+}
+
+/** Ereignisse der Timeline: Blockanfänge und Blockenden (Ende = zurück zur Ausgangsszene, Szene 0). */
+export function timelineEvents(marks: readonly SceneMark[]): SceneMark[] {
+  const sorted = [...marks].sort((a, b) => a.t - b.t);
+  // Ende jedes Blocks: eigene Länge, sonst bis zum nächsten Block (der letzte offene Block läuft bis zum Schluss)
+  const endOf = (k: number) => { const m = sorted[k]!; return m.len !== undefined && m.len > 0 ? m.t + m.len : sorted[k + 1]?.t ?? Infinity; };
+  const ev: SceneMark[] = [];
+  sorted.forEach((m, k) => {
+    ev.push({ t: m.t, scene: m.scene, others: m.others });
+    if (m.len !== undefined && m.len > 0) {
+      const end = m.t + m.len;
+      // Lücke nur, wenn dort kein anderer Block liegt (angrenzend oder überlappend)
+      const covered = sorted.some((o, j) => j !== k && o.t <= end + 0.06 && endOf(j) > end + 0.01);
+      if (!covered) ev.push({ t: end, scene: 0, others: m.others });
+    }
+  });
+  return ev.sort((a, b) => a.t - b.t);
+}
+
+/**
+ * Timeline: Ereignisse zwischen der zuletzt gesehenen und der jetzigen Zeit auslösen.
+ * Im Loop zählt der Sprung an den Anfang mit; springt die Zeit sonst zurück (z. B. Timecode), gilt der Stand
+ * des letzten Ereignisses vor der neuen Stelle. Blockenden rufen die Ausgangsszene wieder ab.
+ */
+export function fireMarks(c: Cue, ac: ActiveCue, t: number, looping: boolean, env: CueEnv): SceneMark[] {
+  const evs = timelineEvents(c.marks ?? []);
+  const prev = ac.lastT;
+  if (prev === undefined && ac.baseScene === undefined) ac.baseScene = env.currentScene?.() ?? 0;
+  ac.lastT = t;
+  let due: SceneMark[];
+  if (prev === undefined) due = evs.filter(m => m.t <= t);
+  else if (t >= prev) due = evs.filter(m => m.t > prev && m.t <= t);
+  else if (looping) due = [...evs.filter(m => m.t > prev), ...evs.filter(m => m.t <= t)];
+  else { const last = evs.filter(m => m.t <= t).pop(); due = last ? [last] : []; }
+  for (const m of due) {
+    const sc = m.scene > 0 ? m.scene : ac.baseScene ?? 0;
+    if (sc > 0) env.recallScene(sc - 1, m.others);
+  }
+  return due;
+}
+
+/** Länge der Timeline: gekürztes Video bzw. Standzeit von Bild/Schwarz (0 = keine feste Länge). */
+export function timelineSpan(c: Cue, duration: number): [number, number] {
+  if (c.kind === "video") return duration > 0 ? trimmed(c, duration) : [0, 0];
+  return [0, c.hold > 0 ? c.hold : 0];
+}
+
+/** Laufenden Cue an eine Stelle spulen (Timeline). Marker gelten danach mit dem Stand an dieser Stelle. */
+export function cueSeek(s: CueState, cueId: string, t: number, nowMs: number, duration: number): boolean {
+  const c = byId(s, cueId);
+  const ac = s.run.active.find(a => a.cueId === cueId && a.fadeOutMs === null);
+  if (!c || !ac || nowMs < ac.startMs) return false;
+  const [a, b] = timelineSpan(c, duration);
+  const x = Math.max(a, Math.min(b > a ? b - 0.05 : t, t));
+  ac.startMs = nowMs - (x - a) * 1000;
+  ac.endHandled = false;
+  ac.lastT = undefined;
+  return true;
+}
+
+/** Szenen-Block, der zur Zeit t läuft (der zuletzt begonnene, dessen Ende noch nicht erreicht ist). */
+export function activeSceneBlock(marks: readonly SceneMark[], t: number): SceneMark | null {
+  const sorted = [...marks].sort((a, b) => a.t - b.t);
+  let hit: SceneMark | null = null;
+  sorted.forEach((m, k) => {
+    const end = m.len !== undefined && m.len > 0 ? m.t + m.len : sorted[k + 1]?.t ?? Infinity;
+    if (m.t <= t && t < end) hit = m;
+  });
+  return hit;
+}
+
+/** Was laufende Timelines gerade bewirken: Effekte und Helligkeit je Bild. */
+export interface TimelineOverride { fx: Set<FxKind>; gains: Record<string, number> }
+
+export function timelineOverride(s: CueState, nowMs: number, env: CueEnv, stacks: readonly string[], showImage: string): TimelineOverride | null {
+  let out: TimelineOverride | null = null;
+  for (const ac of s.run.active) {
+    if (ac.fadeOutMs !== null || nowMs < ac.startMs) continue;
+    const c = byId(s, ac.cueId);
+    if (!c || (!c.fx?.length && !c.marks?.some(m => m.level !== undefined && m.level < 1))) continue;
+    const t = cueTime(c, ac, nowMs, env.duration(c.media)).t;
+    out ??= { fx: new Set(), gains: {} };
+    for (const b of c.fx ?? []) if (t >= b.t && t < b.t + b.len) out.fx.add(b.kind);
+    const blk = activeSceneBlock(c.marks ?? [], t);
+    if (blk && blk.level !== undefined && blk.level < 1) {
+      for (const id of stacks) {
+        if (blk.others && id === showImage) continue;
+        out.gains[id] = Math.min(out.gains[id] ?? 1, Math.max(0, blk.level));
+      }
+    }
+  }
+  return out;
+}

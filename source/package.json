@@ -1,0 +1,111 @@
+{
+  "name": "vj-link",
+  "version": "0.1.9",
+  "productName": "VJ-Link",
+  "description": "Einfache VJ-Software für LJs: Lichtpult, OSC und LJ-Link steuern die Visuals.",
+  "private": true,
+  "main": "dist/main/main.js",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "start": "npm run build && node scripts/dev-app.mjs --run",
+    "web": "npm run build && node scripts/serve.mjs",
+    "check": "npm run typecheck && npm test",
+    "test:e2e": "npm run build && node tests/e2e/smoke.cjs dev release/e2e",
+    "dist:mac": "npm run build && electron-builder --mac --arm64 --x64 --publish never && node scripts/rename-dist.mjs",
+    "dist:win": "npm run build && electron-builder --win --x64 --publish never && node scripts/rename-dist.mjs"
+  },
+  "dependencies": {
+    "@mediapipe/tasks-vision": "1.2.2",
+    "bonjour-service": "1.4.4",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/ws": "^8.5.13",
+    "electron": "^45.2.3",
+    "electron-builder": "26.17.0",
+    "esbuild": "^0.28.2",
+    "typescript": "^5.7.0",
+    "vitest": "^5.1.0"
+  },
+  "author": {
+    "name": "Philipp Spruck / NEXTPHILM",
+    "email": "anfrage@nextphilm.de"
+  },
+  "homepage": "https://skyplayser.github.io/VJ-LINK/",
+  "build": {
+    "appId": "de.nextphilm.vjlink",
+    "productName": "VJ-Link",
+    "copyright": "© 2026 Philipp Spruck / NEXTPHILM",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "package.json",
+      "LICENSE"
+    ],
+    "asar": true,
+    "mac": {
+      "category": "public.app-category.entertainment",
+      "icon": "build/icon.icns",
+      "target": [
+        {
+          "target": "dmg"
+        }
+      ],
+      "identity": "-",
+      "hardenedRuntime": false,
+      "artifactName": "VJ-Link-macos-${arch}.${ext}",
+      "extendInfo": {
+        "NSCameraUsageDescription": "VJ-Link zeigt das Kamerabild als Clip (Silhouette, Masken, Looks). Camera input as a clip.",
+        "NSMicrophoneUsageDescription": "VJ-Link wertet den Audio-Eingang für Equalizer und Takt aus. Audio input for equalizers and beat.",
+        "NSLocalNetworkUsageDescription": "VJ-Link empfängt Art-Net, sACN und OSC, verbindet sich mit LJ-Link und nimmt am Suite-Chat teil. Art-Net, sACN, OSC, LJ-Link and the suite chat.",
+        "NSBonjourServices": [
+          "_ljlink._tcp"
+        ]
+      }
+    },
+    "dmg": {
+      "title": "VJ-Link ${version}"
+    },
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "VJ-Link-windows.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "VJ-Link",
+      "license": "build/license.txt"
+    },
+    "extraResources": [
+      {
+        "from": "LICENSE",
+        "to": "LICENSE.txt"
+      },
+      {
+        "from": "dist/THIRD_PARTY_LICENSES.txt",
+        "to": "THIRD_PARTY_LICENSES.txt"
+      }
+    ]
+  },
+  "license": "EPL-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/skyplayser/VJ-LInk-dev.git"
+  }
+}

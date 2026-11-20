@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' vjasset: 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' data:; media-src vjmedia: blob:; connect-src vjasset:">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VJ-Link</title>
+<link rel="stylesheet" href="intro/program-intro.css">
+<link rel="stylesheet" href="suite/launcher-hint.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="logo"><span class="slots"><i></i><i></i><i></i><i></i><i></i></span>VJ-Link</div>
+  <div class="map-wrap proj-wrap">
+    <button class="pill proj-btn" id="proj-btn" aria-haspopup="menu" aria-expanded="false" title="Projekt: neu, öffnen, speichern" data-i18n-title><span id="proj-name" data-i18n>Unbenannt</span><b id="proj-dirty" hidden title="Ungespeicherte Änderungen" data-i18n-title>●</b> ▾</button>
+    <div class="map-menu" id="proj-menu" role="menu" hidden>
+      <button role="menuitem" data-proj="new"><span data-i18n>Neues Projekt</span> <kbd>⌘N</kbd></button>
+      <button role="menuitem" data-proj="open"><span data-i18n>Projekt öffnen …</span> <kbd>⌘O</kbd></button>
+      <button role="menuitem" data-proj="save"><span data-i18n>Speichern</span> <kbd>⌘S</kbd></button>
+      <button role="menuitem" data-proj="saveAs"><span data-i18n>Speichern unter …</span> <kbd>⇧⌘S</kbd></button>
+      <button role="menuitem" id="proj-start" data-i18n>Startbildschirm</button>
+      <div class="proj-recent" id="proj-recent"></div>
+    </div>
+  </div>
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-tab="visuals" class="on" data-i18n="tab.visuals">VISUALS</button>
+    <button role="tab" data-tab="show" data-i18n="tab.show">SHOW</button>
+    <button role="tab" data-tab="build" data-i18n="tab.build">GALERIE</button>
+    <button role="tab" data-tab="output" data-i18n="tab.output">AUSGABE</button>
+    <button role="tab" data-tab="connect" data-i18n="tab.connect">VERBINDEN</button>
+  </nav>
+  <div class="map-wrap">
+    <button class="btn" id="map-btn" aria-haspopup="menu" aria-expanded="false">MAPPING ▾</button>
+    <div class="map-menu" id="map-menu" role="menu" hidden>
+      <button role="menuitem" data-map="key"><span data-i18n>Tastatur</span> <kbd>⇧⌘K</kbd></button>
+      <button role="menuitem" data-map="midi">MIDI <kbd>⇧⌘M</kbd></button>
+      <button role="menuitem" data-map="dmx">DMX / Art-Net <kbd>⇧⌘D</kbd></button>
+      <button role="menuitem" data-map="osc">OSC <kbd>⇧⌘O</kbd></button>
+      <button role="menuitem" data-mod><span data-i18n>Modulation (LFO, Audio)</span> <kbd>⇧⌘L</kbd></button>
+    </div>
+  </div>
+  <div class="top-break" aria-hidden="true"></div>
+  <div class="map-wrap audio-wrap">
+    <button class="pill audio-pill" id="audio-btn" aria-haspopup="dialog" aria-expanded="false" title="Audio-Eingang für Equalizer und Oszilloskop" data-i18n-title>
+      <span class="meter" id="audio-meter"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span id="audio-label">AUDIO</span>
+    </button>
+  </div>
+  <button class="pill tc-pill" id="tc-btn" title="Timecode (Einstellungen)" data-i18n-title>TC <span id="tc-val">--:--:--:--</span></button>
+  <div class="tempo">
+    <button class="bpm" id="bpm" data-ctl="tempo.bpm" title="Klicken, Zahl eingeben, mit Enter bestätigen" data-i18n-title>120.00</button>
+    <input class="bpm bpm-input" id="bpm-input" type="number" min="20" max="300" step="0.01" hidden aria-label="BPM eingeben" data-i18n-aria>
+    <span class="beats" id="beats"><i></i><i></i><i></i><i></i></span>
+    <div class="map-wrap">
+      <button class="pill tempo-lock" id="tempo-lock" aria-haspopup="menu" aria-expanded="false" title="Tempo-Quelle wählen" data-i18n-title>AUTO</button>
+      <div class="map-menu" id="tempo-menu" role="menu" hidden>
+        <button role="menuitemradio" data-lock="auto"><span data-i18n>Automatisch</span> <kbd data-i18n>beste Quelle</kbd></button>
+        <button role="menuitemradio" data-lock="ljlink">LJ-Link</button>
+        <button role="menuitemradio" data-lock="link">Ableton Link</button>
+        <button role="menuitemradio" data-lock="midi">MIDI-Clock</button>
+        <button role="menuitemradio" data-lock="osc">OSC</button>
+        <button role="menuitemradio" data-lock="manual" data-i18n>Manuell / Tap</button>
+      </div>
+    </div>
+    <button class="btn" id="tap" data-ctl="tempo.tap">TAP</button>
+  </div>
+  <div class="status">
+    <span class="pill" id="st-dmx"><span class="dot"></span>DMX</span>
+    <span class="pill" id="st-osc"><span class="dot"></span>OSC</span>
+    <span class="pill" id="st-lj"><span class="dot"></span>LJ-LINK</span>
+    <span class="pill" id="st-link"><span class="dot"></span>LINK</span>
+    <span class="pill" id="st-midi"><span class="dot"></span>MIDI</span>
+    <span class="pill" id="st-fps">– FPS</span>
+  </div>
+  <button class="btn icon-btn chat-btn" id="chat-btn" type="button" hidden aria-expanded="false" title="Suite-Chat – Alpha" aria-label="Suite-Chat" data-i18n-title data-i18n-aria>
+    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M4 4h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-5 4v-4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm3 6.5a1.5 1.5 0 1 0 0 .01zm5 0a1.5 1.5 0 1 0 0 .01zm5 0a1.5 1.5 0 1 0 0 .01z"/></svg><b class="chat-unread" id="chat-unread" hidden></b>
+  </button>
+  <button class="btn icon-btn lock-btn" id="lock-btn" aria-pressed="false" aria-label="Sperrmodus" data-i18n-aria>
+    <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M17 10V7a5 5 0 0 0-10 0v3H5v11h14V10h-2zm-8-3a3 3 0 0 1 6 0v3H9V7zm4 10.7V19h-2v-1.3a2 2 0 1 1 2 0z"/></svg><span></span>
+  </button>
+  <button class="btn icon-btn" id="settings-btn" title="Einstellungen" aria-label="Einstellungen" data-i18n-title data-i18n-aria>
+    <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path fill="currentColor" d="M19.4 13a7.6 7.6 0 0 0 0-2l2-1.6-2-3.4-2.4 1a7.4 7.4 0 0 0-1.7-1L15 3.4h-4l-.3 2.6a7.4 7.4 0 0 0-1.7 1l-2.4-1-2 3.4L6.6 11a7.6 7.6 0 0 0 0 2l-2 1.6 2 3.4 2.4-1a7.4 7.4 0 0 0 1.7 1l.3 2.6h4l.3-2.6a7.4 7.4 0 0 0 1.7-1l2.4 1 2-3.4zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z" transform="translate(-1 0)"/></svg>
+  </button>
+  <button class="btn blackout" id="blackout" data-ctl="blackout">BLACKOUT</button>
+</header>
+
+<main>
+<section id="tab-visuals" class="tab on">
+  <div class="show-grid">
+    <div class="left">
+      <div class="monrow">
+        <div class="mon">
+          <div class="lbl"><b data-i18n>● AUSGANG</b><span class="res-wrap"><span id="mon-info">–</span><button class="btn small-btn res-btn" id="res-btn" type="button" title="Auflösung des Ausgabebilds: Auto, feste Pixel oder Format" data-i18n-title>Auflösung</button></span></div>
+          <div class="mon-box" id="mon-box"><canvas id="preview" width="640" height="360" aria-label="Vorschau des Ausgangs" data-i18n-aria></canvas></div>
+          <div class="img-tiles" id="img-tiles" hidden></div>
+        </div>
+        <div class="canvas-pick" id="canvas-pick" hidden></div>
+      </div>
+      <div class="h2row grid-head"><h2><span data-i18n>Clip-Raster</span> <span class="grid-canvas" id="grid-canvas" hidden></span> <span class="muted" data-i18n>· Klick auf eine Ebene zeigt ihre Effekte · Grafiken und Videos über „+ Clips“ hinzufügen oder auf eine Zeile ziehen</span></h2><span class="inline"><button class="btn small-btn" id="text-add" title="Text-Clip gestalten und auf die gewählte Ebene legen" data-i18n-title>+ Text</button><button class="btn small-btn" id="layer-add" data-i18n>+ Ebene</button></span></div>
+      <input type="file" id="file-input" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml,video/mp4,video/quicktime,video/webm,.mp4,.mov,.m4v,.webm" multiple hidden>
+      <div id="toast" class="toast" role="status" hidden></div>
+      <div id="grid" class="clip-grid"></div>
+    </div>
+    <aside class="right">
+      <h2 data-i18n>Farbslots</h2>
+      <div id="slots" class="slot-list"></div>
+      <div class="h2row"><h2 data-i18n>Szenen</h2><span><button class="btn small-btn" id="scene-add" data-i18n>+ Szene speichern</button> <button class="btn small-btn toggle" id="scene-auto" aria-pressed="false" title="Szenen wechseln automatisch, wie unter „Danach“ eingestellt" data-i18n-title>Auto</button></span></div>
+      <div id="scenes" class="scene-list"></div>
+      <section id="layer-panel" class="media-panel layer-panel" hidden></section>
+      <section id="media-panel" class="media-panel" hidden></section>
+      <section id="video-panel" class="media-panel" hidden></section>
+      <section id="cam-panel" class="media-panel" hidden></section>
+      <h2 id="fx-title" data-i18n>Effekte</h2>
+      <div id="fx-list" class="fx-list"></div>
+      <select id="fx-add" class="fx-add" aria-label="Effekt hinzufügen" data-i18n-aria></select>
+    </aside>
+  </div>
+</section>
+
+<section id="tab-show" class="tab">
+  <div class="sh-grid">
+    <div class="sh-left">
+      <div class="h2row"><h2><span data-i18n>Ablauf</span> <span class="muted" id="cue-sum"></span> <label class="cue-img" id="cue-img-wrap" hidden><span data-i18n>läuft auf</span> <select id="cue-image" aria-label="Bild, auf dem der SHOW-Ablauf läuft" data-i18n-aria></select></label></h2>
+        <span class="inline"><button class="btn small-btn" id="cue-add-media" data-i18n>+ Video / Bild</button><button class="btn small-btn" id="cue-add-cam" title="Webcam, Capture-Karte oder OBS Virtual Camera" data-i18n-title data-i18n>+ Kamera</button><button class="btn small-btn" id="cue-add-black" data-i18n>+ Schwarz</button><button class="btn small-btn" id="cue-add-scene" data-i18n>+ VJ-Szene</button><button class="btn small-btn" id="cue-add-tc" title="Timecode starten, stoppen oder springen (z. B. für eine MA)" data-i18n-title data-i18n>+ Timecode</button></span></div>
+      <div id="cue-list" class="cue-list"></div>
+      <section id="cue-timeline" class="cue-tl" hidden aria-label="Timeline" data-i18n-aria></section>
+      <div class="cue-drop" id="cue-drop" data-i18n>Zieh Videos oder Bilder hierher – aus jeder Datei wird ein Cue.</div>
+    </div>
+    <aside class="sh-right">
+      <div class="sh-mon"><div class="lbl"><b id="sh-now" data-i18n>● AUSGANG</b><span id="sh-now-time"></span></div><div class="sh-mon-slot" id="sh-mon-slot"></div></div>
+      <div class="sh-next"><span class="lbl" data-i18n>ALS NÄCHSTES</span><div class="sh-next-row"><span class="sh-next-thumb" id="sh-next-thumb"></span><b id="sh-next-name">–</b></div></div>
+      <button class="cue-go" id="cue-go" data-ctl="show.go"><span data-i18n>WEITER ▶</span><small id="cue-go-sub" data-i18n>Leertaste</small></button>
+      <div class="sh-row"><button class="btn" id="cue-back" data-ctl="show.back" data-i18n>◀ Zurück</button><button class="btn danger-btn" id="cue-stop" data-ctl="show.stop" data-i18n>Alles stoppen</button></div>
+      <div id="cue-details" class="cue-details"></div>
+    </aside>
+  </div>
+  <input type="file" id="cue-file" accept="video/mp4,video/quicktime,video/webm,.mp4,.mov,.m4v,.webm,image/png,image/jpeg,image/webp,image/gif,image/svg+xml" multiple hidden>
+</section>
+
+<section id="tab-build" class="tab"><div id="gallery" class="gallery"></div></section>
+
+<section id="tab-output" class="tab">
+  <div class="out-grid">
+    <div class="out-left">
+      <h2 data-i18n>Bildschirme</h2>
+      <p class="muted small" data-i18n>Jeder angeschlossene Bildschirm, Beamer oder LED-Prozessor kann ein Ausgang sein.</p>
+      <div id="displays" class="display-list"></div>
+      <p class="muted small" id="output-note"></p>
+      <h2 data-i18n>Testbild</h2>
+      <button class="btn" id="test-quick" data-ctl="test.toggle" aria-pressed="false" data-i18n>Testbild auf allen Ausgängen</button>
+      <div class="test-pats" id="test-pats" role="radiogroup" aria-label="Testbild" data-i18n-aria></div>
+      <div class="test-step"><button class="btn small-btn" id="test-prev" data-ctl="test.prev" title="Voriges Testbild" data-i18n-title data-i18n>‹ Voriges</button><span id="test-name" class="muted small"></span><button class="btn small-btn" id="test-next" data-ctl="test.next" title="Nächstes Testbild" data-i18n-title data-i18n>Nächstes ›</button></div>
+      <p class="muted small" id="test-hint"></p>
+      <p class="muted small" data-i18n>Tipp: „Testbild“, „Nächstes Testbild“ und „Voriges Testbild“ lassen sich per Mapping auf Tasten am Pult legen.</p>
+      <input type="checkbox" id="testpattern" hidden>
+    </div>
+    <div class="out-right">
+      <h2 data-i18n>Anordnung</h2>
+      <div class="seg2 out-mode" id="out-mode" role="radiogroup" aria-label="Anordnung" data-i18n-aria>
+        <button data-mode="mirror" role="radio" data-i18n>Überall dasselbe Bild</button>
+        <button data-mode="canvas" role="radio" data-i18n>Leinwand: Bildschirme anordnen</button>
+        <button data-mode="mapping" role="radio" data-i18n>Projektionsmapping</button>
+      </div>
+      <p class="muted small" id="out-mode-hint"></p>
+      <div class="cv-stage" id="cv-stage"></div>
+      <div class="cv-tools" id="cv-tools"></div>
+    </div>
+  </div>
+</section>
+
+<section id="tab-connect" class="tab">
+  <div class="conn-wrap">
+  <div class="h2row"><h2 data-i18n>Verbindungen</h2><span class="muted small" data-i18n>Links wählen, rechts einstellen. Der Schalter schaltet eine Verbindung ein oder aus.</span></div>
+  <div class="conn-split">
+  <div class="conn-list" id="conn-list" role="tablist" aria-label="Verbindungen" data-i18n-aria>
+    <div class="conn" data-conn="artnet">
+      <div class="conn-head" role="tab" tabindex="0" aria-selected="false"><input type="checkbox" class="conn-sw" id="on-artnet" aria-label="Art-Net ein/aus" data-i18n-aria><span class="conn-name"><b>Art-Net</b><small data-i18n>Lichtpult über Netzwerk (DMX)</small></span><span class="conn-st" id="st-c-artnet"></span></div>
+      <div class="conn-body">
+        <label class="conn-field"><span data-i18n>Art-Net Universe</span> <input type="number" id="cfg-universe" min="0" max="32767" value="0"></label>
+        <div class="conn-lines" id="ln-artnet"></div>
+        <p class="am-hint" data-i18n>UDP-Port 6454. Ausgeschaltet gibt VJ-Link den Port frei, zum Beispiel für eine Lichtsoftware auf demselben Rechner. Startadresse und Kanalliste stehen unter „DMX-Kanäle“.</p>
+      </div>
+    </div>
+    <div class="conn" data-conn="sacn">
+      <div class="conn-head" role="tab" tabindex="0" aria-selected="false"><input type="checkbox" class="conn-sw" id="on-sacn" aria-label="sACN ein/aus" data-i18n-aria><span class="conn-name"><b>sACN</b><small data-i18n>Lichtpult über Netzwerk (E1.31)</small></span><span class="conn-st" id="st-c-sacn"></span></div>
+      <div class="conn-body">
+        <label class="conn-field"><span data-i18n>sACN Universe</span> <input type="number" id="cfg-sacn" min="1" max="63999" value="1"></label>
+        <div class="conn-lines" id="ln-sacn"></div>
+        <p class="am-hint" data-i18n>UDP-Port 5568, Multicast auf allen Netzwerk-Anschlüssen.</p>
+      </div>
+    </div>
+    <div class="conn" data-conn="dmx">
+      <div class="conn-head" role="tab" tabindex="0" aria-selected="false"><span class="conn-sw-gap"></span><span class="conn-name"><b data-i18n>DMX-Kanäle</b><small data-i18n>Startadresse, Kanalliste, Live-Werte</small></span><span class="conn-st" id="st-c-dmx"></span></div>
+      <div class="conn-body">
+        <div class="inline wrap"><label class="conn-field"><span data-i18n>Startadresse</span> <input type="number" id="cfg-address" min="1" max="445" value="1"></label>
+        <button class="btn small-btn" id="dl-channels" data-i18n>Kanalliste speichern (CSV)</button></div>
+        <span class="am-cap" data-i18n>Live-Werte (91 Kanäle)</span>
+        <div id="dmx-live" class="dmx-live"></div>
+      </div>
+    </div>
+    <div class="conn" data-conn="osc">
+      <div class="conn-head" role="tab" tabindex="0" aria-selected="false"><input type="checkbox" class="conn-sw" id="on-osc" aria-label="OSC ein/aus" data-i18n-aria><span class="conn-name"><b>OSC</b><small data-i18n>TouchOSC, Companion, QLab …</small></span><span class="conn-st" id="st-c-osc"></span></div>
+      <div class="conn-body">
+        <label class="conn-field"><span data-i18n>UDP-Port</span> <input type="number" id="cfg-oscport" min="1024" max="65535" value="8000"></label>
+        <div class="conn-lines" id="ln-osc"></div>
+        <p class="am-hint" data-i18n>Beispiele: /vjlink/scene/go 3 · /vjlink/scene/next · /vjlink/ctl/master 0.8. Jedes Bedienelement ist als /vjlink/ctl/… erreichbar; die Namen siehst du unter MAPPING.</p>
+      </div>
+    </div>
+    <div class="conn" data-conn="lj">
+      <div class="conn-head" role="tab" tabindex="0" aria-selected="false"><input type="checkbox" class="conn-sw" id="on-lj" aria-label="LJ-Link ein/aus" data-i18n-aria><span class="conn-name"><b>LJ-Link</b><small data-i18n>DJ-Decks, Titel, Tempo, Phrasen</small></span><span class="conn-st" id="st-c-lj"></span></div>
+      <div class="conn-body">
+        <div class="conn-lines" id="ln-lj"></div>
+        <p class="muted small" data-i18n>VJ-Link findet LJ-Link automatisch, auf diesem Rechner und im Netzwerk (Bonjour). Normalerweise musst du nichts einstellen. Nur wenn LJ-Link nicht gefunden wird (z. B. in einem anderen Netz), trag hier die Adresse oder „Adresse:Port“ ein.</p>
+        <div class="inline wrap lj-host">
+          <label class="inline"><span data-i18n>LJ-Link auf</span> <input id="cfg-ljhost" type="text" placeholder="automatisch" spellcheck="false" autocomplete="off" maxlength="253" data-i18n-ph></label>
+          <button class="btn small-btn" id="lj-open" title="Weboberfläche von LJ-Link im Browser öffnen" data-i18n-title data-i18n>LJ-Link öffnen</button>
+        </div>
+        <div class="inline wrap lj-host">
+          <label class="inline"><span data-i18n>Now-Playing-Bauchbinde zeigen</span>
+            <select id="cfg-ljhold"><option value="8" data-i18n>8 s nach Trackwechsel</option><option value="15" data-i18n>15 s nach Trackwechsel</option><option value="30" data-i18n>30 s nach Trackwechsel</option><option value="0" data-i18n>immer</option></select></label>
+          <button class="btn small-btn" id="lj-np-show" title="Bauchbinde jetzt noch einmal einblenden" data-i18n-title data-i18n>Jetzt einblenden</button>
+        </div>
+        <p class="muted small" data-i18n>Leg den Clip „Now Playing“ (Bibliothek → LJ-Link) auf eine Ebene. Im Privatsphäre-Modus von LJ-Link bleibt die Bauchbinde leer.</p>
+        <div id="lj-decks" class="cards"></div>
+      </div>
+    </div>
+    <div class="conn" data-conn="link">
+      <div class="conn-head" role="tab" tabindex="0" aria-selected="false"><input type="checkbox" class="conn-sw" id="on-link" aria-label="Ableton Link ein/aus" data-i18n-aria><span class="conn-name"><b>Ableton Link</b><small data-i18n>Tempo mit Ableton Live, Traktor & Co.</small></span><span class="conn-st" id="st-c-link"></span></div>
+      <div class="conn-body">
+        <div class="conn-lines" id="ln-link"></div>
+        <p class="am-hint" data-i18n>VJ-Link spricht Link über das freie Zusatzprogramm Carabiner (TCP-Port 17000). Starte Carabiner auf diesem Rechner, dann verbindet sich VJ-Link von selbst.</p>
+      </div>
+    </div>
+    <div class="conn" data-conn="midi">
+      <div class="conn-head" role="tab" tabindex="0" aria-selected="false"><input type="checkbox" class="conn-sw" id="on-midi" aria-label="MIDI ein/aus" data-i18n-aria><span class="conn-name"><b>MIDI</b><small data-i18n>Controller, MIDI-Clock, MIDI-Timecode</small></span><span class="conn-st" id="st-c-midi"></span></div>
+      <div class="conn-body">
+        <div class="conn-lines" id="ln-midi"></div>
+        <div class="inline wrap"><button class="btn small-btn" data-open-set="midi" data-i18n>MIDI-Einstellungen</button><button class="btn small-btn" id="conn-map-midi" data-i18n>Tasten zuweisen (MAPPING)</button></div>
+      </div>
+    </div>
+    <div class="conn" data-conn="audio">
+      <div class="conn-head" role="tab" tabindex="0" aria-selected="false"><span class="conn-sw-gap"></span><span class="conn-name"><b data-i18n>Audio-Eingang</b><small data-i18n>Mikrofon oder Line-In</small></span><span class="conn-st" id="st-c-audio"></span></div>
+      <div class="conn-body">
+        <div class="conn-lines" id="ln-audio"></div>
+        <div class="am-meter" aria-hidden="true"><i id="conn-audio-level"></i></div>
+        <div class="inline wrap"><button class="btn small-btn" data-open-set="audio" data-i18n>Eingang wählen</button></div>
+      </div>
+    </div>
+    <div class="conn" data-conn="tc">
+      <div class="conn-head" role="tab" tabindex="0" aria-selected="false"><span class="conn-sw-gap"></span><span class="conn-name"><b>Timecode</b><small data-i18n>MIDI-Timecode und Art-Net-Timecode</small></span><span class="conn-st" id="st-c-tc"></span></div>
+      <div class="conn-body">
+        <div class="conn-lines" id="ln-tc"></div>
+        <div class="inline wrap"><button class="btn small-btn" data-open-set="timecode" data-i18n>Timecode-Einstellungen</button></div>
+      </div>
+    </div>
+  </div>
+  <div class="conn-detail" id="conn-detail" role="tabpanel"></div>
+  </div>
+  </div>
+</section>
+</main>
+<div class="settings" id="settings" role="dialog" aria-modal="true" aria-label="Einstellungen" hidden data-i18n-aria>
+  <div class="set-box">
+    <nav class="set-nav" aria-label="Bereiche" data-i18n-aria>
+      <b data-i18n="set.title">Einstellungen</b>
+      <button data-sec="audio" class="on" data-i18n="set.audio">Audio</button>
+      <button data-sec="timecode" data-i18n="set.timecode">Timecode</button>
+      <button data-sec="midi" data-i18n="set.midi">MIDI</button>
+      <button data-sec="dmx" data-i18n="set.dmx">DMX und Netzwerk</button>
+      <button data-sec="ui" data-i18n="set.ui">Oberfläche</button>
+      <button data-sec="safety" data-i18n>Sicherheit</button>
+      <button data-sec="update" data-i18n="set.update">Update</button>
+      <button data-sec="chat" data-i18n>Suite-Chat</button>
+      <button data-sec="about" data-i18n>Über VJ-Link</button>
+      <button data-sec="report" data-i18n>Fehler melden</button>
+    </nav>
+    <div class="set-main">
+      <div class="set-head"><h2 id="set-title">Audio</h2><button class="btn small-btn" id="set-close" data-i18n="set.close">Schließen (Esc)</button></div>
+      <section class="set-sec" data-sec="audio">
+        <h3 data-i18n>Eingang</h3>
+        <p class="am-hint" data-i18n>Mikrofon oder Line-In für Equalizer, Oszilloskop & Co.</p>
+      <div id="audio-devices" class="am-list" role="radiogroup" aria-label="Eingang" data-i18n-aria></div>
+      <label class="am-row"><span data-i18n>Pegel</span> <input type="range" id="audio-gain" min="25" max="400" step="5" value="100"><span id="audio-gain-val">100 %</span></label>
+      <div class="am-meter" aria-hidden="true"><i id="audio-level"></i></div>
+      <span class="am-cap" data-i18n>Wirkt auf</span>
+      <div class="seg am-seg" role="radiogroup" aria-label="Wirkt auf" data-i18n-aria>
+        <button data-scope="audio" role="radio">Audio-Visuals</button>
+        <button data-scope="all" role="radio" data-i18n>Alle Visuals</button>
+      </div>
+      <p class="am-hint" id="audio-hint"></p>
+        <h3 data-i18n>Ausgang</h3>
+        <p class="am-hint" data-i18n>Hier kommt der Ton von Videos heraus (Cues und Video-Clips mit eingeschaltetem Ton).</p>
+        <div id="audio-outs" class="am-list" role="radiogroup" aria-label="Audio-Ausgang" data-i18n-aria></div>
+      </section>
+      <section class="set-sec" data-sec="timecode" hidden><div id="set-tc"></div></section>
+      <section class="set-sec" data-sec="midi" hidden><div id="set-midi"></div></section>
+      <section class="set-sec" data-sec="dmx" hidden><div id="set-dmx"></div></section>
+      <section class="set-sec" data-sec="ui" hidden><div id="set-ui"><h3 data-i18n>Größe</h3>
+        <label class="set-row"><span data-i18n>Oberfläche</span>
+          <select id="ui-scale">
+            <option value="auto" data-i18n>Automatisch (passt sich dem Fenster an)</option>
+            <option value="0.8">80 %</option><option value="0.9">90 %</option><option value="1">100 %</option>
+            <option value="1.1">110 %</option><option value="1.25">125 %</option><option value="1.5">150 %</option><option value="1.75">175 %</option><option value="2">200 %</option><option value="2.5">250 %</option><option value="3">300 %</option>
+          </select>
+        </label>
+        <p class="am-hint" data-i18n>Automatisch passt alles dem Fenster an, auch auf großen Bildschirmen.</p></div>
+        <h3 data-i18n>Startanimation</h3>
+        <label class="set-row"><span data-i18n>Beim Start</span>
+          <select id="intro-mode">
+            <option value="suite" data-i18n>Wie die Link-Suite</option>
+            <option value="on" data-i18n>Zeigen</option>
+            <option value="off" data-i18n>Nicht zeigen</option>
+          </select>
+        </label>
+        <p class="am-hint" id="intro-hint" data-i18n>Kurze Animation der Link-Suite beim Programmstart, höchstens 2,5 Sekunden. Jede Taste oder ein Klick überspringt sie. Sie läuft nur im Bedienfenster, nie auf einem Ausgang, und nicht nach einem Absturz. Ist in den Systemeinstellungen „Bewegung reduzieren“ an, blendet nur das Logo ein und aus.</p></section>
+      <section class="set-sec" data-sec="safety" hidden>
+        <h3 data-i18n>Sicherheit im Live-Betrieb</h3>
+        <p class="am-hint" data-i18n>Schnelle Blitze, Strobe und starke Farbwechsel können bei Menschen mit fotosensitiver Epilepsie Anfälle auslösen. Halte die Blitzfrequenz niedrig (höchstens drei Blitze pro Sekunde), kündige Strobe-Effekte an, wenn der Veranstalter das verlangt, und beachte die Regeln des Veranstaltungsorts. Richte helle Projektorstrahlen im Nebel nicht in Augenhöhe auf das Publikum. Software kann ausfallen: Halte für die Show einen Plan B bereit.</p>
+        <label class="report-check"><input type="checkbox" id="safe-flash"> <span data-i18n>Sichere Blitze (höchstens 3 pro Sekunde)</span></label>
+        <p class="am-hint" data-i18n>Begrenzt Strobe, Strobe White, Ebenen-Strobe, Farb-Strobe und Beat-Invert. Schalte das nur bewusst aus, wenn der Veranstaltungsort schnellere Blitze erlaubt und das Publikum gewarnt ist.</p>
+      </section>
+      <section class="set-sec" data-sec="update" hidden><div id="set-update"></div>
+        <label class="report-check"><input type="checkbox" id="auto-update"> <span data-i18n>Automatisch nach Updates suchen</span></label>
+        <p class="am-hint" data-i18n>VJ-Link fragt beim Start und danach höchstens einmal pro Stunde bei GitHub nach einer neuen Version. GitHub erhält dabei die IP-Adresse dieses Rechners und die Programmversion. Sonst verlässt nichts dein Netzwerk. Ausgeschaltet suchst du nur, wenn du hier auf „Nach Updates suchen“ klickst.</p>
+      </section>
+      <section class="set-sec" data-sec="chat" hidden>
+        <h3 data-i18n>Suite-Chat – Alpha</h3>
+        <label class="report-check"><input type="checkbox" id="chat-on"> <span data-i18n>Mit allen Suite-Programmen in diesem Netzwerk chatten</span></label>
+        <p class="am-hint" data-i18n>LJ Link, LJL Link (die DJs) und VJ-Link im selben Netzwerk finden sich von selbst und teilen einen Chatraum – ohne Server. Jeder in diesem Netzwerk kann mitlesen und schreiben – der Chat ist unverschlüsselt. Schreib nichts Vertrauliches. Chat und Notfall-Popups erscheinen nur in diesem Fenster, nie auf den Ausgängen. VJ-Link speichert keine Nachrichten und nimmt sie nie in einen Problembericht auf; die anderen Programme im Raum geben die letzten Nachrichten aber an Neue weiter. Ausgeschaltet sendet und liest VJ-Link keine Chat-Nachrichten.</p>
+        <p class="am-hint" data-i18n>Netzwerke, die Multicast sperren (zum Beispiel Gäste-WLAN mit Client-Isolation), haben keinen Chat. macOS fragt beim ersten Mal nach dem Zugriff auf das lokale Netzwerk, Windows nach der Firewall.</p>
+        <p class="am-hint chat-set-status" id="chat-set-status"></p>
+      </section>
+      <section class="set-sec" data-sec="about" hidden>
+        <h3 data-i18n>Lizenz</h3>
+        <p class="am-hint" data-i18n>VJ-Link ist freie Software unter der Eclipse Public License 2.0. Der Quellcode liegt öffentlich auf GitHub. Kostenlos und ohne Gewähr.</p>
+        <div class="report-btns"><button class="btn" id="open-licenses" data-i18n>Lizenzen und Hinweise</button><button class="btn" id="open-source" data-i18n>Quellcode auf GitHub</button></div>
+        <h3 data-i18n>Community</h3>
+        <label class="report-check"><input type="checkbox" id="farewell-on"> <span data-i18n>Beim Beenden den Hinweis zu Feedback und Weitersagen zeigen</span></label>
+        <h3 data-i18n>Marken</h3>
+        <p class="am-hint" data-i18n>VJ-Link ist ein unabhängiges Projekt und kein offizielles Produkt der genannten Hersteller; es wird von ihnen weder unterstützt noch geprüft. Alle genannten Produktnamen und Marken gehören ihren jeweiligen Inhabern und werden nur genannt, um die Kompatibilität zu beschreiben. Ableton und Link sind Marken der Ableton AG.</p>
+        <p class="am-hint">Art-Net™ Designed by and Copyright Artistic Licence Holdings Ltd</p>
+      </section>
+    </div>
+  </div>
+</div>
+<footer id="deck" class="deck" aria-label="Fader und Tasten" data-i18n-aria></footer>
+<div id="gpu-prep" class="gpu-prep" role="status" aria-live="polite" hidden><b data-i18n>Visuals werden vorbereitet</b> <span id="gpu-prep-n"></span><i><s id="gpu-prep-bar"></s></i><small data-i18n>Beim ersten Start dauert das etwas. Du kannst schon weiterarbeiten.</small></div>
+<div id="chat-panel" class="chat-panel" role="dialog" aria-labelledby="chat-title" hidden>
+  <div class="chat-head"><strong id="chat-title" data-i18n>Suite-Chat – Alpha</strong>
+    <button id="chat-rename" class="chat-link" type="button" hidden data-i18n>Name ändern</button>
+    <button id="chat-close" class="chat-link" type="button" data-i18n>Schließen</button></div>
+  <div id="chat-peers" class="chat-peers"></div>
+  <form id="chat-nick-form" class="chat-nick" hidden>
+    <label for="chat-nick"><span data-i18n>Name</span> <em data-i18n>Wie heißt du?</em></label>
+    <input id="chat-nick" maxlength="24" autocomplete="off" spellcheck="false" placeholder="z. B. VJ Anna" data-i18n-ph>
+    <label for="chat-where"><span data-i18n>Position</span> <em data-i18n>Wo stehst du? (freiwillig)</em></label>
+    <input id="chat-where" maxlength="24" autocomplete="off" spellcheck="false" placeholder="z. B. VJ-Pult, FOH, Bühne" data-i18n-ph>
+    <p class="am-hint" data-i18n>Name und Position sehen alle im Netzwerk.</p>
+    <button class="btn primary-btn" type="submit" data-i18n>Chat betreten</button>
+  </form>
+  <div id="chat-list" class="chat-list" aria-live="polite"></div>
+  <form id="chat-form" class="chat-form">
+    <input id="chat-input" maxlength="500" autocomplete="off" placeholder="Nachricht an alle" aria-label="Nachricht an alle" data-i18n-ph data-i18n-aria>
+    <button class="btn" type="submit" data-i18n>Senden</button>
+    <button id="chat-emergency" class="chat-emergency" type="button" title="Popup sofort bei allen im Raum, mit gelb blinkendem Rand" data-i18n-title>EMERGENCY</button>
+  </form>
+  <div id="chat-status" class="chat-status"></div>
+</div>
+<div id="chat-alert" class="chat-alert" role="alertdialog" aria-labelledby="chat-alert-title" aria-describedby="chat-alert-text" hidden>
+  <strong id="chat-alert-title">EMERGENCY</strong>
+  <div id="chat-alert-from" class="chat-alert-from"></div>
+  <div id="chat-alert-text" class="chat-alert-text"></div>
+  <div class="chat-alert-row"><span id="chat-alert-more"></span><span class="chat-alert-btns"><button id="chat-alert-all" class="btn chat-alert-all" type="button" hidden data-i18n>Alle schließen</button><button id="chat-alert-ok" class="btn" type="button">OK</button></span></div>
+</div>
+<!-- Startanimation der Link-Suite: liegt ab dem ersten Bild deckend da, startintro.ts übernimmt oder entfernt sie -->
+<div id="lsi" class="lsi-layer"><div class="lsi-bg"></div></div>
+<script src="app.js"></script>
+</body>
+</html>

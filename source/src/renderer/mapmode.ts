@@ -1,0 +1,326 @@
+// Mapping-Modus wie bei Daslight: Art wählen, alle zuweisbaren Elemente leuchten lila,
+// Element anklicken, dann Taste, MIDI-Regler, DMX-Kanal oder OSC-Adresse bewegen.
+import type { ControlContext } from "../core/control";
+import { resolveControl } from "../core/controls";
+import {
+  DmxLearner, PROTOCOL_LABEL, describeInput, parseMappings, type MapExtra, type MapInput, type MapProtocol, type MappingTable,
+} from "../core/mapping";
+import { TEMPLATES, buildTemplate, exportMappings, templateFor } from "../core/templates";
+import { getLang, t } from "../core/i18n";
+
+function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls = "", text = ""): HTMLElementTagNameMap[K] {
+  const e = document.createElement(tag); if (cls) e.className = cls; if (text) e.textContent = text; return e;
+}
+
+export interface MapInfo {
+  midiDevices: () => string[]; midiError: () => string; dmx: () => string; osc: () => string;
+  toast: (msg: string) => void;
+}
+
+export class MapMode {
+  protocol: MapProtocol | null = null;
+  target: string | null = null;
+  private panel = el("aside", "map-panel");
+  private learner = new DmxLearner();
+  private lastAssigned = "";
+  private confirmClear = false;
+  private confirmTemplate = false;
+  private tplId = "";
+  private tplDevice = "";
+  private timer = 0;
+
+  constructor(private ctx: ControlContext, private table: MappingTable, private info: MapInfo, private onChanged: () => void) {
+    this.panel.setAttribute("aria-label", t("Zuweisungen"));
+    this.panel.hidden = true;
+    document.body.append(this.panel);
+    this.restorePlace();
+    window.addEventListener("resize", () => this.keepInside());
+    // Größe merken, wenn an der Ecke gezogen wurde
+    new ResizeObserver(() => { if (!this.panel.hidden && !this.panel.classList.contains("collapsed")) this.savePlace(); }).observe(this.panel);
+    // Im Mapping-Modus wählt ein Klick das Element aus, statt es zu bedienen.
+    const block = (e: Event) => {
+      if (!this.protocol) return;
+      const tg = e.target as HTMLElement;
+      if (tg.closest(".map-panel, .map-menu, #map-btn")) return;
+      const ctl = tg.closest<HTMLElement>("[data-ctl]");
+      if (ctl || tg.closest("main, .deck, .top")) { e.preventDefault(); e.stopPropagation(); }
+      if (ctl && e.type === "pointerdown") this.select(ctl.dataset.ctl!);
+    };
+    for (const ev of ["pointerdown", "mousedown", "click", "dblclick"]) document.addEventListener(ev, block, true);
+  }
+
+  get active(): boolean { return this.protocol !== null; }
+
+  open(p: MapProtocol): void {
+    this.protocol = p; this.target = null; this.lastAssigned = ""; this.confirmClear = false;
+    document.body.classList.add("mapping");
+    document.body.dataset.mapping = p;
+    this.panel.hidden = false;
+    this.render();
+    this.keepInside();
+    clearInterval(this.timer);
+    this.timer = window.setInterval(() => this.mark(), 300);
+  }
+
+  close(): void {
+    this.protocol = null; this.target = null;
+    document.body.classList.remove("mapping");
+    delete document.body.dataset.mapping;
+    this.panel.hidden = true;
+    clearInterval(this.timer);
+    document.querySelectorAll("[data-mapped],[data-map-sel]").forEach(e => { e.removeAttribute("data-mapped"); e.removeAttribute("data-map-sel"); });
+  }
+
+  select(target: string): void {
+    this.target = target; this.lastAssigned = ""; this.learner.reset();
+    this.render(); this.mark();
+  }
+
+  /**
+   * Eingang im Mapping-Modus. Gibt true zurück, wenn er verbraucht wurde (dann nicht weitergeben).
+   * Für DMX kommt hier das ganze Universe an; gelernt wird der Kanal, der sich bewegt.
+   */
+  input(input: MapInput | { p: "dmx-frame"; universe: number; data: Uint8Array }, extra: MapExtra & { value?: number } = {}): boolean {
+    if (!this.protocol) return false;
+    const p = input.p === "dmx-frame" ? "dmx" : input.p;
+    if (p !== this.protocol) return true; // andere Eingänge im Mapping-Modus ruhen lassen
+    if (!this.target) return true;
+    let inp: MapInput | null = null;
+    if (input.p === "dmx-frame") {
+      const hit = this.learner.feed(input.universe, input.data);
+      if (hit) inp = { p: "dmx", universe: hit.universe, channel: hit.channel };
+    } else inp = input;
+    if (!inp) return true;
+    // CC mit Wert 0 oder 127 beim Lernen ist fast immer eine Taste
+    const button = inp.p === "midi" && inp.type === "cc" && (extra.value === 0 || extra.value === 1);
+    this.table.add(this.target, inp, undefined, { device: extra.device, button });
+    this.lastAssigned = `${label(this.target)} ← ${describeInput(inp)}`;
+    this.target = null;
+    this.onChanged();
+    this.render(); this.mark();
+    return true;
+  }
+
+  /** Zugewiesene Elemente markieren, gewähltes hervorheben. */
+  private mark(): void {
+    if (!this.protocol) return;
+    const mapped = new Map<string, string>();
+    for (const m of this.table.ofProtocol(this.protocol)) {
+      const prev = mapped.get(m.target);
+      mapped.set(m.target, prev ? `${prev}, ${describeInput(m.input)}` : describeInput(m.input));
+    }
+    document.querySelectorAll<HTMLElement>("[data-ctl]").forEach(e => {
+      const id = e.dataset.ctl!;
+      const d = mapped.get(id);
+      if (d) { e.dataset.mapped = d; e.title = `${label(id)} · ${d}`; } else { e.removeAttribute("data-mapped"); e.title = label(id); }
+      if (id === this.target) e.dataset.mapSel = "1"; else e.removeAttribute("data-map-sel");
+    });
+  }
+
+  render(): void {
+    const p = this.protocol;
+    if (!p) return;
+    const box = this.panel;
+    box.replaceChildren();
+    const head = el("div", "map-head");
+    head.title = t("Zum Verschieben ziehen");
+    head.append(el("span", "grip", "⋮⋮"), el("b", "", t("Zuweisungen")));
+    this.dragBy(head);
+    const tabs = el("div", "map-tabs");
+    for (const q of ["key", "midi", "dmx", "osc"] as MapProtocol[]) {
+      const b = el("button", q === p ? "on" : "", PROTOCOL_LABEL[q]);
+      b.addEventListener("click", () => this.open(q));
+      tabs.append(b);
+    }
+    const fold = el("button", "icon", this.panel.classList.contains("collapsed") ? "▢" : "–");
+    fold.title = this.panel.classList.contains("collapsed") ? "Aufklappen" : "Einklappen (nur Kopfzeile)";
+    fold.addEventListener("click", () => { this.panel.classList.toggle("collapsed"); this.render(); this.keepInside(); });
+    const done = el("button", "btn small-btn", t("Fertig"));
+    done.title = t("Mapping beenden (Esc)");
+    done.addEventListener("click", () => this.close());
+    const right = el("span", "inline"); right.append(fold, done);
+    head.append(right);
+    box.append(head, tabs);
+
+    const status = el("p", "map-status");
+    if (p === "midi") {
+      const devs = this.info.midiDevices();
+      status.textContent = this.info.midiError() || (devs.length ? t("Geräte: {list}", { list: devs.join(", ") }) : t("Kein MIDI-Gerät gefunden. Sobald du einen Controller ansteckst, erscheint er hier."));
+    } else if (p === "dmx") status.textContent = this.info.dmx();
+    else if (p === "osc") status.textContent = this.info.osc();
+    else status.textContent = t("Tasten wirken, solange kein Eingabefeld aktiv ist.");
+    box.append(status);
+
+    const hint = el("div", this.target ? "map-hint waiting" : "map-hint");
+    if (this.target) {
+      const what = p === "key" ? t("eine Taste drücken") : p === "midi" ? t("Regler, Taste oder Pad am Controller bewegen")
+        : p === "dmx" ? t("den Kanal am Pult bewegen") : t("die OSC-Nachricht senden");
+      const existing = this.table.forTarget(this.target).filter(m => m.input.p === p);
+      hint.append(el("b", "", label(this.target)), el("span", "", existing.length ? t(" · schon belegt – beweg einen weiteren Eingang, um doppelt zu belegen …") : t(" · jetzt {what} …", { what })));
+      const cancel = el("button", "icon", "×"); cancel.title = t("Abbrechen");
+      cancel.addEventListener("click", () => { this.target = null; this.render(); this.mark(); });
+      hint.append(cancel);
+      if (existing.length) {
+        const ex = el("div", "map-existing");
+        for (const m of existing) {
+          const chip = el("span", "map-chip", describeInput(m.input));
+          const x = el("button", "icon", "×"); x.title = t("Diese Zuweisung entfernen");
+          x.addEventListener("click", () => { this.table.remove(m.id); this.onChanged(); this.render(); this.mark(); });
+          chip.append(x); ex.append(chip);
+        }
+        hint.append(ex);
+      }
+    } else {
+      hint.textContent = this.lastAssigned ? t("Zugewiesen: {what}", { what: this.lastAssigned }) : t("Klick auf ein Element und beweg dann den Eingang. Grün heißt schon belegt: Ein Klick zeigt die Zuweisungen (zum Entfernen oder doppelt Belegen).");
+    }
+    box.append(hint);
+
+    const list = this.table.ofProtocol(p);
+    const uses = new Map<string, number>();
+    for (const m of list) { const k = describeInput(m.input); uses.set(k, (uses.get(k) ?? 0) + 1); }
+    box.append(el("div", "map-sub", t("Alle {p}-Zuweisungen ({n})", { p: PROTOCOL_LABEL[p], n: list.length })));
+    const tbl = el("div", "map-list");
+    const hdr = el("div", "map-row hdr"); hdr.append(el("span", "", t("Ziel")), el("span", "", t("Eingang")), el("span", "", ""));
+    tbl.append(hdr);
+    if (!list.length) tbl.append(el("p", "muted small", t("Noch keine Zuweisung.")));
+    for (const m of [...list].sort((a, b) => label(a.target).localeCompare(label(b.target), getLang()))) {
+      const row = el("div", m.target === this.target ? "map-row sel" : "map-row");
+      const tb = el("button", "map-target", label(m.target)); tb.title = m.target;
+      tb.addEventListener("click", () => this.select(m.target));
+      const del = el("button", "icon", "×"); del.title = t("Zuweisung entfernen");
+      del.addEventListener("click", () => { this.table.remove(m.id); this.onChanged(); this.render(); this.mark(); });
+      const inp = describeInput(m.input), n = uses.get(inp) ?? 1;
+      const inEl = el("span", "map-in", inp);
+      if (n > 1) { inEl.append(el("small", "map-dup", t(" · {n} Ziele", { n }))); inEl.title = t("Dieser Eingang steuert mehrere Ziele"); }
+      row.append(tb, inEl, del);
+      tbl.append(row);
+    }
+    box.append(tbl);
+    // Gewähltes Ziel: zu seinen Zeilen springen
+    requestAnimationFrame(() => tbl.querySelector(".map-row.sel")?.scrollIntoView({ block: "nearest" }));
+
+    if (p === "midi") box.append(this.templateBox());
+
+    const foot = el("div", "map-foot");
+    const exp = el("button", "btn small-btn", t("Exportieren"));
+    exp.title = t("Alle Zuweisungen (Tastatur, MIDI, DMX, OSC) als Datei speichern");
+    exp.addEventListener("click", () => {
+      const url = URL.createObjectURL(new Blob([exportMappings(this.table.list)], { type: "application/json" }));
+      const a = el("a"); a.href = url; a.download = t("vj-link-zuweisungen.json"); a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+    const imp = el("button", "btn small-btn", t("Importieren"));
+    imp.title = t("Zuweisungen aus Datei laden (ersetzt die Arten, die in der Datei vorkommen)");
+    const file = el("input"); file.type = "file"; file.accept = "application/json,.json"; file.hidden = true;
+    imp.addEventListener("click", () => file.click());
+    file.addEventListener("change", async () => {
+      const f = file.files?.[0]; if (!f) return;
+      try {
+        const data = JSON.parse(await f.text()) as { kind?: unknown; mappings?: unknown };
+        const list = data.kind === "mappings" ? parseMappings(data.mappings) : null;
+        if (!list) { this.info.toast(t("Diese Datei enthält keine VJ-Link-Zuweisungen.")); return; }
+        const kinds = new Set(list.map(m => m.input.p));
+        this.table.replace([...this.table.list.filter(m => !kinds.has(m.input.p)), ...list]);
+        this.onChanged(); this.render(); this.mark();
+        this.info.toast(t("{n} Zuweisungen geladen.", { n: list.length }));
+      } catch { this.info.toast(t("Datei lässt sich nicht lesen.")); }
+    });
+    foot.append(exp, imp, file);
+    const clr = el("button", "btn small-btn danger", this.confirmClear ? t("Wirklich alle löschen?") : t("Alle {p}-Zuweisungen löschen", { p: PROTOCOL_LABEL[p] }));
+    clr.disabled = !list.length;
+    clr.addEventListener("click", () => {
+      if (!this.confirmClear) { this.confirmClear = true; this.render(); return; }
+      this.table.clear(p); this.confirmClear = false; this.onChanged(); this.render(); this.mark();
+    });
+    foot.append(clr);
+    box.append(foot);
+  }
+
+  // ---- Fenster verschieben und Lage merken ---------------------------------------
+  private dragBy(handle: HTMLElement): void {
+    handle.addEventListener("pointerdown", e => {
+      if ((e.target as HTMLElement).closest("button")) return;
+      e.preventDefault();
+      const r = this.panel.getBoundingClientRect();
+      const dx = e.clientX - r.left, dy = e.clientY - r.top;
+      handle.setPointerCapture(e.pointerId);
+      const move = (ev: PointerEvent) => {
+        this.panel.style.left = `${ev.clientX - dx}px`;
+        this.panel.style.top = `${ev.clientY - dy}px`;
+        this.keepInside();
+      };
+      const up = () => {
+        handle.removeEventListener("pointermove", move);
+        handle.removeEventListener("pointerup", up);
+        this.savePlace();
+      };
+      handle.addEventListener("pointermove", move);
+      handle.addEventListener("pointerup", up);
+    });
+  }
+
+  /** Fenster bleibt immer mit der Kopfzeile im sichtbaren Bereich. */
+  private keepInside(): void {
+    const r = this.panel.getBoundingClientRect();
+    const x = Math.min(Math.max(0, r.left), window.innerWidth - Math.min(r.width, 120));
+    const y = Math.min(Math.max(0, r.top), window.innerHeight - 40);
+    this.panel.style.left = `${x}px`; this.panel.style.top = `${y}px`;
+  }
+
+  private savePlace(): void {
+    const r = this.panel.getBoundingClientRect();
+    try { localStorage.setItem("vjlink.mapPanel", JSON.stringify({ x: r.left, y: r.top, w: r.width, h: r.height })); } catch { /* ohne Speicher */ }
+  }
+
+  private restorePlace(): void {
+    try {
+      const p = JSON.parse(localStorage.getItem("vjlink.mapPanel") ?? "null") as { x: number; y: number; w: number; h: number } | null;
+      if (!p) return;
+      // Höhe mindestens so, dass die Liste der Zuweisungen gut zu sehen ist (alte, kleine Fenster wachsen einmal mit)
+      const h = Math.max(p.h, Math.min(560, window.innerHeight * 0.8));
+      Object.assign(this.panel.style, { left: `${p.x}px`, top: `${p.y}px`, width: `${p.w}px`, height: `${h}px` });
+    } catch { /* Standardlage */ }
+  }
+
+  /** Vorlage für einen Controller laden (ersetzt die MIDI-Zuweisungen). */
+  private templateBox(): HTMLElement {
+    const box = el("div", "tpl-box");
+    box.append(el("b", "", t("Controller-Vorlage")));
+    const devs = this.info.midiDevices();
+    if (!this.tplDevice || !devs.includes(this.tplDevice)) this.tplDevice = devs[0] ?? "";
+    const auto = this.tplDevice ? templateFor(this.tplDevice) : undefined;
+    if (!this.tplId || !TEMPLATES.some(x => x.id === this.tplId)) this.tplId = auto?.id ?? TEMPLATES[0]!.id;
+    const tplSel = el("select"); tplSel.setAttribute("aria-label", t("Vorlage"));
+    for (const x of TEMPLATES) tplSel.append(new Option(x.name + (auto?.id === x.id ? t(" (erkannt)") : ""), x.id));
+    tplSel.value = this.tplId;
+    tplSel.addEventListener("change", () => { this.tplId = tplSel.value; this.confirmTemplate = false; this.render(); });
+    const devSel = el("select"); devSel.setAttribute("aria-label", t("Gerät für die Vorlage"));
+    if (!devs.length) devSel.append(new Option(t("Kein Gerät angeschlossen"), ""));
+    for (const d of devs) devSel.append(new Option(d, d));
+    devSel.value = this.tplDevice;
+    devSel.addEventListener("change", () => { this.tplDevice = devSel.value; this.tplId = templateFor(devSel.value)?.id ?? this.tplId; this.render(); });
+    const tpl = TEMPLATES.find(x => x.id === this.tplId)!;
+    const hasMidi = this.table.ofProtocol("midi").length > 0;
+    const load = el("button", "btn small-btn", this.confirmTemplate ? t("Ersetzt alle MIDI-Zuweisungen. Laden?") : t("Vorlage laden"));
+    load.disabled = !this.tplDevice;
+    load.addEventListener("click", () => {
+      if (hasMidi && !this.confirmTemplate) { this.confirmTemplate = true; this.render(); return; }
+      const keep = this.table.list.filter(m => m.input.p !== "midi");
+      this.table.replace(keep);
+      for (const e of buildTemplate(tpl, this.tplDevice)) this.table.add(e.target, e.input, undefined, e);
+      this.confirmTemplate = false;
+      this.onChanged(); this.render(); this.mark();
+      this.info.toast(t("Vorlage „{name}“ geladen.", { name: tpl.name }));
+    });
+    const row = el("div", "inline wrap"); row.append(tplSel, devSel, load);
+    box.append(row, el("p", "muted small", tpl.info), el("p", "muted small", t("Noch nicht an echten Geräten geprüft. Einzelne Tasten lassen sich danach wie gewohnt umbelegen.")));
+    return box;
+  }
+}
+
+/** Lesbarer Name eines Ziels, z. B. „Strobe · Speed“ oder „Szenen · Drop“. */
+export function label(id: string): string {
+  const d = resolveControl(id);
+  if (!d) return id;
+  const name = id.startsWith("scene.") && /^\d+$/.test(id.slice(6)) ? t("Szene {n}", { n: id.slice(6) }) : d.label;
+  return `${t(d.group)} · ${name}`;
+}

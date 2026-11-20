@@ -1,0 +1,155 @@
+// DMX-Belegung „Standard“ (68 Kanäle) laut Konzept. Das Pult sendet, VJ-Link liest.
+import { READY_GENERATORS } from "./effects";
+import { t } from "./i18n";
+import {
+  BLEND_MODES, COLOR_SOURCES, DMX_LAYERS, MAX_IMAGES, clamp01, imageList, mainLayers, type Scene, type ShowState,
+} from "./show";
+
+export const DMX_MODE_STANDARD_CHANNELS = 91;
+export const CH = {
+  master: 1, strobe: 2, scene: 3, transition: 4, tempoFactor: 5, fxMaster: 6, autoVj: 7, blackout: 8,
+  slotBase: 9, layerBase: 29, layerSize: 10,
+  /** Nach den vier Ebenen (29–68). */
+  strobeIntensity: 69, strobeSync: 70,
+  /** Projektionsmapping: Helligkeit Bild 1–5 (71–75), dann je Bild 2–5 Deckkraft Ebene 1–4 (76–91). */
+  imageGainBase: 71, imageLayerBase: 76,
+} as const;
+/** Offsets innerhalb einer Ebene. */
+export const LAYER_CH = { opacity: 0, bank: 1, clip: 2, color: 3, speed: 4, fx1: 5, fx2: 6, fx3: 7, strobe: 8, blend: 9 } as const;
+
+export const TRANSITION_BEATS = [0, 0.25, 0.5, 1, 2, 4, 8] as const;
+export const TEMPO_FACTORS = [0.25, 0.5, 1, 2, 4] as const;
+
+/** Wert 0–255 gleichmäßig auf `n` Stufen verteilen. */
+export const stepOf = (v: number, n: number): number => Math.min(n - 1, Math.floor((v / 256) * n));
+
+/** Clip-Nummer 1–64 in Bank 1 → Generator. Weitere Bänke folgen mit den Bibliotheken. */
+export function resolveClip(bank: number, clip: number): string | null {
+  if (clip === 0) return null;
+  if (bank !== 1) return null;
+  return READY_GENERATORS[clip - 1]?.id ?? null;
+}
+
+export interface DmxEffects {
+  /** Szene 1–255 soll abgerufen werden (Aufrufer nutzt recallScene). */
+  scene?: number;
+  tempoFactor?: number;
+}
+
+/**
+ * Liest DMX-Frames und wendet nur die Kanäle an, die sich geändert haben.
+ * So gewinnt immer die zuletzt bediente Stelle (Pult oder Oberfläche).
+ */
+export class DmxDecoder {
+  private prev = new Uint8Array(512);
+  private first = true;
+  private bank = new Map<number, number>();
+  /** Rohwerte je Slot: [Dimmer, R, G, B], jeweils 0–1. Dimmer startet auf 1. */
+  private slotRaw: number[][] = Array.from({ length: 5 }, () => [1, 1, 1, 1]);
+  constructor(public startAddress = 1, public scenes: readonly Scene[] = []) {}
+
+  decode(frame: Uint8Array, state: ShowState): DmxEffects {
+    const out: DmxEffects = {};
+    const base = this.startAddress - 1;
+    for (let rel = 1; rel <= DMX_MODE_STANDARD_CHANNELS; rel++) {
+      const idx = base + rel - 1;
+      if (idx >= frame.length) break;
+      const v = frame[idx]!;
+      if (rel === CH.scene) continue; // Szene zuletzt, damit sie nicht von Ebenenkanälen überschrieben wird
+      if (rel >= CH.slotBase && rel < CH.layerBase) continue; // Farbslots gesondert, siehe unten
+      if (this.first ? v === 0 : this.prev[idx] === v) continue; // erstes Bild: nur gesetzte Kanäle
+      this.apply(rel, v, state, out);
+    }
+    // Farbslots: Ein Slot gehört dem Pult erst, wenn einer seiner 4 Kanäle bewegt wird (oder beim ersten Bild
+    // nicht 0 ist). Dann zählen alle 4 Kanäle, auch 0 als echte Farbe. Sonst würde ein frisch gepatchtes Pult
+    // mit allen Kanälen auf 0 sämtliche Slots schwarz machen.
+    for (let slot = 0; slot < 5; slot++) {
+      const i0 = base + CH.slotBase - 1 + slot * 4;
+      if (i0 + 3 >= frame.length) break;
+      const vals = [frame[i0]!, frame[i0 + 1]!, frame[i0 + 2]!, frame[i0 + 3]!];
+      const touched = this.first ? vals.some(v => v > 0) : vals.some((v, c) => this.prev[i0 + c] !== v);
+      if (!touched) continue;
+      vals.forEach((v, c) => this.apply(CH.slotBase + slot * 4 + c, v, state, out));
+    }
+    const sceneIdx = base + CH.scene - 1;
+    const sceneV = frame[sceneIdx] ?? 0;
+    if (sceneV > 0 && (this.first || this.prev[sceneIdx] !== sceneV)) this.apply(CH.scene, sceneV, state, out);
+    this.prev.set(frame.subarray(0, Math.min(512, frame.length)));
+    this.first = false;
+    return out;
+  }
+
+  private apply(rel: number, v: number, s: ShowState, out: DmxEffects): void {
+    const f = v / 255;
+    switch (rel) {
+      case CH.master: s.master = f; return;
+      case CH.strobe: // 0–7 aus, 8–255 Geschwindigkeit langsam bis schnell
+        s.strobe.on = v >= 8; if (v >= 8) s.strobe.speed = (v - 8) / 247; return;
+      case CH.strobeIntensity: s.strobe.intensity = f; return;
+      case CH.strobeSync: s.strobe.sync = v < 128; return; // 0–127 im Takt, 128–255 freie Hz
+      case CH.scene: // Abruf übernimmt recallScene() (mit Überblendung)
+        if (v > 0 && this.scenes[v - 1]) out.scene = v;
+        return;
+      case CH.transition: s.transitionBeats = TRANSITION_BEATS[stepOf(v, TRANSITION_BEATS.length)]!; return;
+      case CH.tempoFactor: out.tempoFactor = TEMPO_FACTORS[stepOf(v, TEMPO_FACTORS.length)]!; return;
+      case CH.fxMaster: s.fxMaster = f; return;
+      case CH.autoVj: s.autoVj = v >= 128; return;
+      case CH.blackout: s.blackout = v >= 250; return;
+    }
+    // Bilder (Projektionsmapping): feste Kanäle je Bild, unabhängig davon, welches gerade bearbeitet wird
+    if (rel >= CH.imageGainBase && rel < CH.imageGainBase + MAX_IMAGES) {
+      const im = imageList(s)[rel - CH.imageGainBase]; if (!im) return;
+      (s.stackGain ??= {})[im.id] = f; return;
+    }
+    if (rel >= CH.imageLayerBase && rel < CH.imageLayerBase + (MAX_IMAGES - 1) * DMX_LAYERS) {
+      const im = imageList(s)[1 + Math.floor((rel - CH.imageLayerBase) / DMX_LAYERS)];
+      const l = im ? s.stacks?.[im.id]?.[(rel - CH.imageLayerBase) % DMX_LAYERS] : undefined;
+      if (l) l.opacity = f;
+      return;
+    }
+    if (rel >= CH.slotBase && rel < CH.layerBase) {
+      const slot = Math.floor((rel - CH.slotBase) / 4), c = (rel - CH.slotBase) % 4;
+      const raw = this.slotRaw[slot]; if (!raw) return;
+      raw[c] = f;
+      // Kanal 0 ist der Dimmer; das Ergebnis ist die tatsächlich sichtbare Farbe.
+      s.slots[slot] = [raw[1]! * raw[0]!, raw[2]! * raw[0]!, raw[3]! * raw[0]!];
+      return;
+    }
+    if (rel >= CH.layerBase) {
+      const li = Math.floor((rel - CH.layerBase) / CH.layerSize);
+      const off = (rel - CH.layerBase) % CH.layerSize;
+      // Ebenen-Kanäle gehören immer zu Bild 1 (nicht zum gerade bearbeiteten Bild)
+      const l = mainLayers(s)[li]; if (!l || li >= DMX_LAYERS) return;
+      switch (off) {
+        case LAYER_CH.opacity: l.opacity = f; break;
+        case LAYER_CH.bank: this.bank.set(li, Math.max(1, v)); break;
+        case LAYER_CH.clip: l.clip = resolveClip(this.bank.get(li) ?? 1, v); break;
+        case LAYER_CH.color: l.colorSource = COLOR_SOURCES[stepOf(v, COLOR_SOURCES.length)]!; break;
+        case LAYER_CH.speed: l.speed = v === 0 ? -1 : v < 64 ? 0 : v < 96 ? 0.5 : v < 160 ? 1 : 2; break;
+        case LAYER_CH.fx1: case LAYER_CH.fx2: case LAYER_CH.fx3: {
+          const slot = l.effects[off - LAYER_CH.fx1]; if (slot) slot.amount = clamp01(f); break;
+        }
+        case LAYER_CH.strobe: l.strobe = v < 8 ? 0 : 1 + Math.round((1 - f) * 7); break;
+        case LAYER_CH.blend: l.blend = BLEND_MODES[stepOf(v, BLEND_MODES.length)]!; break;
+      }
+    }
+  }
+}
+
+/** Kanalliste für Pult-Bediener (CSV). */
+export function channelListCsv(startAddress = 1): string {
+  const rows: [number, string][] = [
+    [CH.master, t("Master-Dimmer")], [CH.strobe, t("Strobe Geschwindigkeit (0-7 aus)")], [CH.scene, t("Szene")], [CH.transition, t("Übergang")],
+    [CH.tempoFactor, t("Tempo-Faktor")], [CH.fxMaster, t("Effekt-Intensität (gesamt)")], [CH.autoVj, "Auto-VJ"], [CH.blackout, "Blackout (250-255)"],
+  ];
+  ["A", "B", "C", "D", "E"].forEach((n, i) => {
+    ["Dimmer", t("Rot"), t("Grün"), t("Blau")].forEach((c, j) => rows.push([CH.slotBase + i * 4 + j, `Slot ${n} ${c}`]));
+  });
+  const names = [t("Deckkraft"), t("Clip-Bank"), "Clip", t("Farbquelle"), t("Geschwindigkeit"), t("Effekt 1"), t("Effekt 2"), t("Effekt 3"), "Strobe", t("Mischmodus")];
+  rows.push([CH.strobeIntensity, t("Strobe Intensität")], [CH.strobeSync, t("Strobe Modus (0-127 Takt, 128-255 Hz)")]);
+  for (let l = 0; l < DMX_LAYERS; l++) names.forEach((n, j) => rows.push([CH.layerBase + l * CH.layerSize + j, `${t("Ebene {n}", { n: l + 1 })} ${n}`]));
+  for (let i = 0; i < MAX_IMAGES; i++) rows.push([CH.imageGainBase + i, t("Bild {n} Helligkeit (Projektionsmapping)", { n: i + 1 })]);
+  for (let i = 1; i < MAX_IMAGES; i++) for (let l = 0; l < DMX_LAYERS; l++) rows.push([CH.imageLayerBase + (i - 1) * DMX_LAYERS + l, t("Bild {n} Ebene {l} Deckkraft", { n: i + 1, l: l + 1 })]);
+  rows.sort((a, b) => a[0] - b[0]);
+  return t("Kanal;Funktion") + "\n" + rows.map(([ch, n]) => `${startAddress + ch - 1};${n}`).join("\n") + "\n";
+}

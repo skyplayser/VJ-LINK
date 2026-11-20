@@ -16,7 +16,7 @@
   <a href="README.de.md">Deutsch</a> &nbsp;·&nbsp;
   <a href="https://skyplayser.github.io/VJ-LINK/wiki.html">Wiki</a> &nbsp;·&nbsp;
   <a href="https://discord.gg/N6DMca4Bjk">Discord</a> &nbsp;·&nbsp;
-  <a href="https://github.com/skyplayser/VJ-LInk-dev">Source code</a>
+  <a href="https://github.com/skyplayser/VJ-LINK/tree/main/source">Source code</a>
 </p>
 
 <p align="center">
@@ -48,7 +48,7 @@ and a problem report, when you send one.
   op art, organic and fluid, audio and equalizer, particles, retro and synthwave, geometry and tunnels, light and space, and 16
   laser looks for a projector in haze. Written for VJ-Link; all of them react to the beat or the audio. A few small building blocks
   follow published, MIT-licensed snippets – see *Shader credits* in
-  [THIRD_PARTY.md](https://github.com/skyplayser/VJ-LInk-dev/blob/grundgeruest/THIRD_PARTY.md).
+  [THIRD_PARTY.md](https://github.com/skyplayser/VJ-LINK/blob/main/source/THIRD_PARTY.md).
 - **50 effects** in a stack of up to six per layer: feedback, datamosh, slit-scan, VHS, bloom, kaleidoscope, halftone, LCD,
   pixel sort, luma key, color strobe, beat flip and many more.
 - **Up to eight layers** with blend modes, opacity, position, size and rotation. Each layer chooses its drive: audio when there is
@@ -260,8 +260,8 @@ trademarks of Ableton AG.
 ## License
 
 © 2026 Philipp Spruck / NEXTPHILM. VJ-Link is distributed under the [Eclipse Public License 2.0](LICENSE), without any
-warranty. The source code is at [skyplayser/VJ-LInk-dev](https://github.com/skyplayser/VJ-LInk-dev); this repository holds the releases, the website and the
-documentation. The licenses of the bundled libraries are in [THIRD_PARTY.md](https://github.com/skyplayser/VJ-LInk-dev/blob/grundgeruest/THIRD_PARTY.md).
+warranty. The source code of every official version is in [source/](source/) in this repository, next to the releases,
+the website and the documentation. The licenses of the bundled libraries are in [source/THIRD_PARTY.md](source/THIRD_PARTY.md).
 
 <br>
 
