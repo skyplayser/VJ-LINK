@@ -410,6 +410,18 @@ async function main() {
   await c.eval("document.getElementById('set-close')?.click(), true");
   log("Einstellungen", secs.length > 0, `${secs.length} Seiten`);
 
+  // 17b) Einstellungen → NDI: Version der Laufzeit (oder „nicht installiert“), Auswahl der Netzwerkkarte, Ausgänge;
+  //      DMX und Netzwerk: Auswahl der Karte für Art-Net/sACN
+  await c.eval("document.getElementById('settings-btn').click(), document.querySelector('.set-nav [data-sec=ndi]').click(), true");
+  let ndiVer = "";
+  for (let i = 0; i < 40 && !/NDI \d|nicht installiert|not installed/.test(ndiVer); i++) { await wait(250); ndiVer = await c.eval("document.querySelector('#set-ndi .ndi-ver')?.textContent || ''").catch(() => ""); }
+  const ndiPage = await c.eval("JSON.stringify({ cards: document.querySelectorAll('#set-ndi .ndi-adapter option').length, outs: document.querySelectorAll('#set-ndi .ndi-out').length, bw: !!document.querySelector('#set-ndi .ndi-bw') })").then(JSON.parse);
+  await c.eval("document.querySelector('.set-nav [data-sec=dmx]').click(), true"); await wait(800);
+  const lightCards = await c.eval("document.querySelectorAll('#light-iface option').length");
+  await c.eval("document.getElementById('set-close')?.click(), true");
+  log("Einstellungen NDI und Netzwerkkarte", /NDI \d|nicht installiert|not installed/.test(ndiVer) && ndiPage.cards >= 1 && ndiPage.outs >= 1 && ndiPage.bw && lightCards >= 1,
+    `${ndiVer || "keine Version"} · ${ndiPage.cards - 1} Karten für NDI, ${lightCards - 1} für Art-Net/sACN · ${ndiPage.outs} NDI-Ausgang`);
+
   // 18) Größe der Oberfläche
   log("Oberfläche skaliert", inf.zoom > 0, `Zoom × Pixeldichte ${inf.zoom.toFixed(2)}, Fläche ${inf.w} × ${inf.h} CSS-Pixel`);
 

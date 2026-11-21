@@ -8,7 +8,9 @@ import { loadNdi } from "./ndi-lib";
 type Msg =
   | { t: "start"; file: string | null; name: string; fps: number }
   | { t: "frame"; data: Uint8Array; w: number; h: number }
-  | { t: "stop" };
+  | { t: "stop" }
+  /** Nur die Laufzeit laden und ihre Version melden (für die Einstellungen; sendet nichts). */
+  | { t: "version"; file: string | null };
 
 const parent = process.parentPort;
 let loaded: ReturnType<typeof loadNdi> | null = null;
@@ -64,6 +66,9 @@ parent.on("message", async e => {
       cur = next; next = null;
     }
     sending = false;
+  } else if (m.t === "version") {
+    loaded ??= loadNdi(m.file);
+    post(loaded.ok ? { t: "version", ok: true, version: loaded.lib.version } : { t: "version", ok: false, error: loaded.error });
   } else if (m.t === "stop") {
     await stop();
     post({ t: "stopped" });

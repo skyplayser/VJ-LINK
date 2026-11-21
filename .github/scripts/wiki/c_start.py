@@ -7,8 +7,8 @@ group("Start", "Start")
 @page("wiki.html", "Overview", "Übersicht")
 def _():
     body = SEC(
-        ADM("beta", ("This wiki describes the beta **0.1.13**. Many parts have not met real stage hardware yet; every page says what is tested and what is not.",
-                      "Dieses Wiki beschreibt die Beta **0.1.13**. Viele Teile haben noch keine echte Bühnentechnik gesehen; jede Seite sagt, was getestet ist und was nicht.")),
+        ADM("beta", ("This wiki describes the beta **0.1.14**. Many parts have not met real stage hardware yet; every page says what is tested and what is not.",
+                      "Dieses Wiki beschreibt die Beta **0.1.14**. Viele Teile haben noch keine echte Bühnentechnik gesehen; jede Seite sagt, was getestet ist und was nicht.")),
         H2("What VJ-Link does", "Was VJ-Link macht"),
         P("VJ-Link plays live visuals on screens, projectors and LED walls. The light desk leads: it recalls scenes, sets the colors, the brightness, the strobe and the blackout. The tempo comes from the music, best from [LJ-Link](wiki-ljlink.html), so everything moves in time without anybody tapping.",
           "VJ-Link spielt Live-Visuals auf Bildschirmen, Beamern und LED-Wänden. Das Lichtpult führt: Es ruft Szenen ab und setzt Farben, Helligkeit, Strobe und Blackout. Das Tempo kommt aus der Musik, am besten aus [LJ-Link](wiki-ljlink.html), sodass alles im Takt läuft, ohne dass jemand tappen muss."),
@@ -284,8 +284,8 @@ def _():
            ("The other programs in the room keep your messages in their memory and pass the last 20 on to newcomers, even after you quit VJ-Link; a sent message cannot be recalled. More in the [privacy policy](datenschutz.html).", "Die anderen Programme im Raum behalten deine Nachrichten im Speicher und geben die letzten 20 an Neue weiter, auch nachdem du VJ-Link beendet hast; eine gesendete Nachricht lässt sich nicht zurückholen. Mehr in der [Datenschutzerklärung](datenschutz.html)."),
            ("How the programs talk to each other is open: [suite chat protocol](https://github.com/skyplayser/LJ-Link/blob/main/docs/suite-chat.md).", "Wie die Programme miteinander reden, ist offen beschrieben: [Protokoll des Suite-Chats](https://github.com/skyplayser/LJ-Link/blob/main/docs/suite-chat.md).")),
         H2("Settings", "Einstellungen"),
-        P("The gear opens audio input and output, timecode, MIDI devices, DMX and network, interface size, **Update** and **Report a problem**.",
-          "Das Zahnrad öffnet Audio-Eingang und -Ausgang, Timecode, MIDI-Geräte, DMX und Netzwerk, die Oberflächengröße, **Update** und **Fehler melden**."),
+        P("The gear opens audio input and output, timecode, MIDI devices, DMX and network, **NDI** (runtime version, network adapter, state of the outputs), interface size, **Update** and **Report a problem**.",
+          "Das Zahnrad öffnet Audio-Eingang und -Ausgang, Timecode, MIDI-Geräte, DMX und Netzwerk, **NDI** (Version der Laufzeit, Netzwerkkarte, Stand der Ausgänge), die Oberflächengröße, **Update** und **Fehler melden**."),
         H2("Lock mode", "Sperrmodus"),
         P("The lock at the top: during the show you can still operate everything (faders, clips, scenes, effect strengths, GO, blackout), but nothing can be deleted, added, renamed or loaded. Hold the lock for one second to unlock.",
           "Das Schloss oben: Während der Show lässt sich weiter alles bedienen (Fader, Clips, Szenen, Effekt-Stärken, WEITER, Blackout), aber nichts löschen, hinzufügen, umbenennen oder laden. Zum Entsperren das Schloss eine Sekunde gedrückt halten."),

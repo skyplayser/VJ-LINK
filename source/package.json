@@ -1,6 +1,6 @@
 {
   "name": "vj-link",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "productName": "VJ-Link",
   "description": "Einfache VJ-Software für LJs: Lichtpult, OSC und LJ-Link steuern die Visuals.",
   "private": true,
@@ -54,7 +54,12 @@
     "npmRebuild": false,
     "afterPack": "scripts/after-pack.cjs",
     "mac": {
-      "files": ["dist/**/*", "package.json", "LICENSE", "!node_modules/@koromix/koffi-win32-*/**"],
+      "files": [
+        "dist/**/*",
+        "package.json",
+        "LICENSE",
+        "!node_modules/@koromix/koffi-win32-*/**"
+      ],
       "category": "public.app-category.entertainment",
       "icon": "build/icon.icns",
       "target": [
@@ -79,7 +84,12 @@
       "title": "VJ-Link ${version}"
     },
     "win": {
-      "files": ["dist/**/*", "package.json", "LICENSE", "!node_modules/@koromix/koffi-darwin-*/**"],
+      "files": [
+        "dist/**/*",
+        "package.json",
+        "LICENSE",
+        "!node_modules/@koromix/koffi-darwin-*/**"
+      ],
       "icon": "build/icon.ico",
       "target": [
         {

@@ -1024,3 +1024,11 @@ input[type=range].modded{accent-color:color-mix(in srgb,var(--accent) calc(35% +
 .phone-pairing figcaption{color:var(--dim);margin-top:6px;font-size:12px}
 .phone-manual{flex:1 1 220px;min-width:0}
 .phone-manual strong{overflow-wrap:anywhere}
+
+/* ---- Einstellungen → NDI ---- */
+.set-sec .ndi-file{font:11px var(--mono);color:var(--dim);overflow-wrap:anywhere}
+.set-sec .ndi-ver{color:var(--text)}
+.set-sec .ndi-out{display:grid;gap:2px;padding:7px 9px}
+.set-sec .ndi-out small{font-size:11px;color:var(--dim)}
+.set-sec .ndi-out .ok{color:var(--ok, #4cd68a)}
+.set-sec .ndi-out .warn{color:var(--warn)}

@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <img alt="Stand: Beta 0.1.13" src="https://img.shields.io/badge/Stand-Beta%200.1.13-FF5C93">
+  <img alt="Stand: Beta 0.1.14" src="https://img.shields.io/badge/Stand-Beta%200.1.14-FF5C93">
   <img alt="macOS und Windows, kostenlos" src="https://img.shields.io/badge/macOS%20%7C%20Windows-kostenlos-3DDC84">
   <img alt="Lizenz: EPL-2.0" src="https://img.shields.io/badge/Lizenz-EPL--2.0-60a5fa">
   <a href="https://github.com/skyplayser/VJ-LINK/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/skyplayser/VJ-LINK/total?label=Downloads&color=a78bfa"></a>
@@ -38,7 +38,7 @@ und danach höchstens einmal pro Stunde bei GitHub nach der neuesten Version; ab
 Fehlermeldung, wenn du eine schickst.
 
 > [!WARNING]
-> **Das ist die Beta 0.1.13.** Nach einem kompletten Testtag (Fehler, Arbeitsabläufe, Oberfläche und Sicherheitstest) ist sie
+> **Das ist die Beta 0.1.14.** Nach einem kompletten Testtag (Fehler, Arbeitsabläufe, Oberfläche und Sicherheitstest) ist sie
 > deutlich robuster als die erste Alpha, aber große Teile haben noch keine echte Bühnentechnik gesehen. Probier sie bitte vor
 > einer wichtigen Show aus, und sag uns, was dir auffällt: **Hilfe → Fehler melden** im Programm.
 
@@ -75,7 +75,8 @@ Fehlermeldung, wenn du eine schickst.
   Leuchten, Kontur und Kasten.
 - **Aus LJ-Link:** Tempo, Beat-Phase, Phrasen und Trackwechsel, eine *Now-Playing*-Bauchbinde und die DJ-Waveform als Clips.
 - **Neu in 0.1.12:** das **Partikel-Objekt**: 3D-Körper aus Tausenden Stäbchen, die auf den Beat oder den Bass explodieren und zurückschnellen, Drehung je Achse, fünf eingebaute Körper und eigene **OBJ/STL**-Modelle ([Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-particles.html), braucht eine starke Grafikkarte); die Anordnung **Getrennt**, bei der jeder Ausgang sein eigenes Bild zeigt, z. B. zwei gleiche Bildschirme mit verschiedenen Visuals ([Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-outputs.html#each-output-its-own-picture)); **Modulation mit Bereich** von–bis ([Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-modulation.html#range)); und *Neues Projekt* **mit Start-Aufbau oder leer**.
-- **Behoben in 0.1.13:** In *+ Clips* bleibt die Liste beim Antippen eines Clips an ihrer Stelle, so wählst du mehrere nacheinander.
+- **Neu in 0.1.14:** **Einstellungen → NDI** zeigt die Version der NDI-Laufzeit, lässt die **Netzwerkkarte** wählen, über die NDI sendet, und zeigt jeden NDI-Ausgang mit Empfängern und Datenrate ([Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-ndi.html#ndi-settings)); eine **Netzwerkkarte für Art-Net und sACN**, damit ein anderes Pult im WLAN nicht stört ([Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-connections.html#network-adapter)).
+- **Behoben in 0.1.14:** Punkte und Kanten des Partikel-Objekts decken voll, auch über anderen Ebenen, und helle Glanzlichter fressen nicht mehr weiß aus. Seit 0.1.13 bleibt die Liste in *+ Clips* beim Antippen eines Clips an ihrer Stelle.
 - **Neu in 0.1.10:** **NDI®-Ausgang** (bis zu vier Quellen mit eigenem Namen, freier Größe und Bildrate; [Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-ndi.html)),
   **Bildfläche, Gerät und Ausgabeprofile** je Ausgang, z. B. eine LED-Wand, die nur 280 × 112 Pixel eines 1280 × 1024-Controllersignals nutzt,
   Strobe und Blinder je Gerät ([Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-output-area.html)), eine **Handy-Fernsteuerung** im lokalen WLAN mit QR-Kopplung

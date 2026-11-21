@@ -38,6 +38,7 @@ import { TcPanel, defaultTcSettings, type TcSettings } from "./tcpanel";
 import { cueRenders, cueTick, isVideoClip, newCueState, videoClip, videoIdOf, type CueEnv } from "../core/video";
 import { VideoLibrary, isVideoFile } from "./videolib";
 import { ModelLibrary, isModelFile, modelClip } from "./modellib";
+import { NdiSettings, ndiErrorText } from "./ndisettings";
 import { isModelClip, modelIdOf } from "../core/particles";
 import { VideoPool } from "./videopool";
 import { VideoPanel } from "./videopanel";
@@ -112,11 +113,13 @@ interface Settings {
   /** Ausgabeprofile (unabhängig vom Projekt), beim Laden geprüft. */
   outputProfiles?: unknown;
   /** Verbindungen an/aus (VERBINDEN) und OSC-Port. */
-  net: { artnet: boolean; sacn: boolean; osc: boolean; lj: boolean; link: boolean; midi: boolean; oscPort: number };
+  net: { artnet: boolean; sacn: boolean; osc: boolean; lj: boolean; link: boolean; midi: boolean; oscPort: number;
+    /** Netzwerkkarte für Art-Net und sACN (Systemname, leer = alle). */
+    lightIface: string };
 }
 function loadSettings(): Settings {
   const d: Settings = { universe: 0, sacn: 1, address: 1, uiScale: "auto", audioDevice: "", audioGain: 1, audioScope: "audio", audioOut: "", tc: defaultTcSettings(), ljHost: "", ljHold: 15, safeFlash: true, autoUpdate: true, safetyAck: false, farewell: true,
-    net: { artnet: true, sacn: true, osc: true, lj: true, link: true, midi: true, oscPort: 8000 } };
+    net: { artnet: true, sacn: true, osc: true, lj: true, link: true, midi: true, oscPort: 8000, lightIface: "" } };
   try {
     const raw = JSON.parse(localStorage.getItem("vjlink.settings") ?? "{}") as Partial<Settings>;
     return { ...d, ...raw, tc: { ...d.tc, ...(raw.tc ?? {}) }, net: { ...d.net, ...(raw.net ?? {}) } };
@@ -261,7 +264,7 @@ function onControl(e: ControlEvent): void {
       break;
     case "lj": { const m = parseLjMessage(e.raw); if (m) handleLj(ctx, m, now); break; }
     case "lj-connection": if (e.clients === 0) ctx.lj.connected = false; break;
-    case "status": netStatus = e.status; break;
+    case "status": netStatus = e.status; updateLightState(); break;
   }
 }
 bridge?.onControl(onControl);
@@ -800,7 +803,8 @@ const tcPanel = new TcPanel(tcClock, settings.tc, saveSettings, {
 });
 ctx.tc = tcClock;
 const setBox = $("settings");
-const SEC_TITLE: Record<string, string> = { audio: t("set.audio"), timecode: t("set.timecode"), midi: t("set.midi"), dmx: t("set.dmx"), ui: t("set.ui"), update: t("set.update"), safety: t("set.safety"), chat: t("Suite-Chat"), about: t("set.about") };
+const ndiSettings = new NdiSettings($("set-ndi"), bridge, () => { closeSettings(); document.querySelector<HTMLButtonElement>('.tabs [data-tab="output"]')?.click(); });
+const SEC_TITLE: Record<string, string> = { audio: t("set.audio"), timecode: t("set.timecode"), midi: t("set.midi"), dmx: t("set.dmx"), ndi: "NDI®", ui: t("set.ui"), update: t("set.update"), safety: t("set.safety"), chat: t("Suite-Chat"), about: t("set.about") };
 function openSettings(sec = "audio"): void {
   setBox.hidden = false;
   setBox.querySelectorAll<HTMLButtonElement>(".set-nav [data-sec]").forEach(b => b.classList.toggle("on", b.dataset.sec === sec));
@@ -809,6 +813,8 @@ function openSettings(sec = "audio"): void {
   if (sec === "audio") { void fillAudioDevices(); void fillAudioOuts(); }
   if (sec === "timecode") tcPanel.build($("set-tc"));
   if (sec === "midi") buildMidiSection();
+  if (sec === "ndi") void ndiSettings.show();
+  if (sec === "dmx") void fillLightIface();
   if (sec === "report") { closeSettings(); report.open(); return; }
   if (sec === "update") { updates.mount($("set-update")); if (settings.autoUpdate) void updates.check(); }
 }
@@ -873,6 +879,33 @@ function buildMidiSection(): void {
   const go = el("button", "btn", t("Verbindungen öffnen"));
   go.addEventListener("click", () => { closeSettings(); openConnection("artnet"); });
   $("set-dmx").append(el("p", "am-hint", t("Art-Net, sACN, DMX-Kanäle, OSC, LJ-Link, Ableton Link und MIDI stellst du im Tab VERBINDEN ein: Klick auf eine Verbindung zeigt ihre Einstellungen, der Schalter schaltet sie ein oder aus.")), go);
+  // Netzwerkkarte für Art-Net und sACN (z. B. Licht-Netz am Kabel, daneben WLAN mit anderem Art-Net)
+  const row = el("label", "set-row");
+  const sel = el("select", "light-iface"); sel.id = "light-iface";
+  row.append(el("span", "", t("Art-Net und sACN über")), sel);
+  sel.addEventListener("change", () => { settings.net.lightIface = sel.value; saveSettings(); bridge?.configure(netConfig()); updateLightState(); });
+  $("set-dmx").append(el("h3", "", t("Netzwerkkarte")), row, el("p", "am-hint light-iface-state"),
+    el("p", "am-hint", t("Mit einer gewählten Karte nimmt VJ-Link Art-Net und sACN nur aus dem Netz dieser Karte an (dazu immer vom eigenen Rechner). So stört kein anderes Pult im WLAN. Die Karte für NDI wählst du unter NDI.")));
+}
+/** Auswahl der Karte für Art-Net/sACN füllen (beim Öffnen der Seite; Karten kommen und gehen). */
+async function fillLightIface(): Promise<void> {
+  const sel = document.getElementById("light-iface") as HTMLSelectElement | null;
+  if (!sel || !bridge?.netAdapters) return;
+  const list = await bridge.netAdapters();
+  sel.replaceChildren(new Option(t("Alle Karten"), ""));
+  for (const a of list) sel.append(new Option(`${a.label} · ${a.address}`, a.name));
+  const cur = settings.net.lightIface;
+  if (cur && !list.some(a => a.name === cur)) sel.append(new Option(t("{name} (nicht verbunden)", { name: cur }), cur));
+  sel.value = cur;
+  updateLightState();
+}
+function updateLightState(): void {
+  const st = document.querySelector<HTMLElement>(".light-iface-state"); if (!st) return;
+  const cur = settings.net.lightIface, l = netStatus?.light;
+  st.classList.toggle("warn", !!cur && !!l && l.name === cur && !l.address);
+  st.textContent = !cur ? t("Art-Net und sACN kommen über alle Karten an.")
+    : l?.name === cur && !l.address ? t("Die gewählte Karte ist gerade nicht verbunden. Bis sie wieder da ist, gelten alle Karten.")
+    : t("Nur Art-Net und sACN aus dem Netz dieser Karte{addr}.", { addr: l?.address ? ` (${l.address})` : "" });
 }
 // Ebenen hinzufügen
 $("layer-add").addEventListener("click", () => {
@@ -1053,7 +1086,7 @@ bridge?.onNdiStat?.(st => {
 function ndiStateText(d: DisplayInfo): string {
   const n = d.ndi!;
   if (!n.runtime) return t("NDI-Laufzeit fehlt: einmal von NDI installieren (kostenlos), dann hier öffnen.");
-  if (n.error) return t("NDI startet nicht ({error}).", { error: n.error });
+  if (n.error) return t("NDI startet nicht: {error}", { error: ndiErrorText(n.error) });
   if (!d.open) return t("Erscheint im Netz als „RECHNERNAME ({name})“, z. B. in VD-Link, OBS oder Resolume.", { name: n.name });
   if (n.sentFps === undefined) return t("Startet …");
   return t("Sendet als „{name}“ · {fps} Bilder/s · Empfänger: {n}", { name: n.name, fps: n.sentFps, n: n.conns ?? 0 });
@@ -1110,6 +1143,7 @@ function renderNdiRow(d: DisplayInfo, row: HTMLElement): void {
     const more = el("div", "ndi-sel");
     if (n.count < NDI_MAX && bridge?.ndiAdd) { const add = el("button", "btn small-btn", t("+ NDI-Ausgang")); add.title = t("Weitere NDI-Quelle, z. B. für eine zweite LED-Fläche"); add.addEventListener("click", async () => refresh(await bridge!.ndiAdd!())); more.append(add); }
     if (n.count > 1 && bridge?.ndiRemove) { const rem = el("button", "btn small-btn", t("Letzten entfernen")); rem.addEventListener("click", async () => refresh(await bridge!.ndiRemove!())); more.append(rem); }
+    if (bridge?.ndiInfo) { const st = el("button", "btn small-btn", t("NDI-Einstellungen")); st.title = t("Netzwerkkarte für NDI, Version der NDI-Laufzeit, Stand aller NDI-Ausgänge"); st.addEventListener("click", () => openSettings("ndi")); more.append(st); }
     if (more.childElementCount) info.append(more);
   }
   let b: HTMLButtonElement;
@@ -1264,7 +1298,7 @@ function openConnection(id: string): void {
 /** Einstellungen der Netzwerk-Eingänge an den Hauptprozess. */
 const netConfig = (): NetConfig => ({
   sacnUniverse: settings.sacn, ljHost: settings.ljHost, artnet: settings.net.artnet, sacn: settings.net.sacn, osc: settings.net.osc,
-  lj: settings.net.lj, link: settings.net.link, oscPort: settings.net.oscPort,
+  lj: settings.net.lj, link: settings.net.link, oscPort: settings.net.oscPort, lightIface: settings.net.lightIface,
 });
 /** Paketzähler je Eingang: wann zuletzt etwas ankam (für „empfängt“). */
 const pktSeen: Record<string, { n: number; at: number }> = {};

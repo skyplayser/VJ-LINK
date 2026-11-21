@@ -246,6 +246,8 @@ def _():
         ]),
         H2("Performance", "Leistung"),
         UL(("All particles are drawn by the graphics card in one pass; the sticks are flat pictures of a capsule (two triangles each), not real cylinders.", "Alle Partikel zeichnet die Grafikkarte in einem Durchgang; die Stäbchen sind flache Bilder einer Kapsel (je zwei Dreiecke), keine echten Zylinder."),
+           ("Edges are smoothed with multisampling (4 samples per pixel, 2 on very large outputs). Dots and sticks are at least about one pixel thick and cover fully, also as an overlay over other layers; bright highlights roll off softly instead of turning white.",
+            "Kanten sind per Mehrfachabtastung geglättet (4 Abtastungen je Pixel, bei sehr großen Ausgängen 2). Punkte und Stäbchen sind mindestens etwa ein Pixel dick und decken voll, auch als Overlay über anderen Ebenen; helle Glanzlichter laufen weich aus, statt weiß auszufressen."),
            ("Every output window draws the picture itself. Three screens therefore cost about three times as much as one.", "Jedes Ausgabefenster zeichnet das Bild selbst. Drei Bildschirme kosten deshalb etwa dreimal so viel wie einer."),
            ("Measured on an Apple M4 Max: 40 thousand sticks add about 0.5 ms per 1080p window, 200 thousand about 1.3 ms.", "Gemessen auf einem Apple M4 Max: 40 Tausend Stäbchen kosten etwa 0,5 ms zusätzlich je 1080p-Fenster, 200 Tausend etwa 1,3 ms.")),
         H2("Troubleshooting", "Fehlersuche"),

@@ -52,6 +52,8 @@ export type ControlEvent =
   | { type: "timecode"; source: "artnet"; tc: Tc; fps: TcFps; from: string };
 
 export interface NetStatus {
+  /** Gewählte Karte für Art-Net/sACN: verbunden (mit Adresse) oder nicht da (dann gelten alle Karten). */
+  light?: { name: string; address?: string };
   /** `off`: in VERBINDEN ausgeschaltet (Port freigegeben). */
   artnet: { listening: boolean; packets: number; lastFrom?: string; error?: string; off?: boolean };
   sacn: { listening: boolean; packets: number; error?: string; off?: boolean };
@@ -102,6 +104,23 @@ export interface NdiInfo {
   error?: string;
 }
 
+/** Seite NDI in den Einstellungen: Laufzeit, Version, Netzwerkkarte, Ausgänge. */
+export interface NdiSettingsInfo {
+  /** Gefundene NDI-Laufzeit (Datei) oder null. */
+  runtime: string | null;
+  /** z. B. „NDI 6.3.2.0“. */
+  version?: string;
+  versionError?: string;
+  /** Gewählte Karte (Systemname, leer = automatisch) und ihre Adresse, solange sie verbunden ist. */
+  adapter: string;
+  adapterAddress?: string;
+  adapters: NetAdapterInfo[];
+  /** Rechnername, wie NDI ihn vor den Quellnamen setzt. */
+  host: string;
+  outputs: DisplayInfo[];
+}
+export interface NetAdapterInfo { name: string; label: string; address: string; prefix: number }
+
 /** Kennung des ersten NDI-Ausgangs (kein echter Bildschirm); weitere: -3, -4, … */
 export const NDI_OUTPUT = -2;
 /** Höchstens so viele NDI-Ausgänge (je eine Quelle im Netz). */
@@ -128,6 +147,8 @@ export interface NetConfig {
   link?: boolean;
   /** UDP-Port für OSC (1024–65535). */
   oscPort?: number;
+  /** Netzwerkkarte für Art-Net und sACN (Systemname, leer = alle Karten). */
+  lightIface?: string;
 }
 
 export type MediaEvent = { type: "add"; item: MediaPayload } | { type: "remove"; id: string }
@@ -173,6 +194,11 @@ export interface VjBridge {
   /** Weiteren NDI-Ausgang anlegen bzw. den letzten entfernen. */
   ndiAdd?(): Promise<DisplayInfo[]>;
   ndiRemove?(): Promise<DisplayInfo[]>;
+  /** Seite NDI in den Einstellungen: Stand abfragen bzw. Netzwerkkarte für NDI wählen ("" = automatisch). */
+  ndiInfo?(): Promise<NdiSettingsInfo | null>;
+  ndiAdapter?(name: string): Promise<NdiSettingsInfo | null>;
+  /** Netzwerkkarten mit IPv4-Adresse (für die Auswahl). */
+  netAdapters?(): Promise<NetAdapterInfo[]>;
   /** Feste Seiten von NDI im Browser öffnen: Website oder Download der NDI-Laufzeit. */
   openNdiPage?(which: "home" | "runtime"): void;
   /** NDI-Ausgang läuft: gesendete Bilder je Sekunde und Empfänger, jede Sekunde. */

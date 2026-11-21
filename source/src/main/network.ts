@@ -10,6 +10,7 @@ import { LjNativeTracker, LjProAdapter, type LjSource } from "../core/ljpro";
 import { foundFromService, mergeFound, planAttempts, type FoundLj, type LjAttempt, type OwnAddr } from "../core/ljdiscover";
 import { Bonjour } from "bonjour-service";
 import os from "node:os";
+import { acceptFrom, findAdapter, listAdapters, type IfaceEntry, type NetAdapter } from "../core/netiface";
 
 /** Eigene IPv4-Adressen mit Präfixlänge (für „gleicher Rechner“ und „eigenes Subnetz“). */
 function ownAddrs(): OwnAddr[] {
@@ -58,6 +59,27 @@ export class Network {
   private osc?: dgram.Socket;
   private sacnUniverse = 1;
   private statusTimer?: NodeJS.Timeout;
+  /** Netzwerkkarte für Art-Net und sACN (Systemname, leer = alle). */
+  private lightIface = "";
+  private lightCache: { at: number; a: NetAdapter | null; own: string[] } | null = null;
+  /** Gewählte Karte, wenn verbunden (alle 2 s neu nachgesehen: Kabel gezogen, neue Adresse). */
+  private lightAdapter(): { a: NetAdapter | null; own: string[] } {
+    const now = Date.now();
+    if (this.lightCache && now - this.lightCache.at < 2000) return this.lightCache;
+    const ifs = os.networkInterfaces() as Record<string, IfaceEntry[]>;
+    const own = Object.values(ifs).flat().filter(n => n && (n.family === "IPv4" || (n.family as unknown) === 4)).map(n => n!.address);
+    this.lightCache = { at: now, a: findAdapter(listAdapters(ifs), this.lightIface), own };
+    return this.lightCache;
+  }
+  /**
+   * Art-Net und sACN nur über diese Karte annehmen (z. B. Licht-Netz am Kabel, WLAN mit anderem Art-Net daneben).
+   * Ist die Karte nicht verbunden, gelten wieder alle Karten.
+   */
+  setLightIface(name: string): void {
+    if (name === this.lightIface || name.length > 64) return;
+    this.lightIface = name; this.lightCache = null;
+    if (this.sacn && this.joined) this.join(this.sacn, this.joined);
+  }
 
   start(sacnUniverse = 1): void {
     this.sacnUniverse = sacnUniverse;
@@ -65,7 +87,11 @@ export class Network {
     if (this.on.sacn) this.startSacn();
     if (this.on.osc) this.startOsc();
     if (this.on.lj) this.startLj();
-    this.statusTimer = setInterval(() => this.emit({ type: "status", status: this.status }), 500);
+    this.statusTimer = setInterval(() => {
+      const a = this.lightIface ? this.lightAdapter().a : null;
+      this.status.light = this.lightIface ? { name: this.lightIface, ...(a ? { address: a.address } : {}) } : undefined;
+      this.emit({ type: "status", status: this.status });
+    }, 500);
     this.statusTimer.unref();
   }
 
@@ -174,6 +200,7 @@ export class Network {
   private udp(key: "artnet" | "sacn" | "osc", port: number, onMsg: (b: Buffer, from: string) => false | void): dgram.Socket {
     const s = dgram.createSocket({ type: "udp4", reuseAddr: true });
     s.on("message", (msg, rinfo) => {
+      if (key !== "osc" && this.lightIface) { const l = this.lightAdapter(); if (!acceptFrom(rinfo.address, l.a, l.own)) return; }
       if (onMsg(msg, rinfo.address) === false) return;
       const st = this.status[key];
       st.packets++;
@@ -213,9 +240,15 @@ export class Network {
       this.joinedIfaces.clear();
       this.joined = addr;
     }
-    const ifaces = Object.values(os.networkInterfaces()).flat()
+    const all = Object.values(os.networkInterfaces()).flat()
       .filter((n): n is os.NetworkInterfaceInfo => !!n && n.family === "IPv4" && !n.internal).map(n => n.address);
-    for (const ifc of [...this.joinedIfaces]) if (!ifaces.includes(ifc)) this.joinedIfaces.delete(ifc); // Kabel gezogen
+    // Gewählte Karte: nur dort (ist sie nicht verbunden, alle)
+    const chosen = this.lightIface ? this.lightAdapter().a?.address : undefined;
+    const ifaces = chosen && all.includes(chosen) ? [chosen] : all;
+    for (const ifc of [...this.joinedIfaces]) {
+      if (!all.includes(ifc)) this.joinedIfaces.delete(ifc); // Kabel gezogen
+      else if (!ifaces.includes(ifc)) { try { s.dropMembership(addr, ifc); } catch { /* schon weg */ } this.joinedIfaces.delete(ifc); }
+    }
     let ok = this.joinedIfaces.size > 0, lastErr = "";
     for (const ifc of ifaces) {
       if (this.joinedIfaces.has(ifc)) continue;

@@ -1,4 +1,4 @@
-import { existsSync, promises as fsp, readFileSync, unlinkSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, promises as fsp, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import { BrowserWindow, Menu, app, dialog, ipcMain, nativeImage, powerMonitor, powerSaveBlocker, protocol, screen, session, shell, systemPreferences, type Display, type MenuItemConstructorOptions } from "electron";
 import path from "node:path";
 import { PhoneRemote } from "./remote";
@@ -15,9 +15,12 @@ import { CHAT_PORT } from "../core/suitechat";
 import { detectLauncher, type LauncherInfo } from "./suite/launcher-detect";
 import { introEnabled, introWanted, parseOwnIntro, parseSuiteIntro, type IntroOwn } from "../core/intro";
 import { PROJECT_EXT, projectRefs } from "../core/projectfile";
-import { NdiSender } from "./ndi/ndi";
+import { NdiSender, probeNdiVersion } from "./ndi/ndi";
+import { execFile } from "node:child_process";
+import os from "node:os";
+import { findAdapter, listAdapters, ndiConfigWithAdapter, parseHardwarePorts, type IfaceEntry, type NetAdapter } from "../core/netiface";
 import { NDI_FPS, NDI_HOME_URL, findRuntime, ndiRuntimeUrl } from "./ndi/ndi-paths";
-import { NDI_OUTPUT, WINDOW_OUTPUT, WINDOW_SIZES, type ControlEvent, type DisplayInfo, type Frame, type MediaEvent, type NetConfig, type OutputStats, NDI_MAX, NDI_MAX_SIZE, NDI_MIN_SIZE, isNdiOutput } from "../core/frame";
+import { NDI_OUTPUT, WINDOW_OUTPUT, WINDOW_SIZES, type ControlEvent, type DisplayInfo, type Frame, type MediaEvent, type NdiSettingsInfo, type NetConfig, type OutputStats, NDI_MAX, NDI_MAX_SIZE, NDI_MIN_SIZE, isNdiOutput } from "../core/frame";
 import { LANGS, detectLang, setLang, t, type Lang } from "../core/i18n";
 
 // Eigenes Protokoll für Videos: streamt aus dem Bibliotheksordner, spulbar, für WebGL freigegeben.
@@ -140,7 +143,9 @@ function createControl(): void {
   chatFlashing = false;
   // Startet auf dem Hauptbildschirm und nutzt dessen Fläche; Ausgänge kommen auf die anderen Bildschirme.
   const wa = screen.getPrimaryDisplay().workArea;
-  const width = Math.round(wa.width * 0.92), height = Math.round(wa.height * 0.92);
+  // Testinstanzen (Bilder für Wiki und Website): feste Fenstergröße, z. B. VJLINK_WIN=1440x900
+  const fixed = process.env.VJLINK_DATA ? /^(\d{3,4})x(\d{3,4})$/.exec(process.env.VJLINK_WIN ?? "") : null;
+  const width = fixed ? Number(fixed[1]) : Math.round(wa.width * 0.92), height = fixed ? Number(fixed[2]) : Math.round(wa.height * 0.92);
   control = secureWindow({
     x: wa.x + Math.round((wa.width - width) / 2), y: wa.y + Math.round((wa.height - height) / 2),
     width, height, minWidth: 900, minHeight: 600, title: "VJ-Link",
@@ -386,7 +391,7 @@ function newNdiOut(i: number, saved?: Partial<Omit<NdiOut, "sender" | "shown">>)
       const key = `${st.live}|${st.error ?? ""}|${st.version ?? ""}`;
       if (key !== o.shown) { o.shown = key; control?.webContents.send("displays", listDisplays()); }
       else control?.webContents.send("ndi:stat", { id: NDI_OUTPUT - ndiOuts.indexOf(o), sentFps: st.fps, conns: st.conns });
-    }),
+    }, ndiEnv),
   };
   return o;
 }
@@ -400,13 +405,88 @@ function ndiNameOk(n: unknown): string | null {
 }
 function loadNdiOutputs(): void {
   let saved: Partial<NdiOut>[] = [];
-  try { const j = JSON.parse(readFileSync(ndiFile(), "utf8")) as { outputs?: Partial<NdiOut>[] }; if (Array.isArray(j.outputs)) saved = j.outputs.slice(0, NDI_MAX); } catch { /* erster Start */ }
+  try {
+    const j = JSON.parse(readFileSync(ndiFile(), "utf8")) as { outputs?: Partial<NdiOut>[]; adapter?: unknown };
+    if (Array.isArray(j.outputs)) saved = j.outputs.slice(0, NDI_MAX);
+    if (typeof j.adapter === "string" && j.adapter.length <= 64) ndiAdapter = j.adapter;
+  } catch { /* erster Start */ }
   ndiOuts.length = 0;
   (saved.length ? saved : [{}]).forEach((s, i) => ndiOuts.push(newNdiOut(i, s)));
 }
 function saveNdiOutputs(): void {
   const outputsJson = ndiOuts.map(o => ({ size: o.size, fps: o.fps, name: o.name, sending: o.sending }));
-  try { writeFileSync(ndiFile(), JSON.stringify({ outputs: outputsJson }, null, 1)); } catch { /* Datenordner schreibgeschützt */ }
+  try { writeFileSync(ndiFile(), JSON.stringify({ outputs: outputsJson, adapter: ndiAdapter }, null, 1)); } catch { /* Datenordner schreibgeschützt */ }
+}
+
+// Netzwerkkarte für NDI. NDI liest beim Start seines Prozesses ndi-config.v1.json; über NDI_CONFIG_DIR bekommt der
+// NDI-Prozess von VJ-Link eine eigene Datei mit `ndi.adapters.allowed` (Rest aus der Konfiguration des Nutzers,
+// z. B. Discovery Server). Leer = automatisch, wie NDI es selbst wählt (alle Karten).
+let ndiAdapter = "";
+/** Adresse, mit der die laufenden NDI-Prozesse gestartet wurden ("" = automatisch). */
+let ndiActiveIp = "";
+/** macOS: Anzeigenamen der Karten (en0 → „WLAN“). */
+let hwNames: Record<string, string> = {};
+function loadHwNames(): void {
+  if (process.platform !== "darwin") return;
+  execFile("/usr/sbin/networksetup", ["-listallhardwareports"], { timeout: 4000 }, (err, out) => { if (!err) hwNames = parseHardwarePorts(String(out)); });
+}
+/** Nur Entwicklung (Bilder für Wiki und Website): erfundene Karten und Rechnername statt der echten. */
+const demoNet = (): boolean => !!process.env.VJLINK_DATA && process.env.VJLINK_DEMO_NET === "1";
+function netAdapters(): NetAdapter[] {
+  if (demoNet()) return [
+    { name: "en0", label: "WLAN (en0)", address: "192.168.1.20", prefix: 24 },
+    { name: "en7", label: "USB 10/100/1000 LAN (en7)", address: "2.0.0.10", prefix: 8 },
+    { name: "en8", label: "Thunderbolt Ethernet (en8)", address: "10.10.0.5", prefix: 24 },
+  ];
+  return listAdapters(os.networkInterfaces() as Record<string, IfaceEntry[]>, hwNames);
+}
+/** Vorhandene NDI-Konfiguration des Nutzers (Discovery Server usw.), damit sie beim Festlegen der Karte bleibt. */
+function userNdiConfig(): string | null {
+  const dirs = [process.env.NDI_CONFIG_DIR, process.platform === "win32" ? path.join(process.env.ProgramData || "C:\\ProgramData", "NDI") : "", path.join(os.homedir(), ".ndi")];
+  for (const d of dirs) { if (!d) continue; try { return readFileSync(path.join(d, "ndi-config.v1.json"), "utf8"); } catch { /* nächster Ort */ } }
+  return null;
+}
+/** Umgebung für einen neuen NDI-Prozess: mit gewählter (und verbundener) Karte eigene Konfiguration, sonst keine. */
+function ndiEnv(): Record<string, string> {
+  const a = findAdapter(netAdapters(), ndiAdapter);
+  ndiActiveIp = a?.address ?? "";
+  if (!a) return {};
+  const dir = path.join(app.getPath("userData"), "ndi-config");
+  try {
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(path.join(dir, "ndi-config.v1.json"), ndiConfigWithAdapter(userNdiConfig(), a.address));
+    return { NDI_CONFIG_DIR: dir };
+  } catch { return {}; }
+}
+/** Laufende NDI-Ausgänge neu starten (neue Karte oder neue Adresse der Karte). */
+function restartNdi(): void {
+  ndiOuts.forEach((o, i) => { if (outputs.has(NDI_OUTPUT - i)) void o.sender.restart(ndiNetName(o), o.fps); });
+}
+function setNdiAdapter(name: unknown): void {
+  if (typeof name !== "string" || name.length > 64 || name === ndiAdapter) return;
+  ndiAdapter = name; saveNdiOutputs(); restartNdi();
+}
+/** Kabel gezogen, neue Adresse per DHCP: NDI mit der neuen Adresse neu starten (alle 5 s geprüft). */
+function watchNdiAdapter(): void {
+  setInterval(() => {
+    if (!ndiAdapter || !ndiOuts.some((_, i) => outputs.has(NDI_OUTPUT - i))) return;
+    const ip = findAdapter(netAdapters(), ndiAdapter)?.address ?? "";
+    if (ip !== ndiActiveIp) restartNdi();
+  }, 5000).unref();
+}
+let ndiVersion: { file: string; version?: string; error?: string } | null = null;
+async function ndiSettingsInfo(): Promise<NdiSettingsInfo> {
+  const file = findRuntime();
+  const live = ndiOuts.find(o => o.sender.state.version)?.sender.state.version;
+  if (file && live) ndiVersion = { file, version: live };
+  else if (file && ndiVersion?.file !== file) ndiVersion = { file, ...(await probeNdiVersion()) };
+  const list = netAdapters(), a = findAdapter(list, ndiAdapter);
+  return {
+    runtime: file, version: file ? ndiVersion?.version : undefined, versionError: file ? ndiVersion?.error : undefined,
+    adapter: ndiAdapter, adapterAddress: a?.address, adapters: list,
+    host: demoNet() ? "VJ-RECHNER" : os.hostname().replace(/\.local$/i, "").toUpperCase(),
+    outputs: ndiOuts.map(ndiInfo),
+  };
 }
 const ndiIndex = (id: number): number => isNdiOutput(id) ? NDI_OUTPUT - id : -1;
 function ndiInfo(o: NdiOut, i: number): DisplayInfo {
@@ -628,7 +708,9 @@ app.whenReady().then(async () => {
     } catch { return new Response("nicht gefunden", { status: 404 }); }
   });
   if (process.platform === "darwin") app.dock?.setIcon(nativeImage.createFromPath(ICON));
+  loadHwNames();
   loadNdiOutputs();
+  watchNdiAdapter();
   createControl();
   resumeNdiOutputs();
   net = new Network((e: ControlEvent) => { control?.webContents.send("control", e); });
@@ -702,6 +784,9 @@ app.whenReady().then(async () => {
   ipcMain.handle("displays:ndiAdd", () => addNdiOutput());
   ipcMain.handle("displays:ndiRemove", () => removeNdiOutput());
   // Feste Adressen von NDI (Website, Download der Laufzeit), nie aus der Oberfläche
+  ipcMain.handle("ndi:info", e => fromControl(e) ? ndiSettingsInfo() : null);
+  ipcMain.handle("ndi:adapter", (e, name: unknown) => { if (fromControl(e)) setNdiAdapter(name); return ndiSettingsInfo(); });
+  ipcMain.handle("net:adapters", () => netAdapters());
   ipcMain.on("ndi:page", (e, which: unknown) => {
     if (!fromControl(e)) return;
     const url = which === "runtime" ? ndiRuntimeUrl() : NDI_HOME_URL;
@@ -813,6 +898,7 @@ app.whenReady().then(async () => {
     const b = (v: unknown) => (typeof v === "boolean" ? v : undefined);
     net?.setEnabled({ artnet: b(c?.artnet), sacn: b(c?.sacn), osc: b(c?.osc), lj: b(c?.lj) }, typeof c?.oscPort === "number" ? c.oscPort : undefined);
     if (typeof c?.link === "boolean") { if (c.link) link?.start(); else link?.stop(); }
+    if (typeof c?.lightIface === "string") net?.setLightIface(c.lightIface);
   });
   const fromControl = (e: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent) => e.sender === control?.webContents;
   ipcMain.on("media:add", async (e, p: unknown) => {

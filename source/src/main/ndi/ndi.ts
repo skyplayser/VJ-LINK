@@ -28,11 +28,12 @@ export class NdiSender {
   private startWait: ((r: { ok: boolean; version?: string; error?: string }) => void) | null = null;
   state: NdiState = { live: false, fps: 0, conns: 0 };
 
-  constructor(private onState: (s: NdiState) => void) {}
+  /** `env`: Zusätze für den NDI-Prozess, z. B. NDI_CONFIG_DIR für die gewählte Netzwerkkarte (gilt ab dem nächsten Start). */
+  constructor(private onState: (s: NdiState) => void, private env: () => Record<string, string> = () => ({})) {}
 
   private worker(): UtilityProcess {
     if (this.child) return this.child;
-    const c = utilityProcess.fork(path.join(__dirname, "ndi-worker.js"), [], { serviceName: "VJ-Link NDI", stdio: "inherit" });
+    const c = forkWorker(this.env());
     c.on("message", (m: { t: string; ok?: boolean; version?: string; error?: string; fps?: number; conns?: number; ms?: number }) => {
       if (m.t === "started") { this.startWait?.({ ok: !!m.ok, version: m.version, error: m.error }); this.startWait = null; }
       else if (m.t === "sent") this.inFlight = Math.max(0, this.inFlight - 1);
@@ -43,6 +44,8 @@ export class NdiSender {
       else if (m.t === "error") console.error("NDI:", m.error);
     });
     c.on("exit", code => {
+      // Ein absichtlich beendeter alter Prozess (Neustart) darf den neuen nicht abmelden
+      if (this.child !== c) return;
       if (code) console.error("NDI-Prozess beendet", code);
       this.child = null; this.inFlight = 0;
       this.startWait?.({ ok: false, error: "process" }); this.startWait = null;
@@ -86,5 +89,33 @@ export class NdiSender {
   }
 
   /** Beim Beenden: NDI-Prozess beenden (gibt den Sender frei). */
-  kill(): void { this.child?.kill(); this.child = null; }
+  kill(): void { const c = this.child; this.child = null; this.inFlight = 0; c?.kill(); }
+
+  /**
+   * NDI-Prozess neu starten (z. B. andere Netzwerkkarte: NDI liest seine Konfiguration nur beim Start des Prozesses).
+   * Nur wenn er gerade sendet; sonst gilt die Änderung beim nächsten Öffnen.
+   */
+  async restart(name: string, fps: number): Promise<void> {
+    if (!this.state.live && !this.state.error) return;
+    this.kill();
+    await this.start(name, fps);
+  }
+}
+
+function forkWorker(env: Record<string, string>): UtilityProcess {
+  return utilityProcess.fork(path.join(__dirname, "ndi-worker.js"), [], { serviceName: "VJ-Link NDI", stdio: "inherit", env: { ...process.env, ...env } });
+}
+
+/** Version der installierten NDI-Laufzeit, ohne etwas zu senden (eigener kurzer NDI-Prozess). */
+export function probeNdiVersion(): Promise<{ version?: string; error?: string }> {
+  const file = findRuntime();
+  if (!file) return Promise.resolve({ error: "runtime-missing" });
+  return new Promise(res => {
+    const c = forkWorker({});
+    const done = (r: { version?: string; error?: string }) => { clearTimeout(t); res(r); c.kill(); };
+    const t = setTimeout(() => done({ error: "timeout" }), 8000);
+    c.on("message", (m: { t: string; ok?: boolean; version?: string; error?: string }) => { if (m.t === "version") done(m.ok ? { version: m.version } : { error: m.error }); });
+    c.on("exit", () => done({ error: "process" }));
+    c.postMessage({ t: "version", file });
+  });
 }

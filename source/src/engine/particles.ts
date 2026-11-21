@@ -18,6 +18,8 @@ uniform mat4 uProj; uniform mat3 uRot; uniform float uDist, uScale;
 uniform vec4 uRegion;
 uniform vec2 uOff;
 uniform float uMorph, uHitT, uHitAmp, uHitRet, uPulseT, uPulseAmp, uHold, uHoldVel, uScatter, uLen, uRad;
+/** Höhe des ganzen Ziels in Pixeln und kleinster Radius in Pixeln. */
+uniform float uVpH, uMinPx;
 out vec2 vQ;
 flat out float vL;
 flat out vec3 vSide; flat out vec3 vAlong; flat out vec3 vCam;
@@ -64,6 +66,10 @@ void main(){
   vec3 along = lp > 1e-6 ? dp / lp : normalize(cross(toCam, vec3(0.31, 0.95, 0.07)));
   vec3 side = normalize(cross(toCam, along));
   float r = uRad * uScale, hl = lp * 0.5;
+  // Mindestens knapp 1 Pixel Radius: sonst decken kleine Punkte und dünne Stäbchen nie ganz (halb durchsichtig, flimmern)
+  float cw = max((uProj * vec4(M, 1.0)).w, 1e-3);
+  float px = r * uProj[1][1] / cw * uVpH * 0.5;
+  r *= max(1.0, uMinPx / max(px, 1e-4));
   float y = aC.y * 2.0 - 1.0;
   vec3 w = M + side * aC.x * r + along * y * (hl + r);
   vQ = vec2(aC.x, y * (hl + r) / r); vL = hl / r;
@@ -87,13 +93,17 @@ flat in vec4 vCol;
 flat in float vR;
 uniform int uColorMode; uniform vec3 uColA, uColB, uBase, uRim; uniform vec3 uPal[5]; uniform int uPalN;
 uniform float uHue;
-out vec4 o;
+layout(location=0) out vec4 o;
+/** Deckung (1 in jeder getroffenen Abtastung): ergibt nach dem Auflösen die echte Deckkraft der Kante. */
+layout(location=1) out vec4 oCov;
 vec3 hue(float h){ return clamp(abs(fract(h + vec3(0.0, 2.0/3.0, 1.0/3.0)) * 6.0 - 3.0) - 1.0, 0.0, 1.0); }
 void main(){
   float dy = sign(vQ.y) * max(abs(vQ.y) - vL, 0.0);
   float dd = vQ.x * vQ.x + dy * dy;
-  float fw = max(fwidth(dd), 1e-4);
-  float a = clamp((1.0 - dd) / fw, 0.0, 1.0);
+  // Rand in Pixeln (Abstand statt Abstand², sonst ist der Übergang je nach Größe verschieden breit)
+  float dl = sqrt(dd);
+  float fw = max(fwidth(dl), 1e-4);
+  float a = clamp((1.0 - dl) / fw, 0.0, 1.0);
   if (a <= 0.0) discard;
   vec3 n = normalize(vSide * vQ.x + vAlong * dy + vCam * sqrt(max(0.0, 1.0 - dd)));
   vec3 L1 = normalize(vec3(-0.5, 0.8, 0.9));
@@ -111,14 +121,33 @@ void main(){
   else { int i = int(floor(vR * float(uPalN))); base = uPal[clamp(i, 0, 4)]; rc = uPal[clamp((i + 1) % max(uPalN, 1), 0, 4)]; }
   base *= 0.85 + vR * 0.3;
   vec3 c = base * (0.1 + dif * 0.95) * ao + vec3(1.0) * spc * 0.45 * ao + rc * rim * 0.5;
+  // Weiche Schulter statt hartem Abschneiden bei 100 %: Glanz und Randlicht fressen sonst weiß aus (übersteuert)
+  float mx = max(c.r, max(c.g, c.b));
+  if (mx > 0.8) c *= (0.8 + 0.2 * (1.0 - exp(-(mx - 0.8) / 0.2))) / mx;
+  // Alpha nur für die Abtast-Deckung (Alpha-to-Coverage); die Deckkraft kommt aus oCov
   o = vec4(c, a);
+  oCov = vec4(1.0);
+}`;
+
+/** Aufgelöstes Bild an seinen Platz im Ziel: Farbe (schon mit der Deckung gewichtet) und Deckkraft aus der Deckung. */
+const CVS = `#version 300 es
+void main(){ gl_Position = vec4(float((gl_VertexID & 1) << 2) - 1.0, float((gl_VertexID & 2) << 1) - 1.0, 0.0, 1.0); }`;
+const CFS = `#version 300 es
+precision highp float;
+uniform sampler2D uC, uA;
+uniform vec2 uO;
+out vec4 o;
+void main(){
+  ivec2 q = ivec2(gl_FragCoord.xy - uO);
+  float a = texelFetch(uA, q, 0).r;
+  o = vec4(min(texelFetch(uC, q, 0).rgb, vec3(a)), a);
 }`;
 
 interface PObj { pts: WebGLBuffer; col: WebGLBuffer | null; n: number }
 interface Msaa {
-  fb: WebGLFramebuffer; color: WebGLRenderbuffer; depth: WebGLRenderbuffer; w: number; h: number; samples: number; used: number;
-  /** Aufgelöstes Bild (MSAA darf nur deckungsgleich aufgelöst werden, danach wird es an seinen Platz kopiert). */
-  rfb: WebGLFramebuffer; rtex: WebGLTexture;
+  fb: WebGLFramebuffer; color: WebGLRenderbuffer; cov: WebGLRenderbuffer; depth: WebGLRenderbuffer; w: number; h: number; samples: number; used: number;
+  /** Aufgelöstes Bild und aufgelöste Deckung (MSAA darf nur deckungsgleich aufgelöst werden, danach an seinen Platz). */
+  rfb: WebGLFramebuffer; rtex: WebGLTexture; rcov: WebGLTexture;
 }
 /** Ziel der Engine (Textur + Framebuffer). */
 export interface PTarget { tex: WebGLTexture; fb: WebGLFramebuffer; w: number; h: number }
@@ -194,15 +223,23 @@ export class ParticleRenderer {
     gl.bufferData(gl.ARRAY_BUFFER, particleRandoms(PARTICLE_MAX), gl.STATIC_DRAW);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
     this.maxSamples = Math.max(1, Math.min(4, gl.getParameter(gl.MAX_SAMPLES) as number));
+    const cvs = gl.createShader(gl.VERTEX_SHADER)!, cfs = gl.createShader(gl.FRAGMENT_SHADER)!, cp = gl.createProgram()!;
+    gl.shaderSource(cvs, CVS); gl.compileShader(cvs);
+    gl.shaderSource(cfs, CFS); gl.compileShader(cfs);
+    gl.attachShader(cp, cvs); gl.attachShader(cp, cfs); gl.linkProgram(cp);
+    this.comp = cp;
+    this.emptyVao = gl.createVertexArray()!;
   }
+  private comp: WebGLProgram;
+  private emptyVao: WebGLVertexArrayObject;
 
   private ok: boolean | null = null;
   /** Shader übersetzt? (Fehler einmal melden.) */
   private ready(): boolean {
     if (this.ok !== null) return this.ok;
     const gl = this.gl;
-    this.ok = !!gl.getProgramParameter(this.prog, gl.LINK_STATUS);
-    if (!this.ok) console.error("Partikel-Shader:", gl.getProgramInfoLog(this.prog));
+    this.ok = !!gl.getProgramParameter(this.prog, gl.LINK_STATUS) && !!gl.getProgramParameter(this.comp, gl.LINK_STATUS);
+    if (!this.ok) console.error("Partikel-Shader:", gl.getProgramInfoLog(this.prog), gl.getProgramInfoLog(this.comp));
     return this.ok;
   }
 
@@ -299,28 +336,38 @@ export class ParticleRenderer {
     if (m) { m.used = performance.now(); return m; }
     // Große Flächen: weniger Abtastungen (Speicher)
     const samples = w * h > 4.2e6 ? Math.min(2, this.maxSamples) : this.maxSamples;
-    const fb = gl.createFramebuffer()!, color = gl.createRenderbuffer()!, depth = gl.createRenderbuffer()!;
+    const fb = gl.createFramebuffer()!, color = gl.createRenderbuffer()!, cov = gl.createRenderbuffer()!, depth = gl.createRenderbuffer()!;
     gl.bindRenderbuffer(gl.RENDERBUFFER, color);
     gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.RGBA8, w, h);
+    gl.bindRenderbuffer(gl.RENDERBUFFER, cov);
+    gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.R8, w, h);
     gl.bindRenderbuffer(gl.RENDERBUFFER, depth);
     gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.DEPTH_COMPONENT24, w, h);
     gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
     gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, color);
+    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT1, gl.RENDERBUFFER, cov);
     gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depth);
+    gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1]);
     gl.bindRenderbuffer(gl.RENDERBUFFER, null);
-    const rtex = gl.createTexture()!, rfb = gl.createFramebuffer()!;
+    const tex = (fmt: number) => {
+      const t = gl.createTexture()!;
+      gl.bindTexture(gl.TEXTURE_2D, t);
+      gl.texStorage2D(gl.TEXTURE_2D, 1, fmt, w, h);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+      return t;
+    };
     gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, rtex);
-    gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RGBA8, w, h);
+    const rtex = tex(gl.RGBA8), rcov = tex(gl.R8), rfb = gl.createFramebuffer()!;
     gl.bindFramebuffer(gl.FRAMEBUFFER, rfb);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, rtex, 0);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT1, gl.TEXTURE_2D, rcov, 0);
     gl.bindTexture(gl.TEXTURE_2D, null);
-    m = { fb, color, depth, w, h, samples, used: performance.now(), rfb, rtex };
+    m = { fb, color, cov, depth, w, h, samples, used: performance.now(), rfb, rtex, rcov };
     this.msaa.push(m);
     // Alte Größen freigeben (Fenster verkleinert, Vorschau gewechselt)
     if (this.msaa.length > 3) {
       this.msaa.sort((a, b) => b.used - a.used);
-      for (const x of this.msaa.splice(3)) { gl.deleteFramebuffer(x.fb); gl.deleteRenderbuffer(x.color); gl.deleteRenderbuffer(x.depth); gl.deleteFramebuffer(x.rfb); gl.deleteTexture(x.rtex); }
+      for (const x of this.msaa.splice(3)) { gl.deleteFramebuffer(x.fb); gl.deleteRenderbuffer(x.color); gl.deleteRenderbuffer(x.cov); gl.deleteRenderbuffer(x.depth); gl.deleteFramebuffer(x.rfb); gl.deleteTexture(x.rtex); gl.deleteTexture(x.rcov); }
     }
     return m;
   }
@@ -360,8 +407,11 @@ export class ParticleRenderer {
     const ms = this.target(rw, rh);
     gl.bindFramebuffer(gl.FRAMEBUFFER, ms.fb);
     gl.viewport(0, 0, rw, rh);
-    gl.clearColor(0, 0, 0, f.key ? 0 : 1); gl.clearDepth(1);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    // Deckung: Overlay leer = 0 (durchsichtig), Basis = 1 (schwarz deckt)
+    const bg = f.key ? 0 : 1;
+    gl.clearBufferfv(gl.COLOR, 0, [0, 0, 0, bg]);
+    gl.clearBufferfv(gl.COLOR, 1, [bg, 0, 0, 0]);
+    gl.clearBufferfv(gl.DEPTH, 0, [1]);
     gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LESS); gl.depthMask(true);
     gl.disable(gl.BLEND);
     if (ms.samples > 1) gl.enable(gl.SAMPLE_ALPHA_TO_COVERAGE);
@@ -391,6 +441,8 @@ export class ParticleRenderer {
     gl.uniform1f(this.loc("uScatter"), Math.min(1, Math.max(0, p.scatter)));
     gl.uniform1f(this.loc("uLen"), 0.085 * p.length);
     gl.uniform1f(this.loc("uRad"), 0.0115 * p.size);
+    gl.uniform1f(this.loc("uVpH"), h);
+    gl.uniform1f(this.loc("uMinPx"), 0.85);
     gl.uniform1i(this.loc("uColorMode"), f.colorMode);
     gl.uniform3f(this.loc("uColA"), f.colA[0]!, f.colA[1]!, f.colA[2]!);
     gl.uniform3f(this.loc("uColB"), f.colB[0]!, f.colB[1]!, f.colB[2]!);
@@ -409,14 +461,31 @@ export class ParticleRenderer {
     gl.disable(gl.SAMPLE_ALPHA_TO_COVERAGE);
     gl.disable(gl.DEPTH_TEST);
     // Glätten: Mehrfach-Abtastung in den Ausschnitt des Ziels auflösen
+    // Farbe und Deckung getrennt auflösen
     gl.bindFramebuffer(gl.READ_FRAMEBUFFER, ms.fb);
     gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, ms.rfb);
+    gl.readBuffer(gl.COLOR_ATTACHMENT0); gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.NONE]);
     gl.blitFramebuffer(0, 0, rw, rh, 0, 0, rw, rh, gl.COLOR_BUFFER_BIT, gl.NEAREST);
-    gl.bindFramebuffer(gl.READ_FRAMEBUFFER, ms.rfb);
-    gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, dst.fb);
-    gl.blitFramebuffer(0, 0, rw, rh, x0, y0, x1, y1, gl.COLOR_BUFFER_BIT, gl.NEAREST);
+    gl.readBuffer(gl.COLOR_ATTACHMENT1); gl.drawBuffers([gl.NONE, gl.COLOR_ATTACHMENT1]);
+    gl.blitFramebuffer(0, 0, rw, rh, 0, 0, rw, rh, gl.COLOR_BUFFER_BIT, gl.NEAREST);
+    gl.readBuffer(gl.COLOR_ATTACHMENT0); gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1]);
     gl.bindFramebuffer(gl.READ_FRAMEBUFFER, null);
     gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
+    // An seinen Platz im Ziel: Deckkraft = Anteil der getroffenen Abtastungen
+    gl.bindFramebuffer(gl.FRAMEBUFFER, dst.fb);
+    gl.viewport(x0, y0, rw, rh);
+    gl.useProgram(this.comp);
+    gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, ms.rcov);
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, ms.rtex);
+    gl.uniform1i(gl.getUniformLocation(this.comp, "uC"), 0);
+    gl.uniform1i(gl.getUniformLocation(this.comp, "uA"), 1);
+    gl.uniform2f(gl.getUniformLocation(this.comp, "uO"), x0, y0);
+    gl.bindVertexArray(this.emptyVao);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    gl.bindVertexArray(null);
+    gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, null);
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, null);
+    gl.viewport(0, 0, w, h);
     return true;
   }
 
