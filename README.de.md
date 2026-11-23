@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <img alt="Stand: Beta 0.1.15" src="https://img.shields.io/badge/Stand-Beta%200.1.15-FF5C93">
+  <img alt="Stand: Beta 0.1.16" src="https://img.shields.io/badge/Stand-Beta%200.1.16-FF5C93">
   <img alt="macOS und Windows, kostenlos" src="https://img.shields.io/badge/macOS%20%7C%20Windows-kostenlos-3DDC84">
   <img alt="Lizenz: EPL-2.0" src="https://img.shields.io/badge/Lizenz-EPL--2.0-60a5fa">
   <a href="https://github.com/skyplayser/VJ-LINK/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/skyplayser/VJ-LINK/total?label=Downloads&color=a78bfa"></a>
@@ -38,7 +38,7 @@ und danach höchstens einmal pro Stunde bei GitHub nach der neuesten Version; ab
 Fehlermeldung, wenn du eine schickst.
 
 > [!WARNING]
-> **Das ist die Beta 0.1.15.** Nach einem kompletten Testtag (Fehler, Arbeitsabläufe, Oberfläche und Sicherheitstest) ist sie
+> **Das ist die Beta 0.1.16.** Nach einem kompletten Testtag (Fehler, Arbeitsabläufe, Oberfläche und Sicherheitstest) ist sie
 > deutlich robuster als die erste Alpha, aber große Teile haben noch keine echte Bühnentechnik gesehen. Probier sie bitte vor
 > einer wichtigen Show aus, und sag uns, was dir auffällt: **Hilfe → Fehler melden** im Programm.
 
@@ -75,6 +75,7 @@ Fehlermeldung, wenn du eine schickst.
   Leuchten, Kontur und Kasten.
 - **Aus LJ-Link:** Tempo, Beat-Phase, Phrasen und Trackwechsel, eine *Now-Playing*-Bauchbinde und die DJ-Waveform als Clips.
 - **Neu in 0.1.12:** das **Partikel-Objekt**: 3D-Körper aus Tausenden Stäbchen, die auf den Beat oder den Bass explodieren und zurückschnellen, Drehung je Achse, fünf eingebaute Körper und eigene **OBJ/STL**-Modelle ([Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-particles.html), braucht eine starke Grafikkarte); die Anordnung **Getrennt**, bei der jeder Ausgang sein eigenes Bild zeigt, z. B. zwei gleiche Bildschirme mit verschiedenen Visuals ([Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-outputs.html#each-output-its-own-picture)); **Modulation mit Bereich** von–bis ([Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-modulation.html#range)); und *Neues Projekt* **mit Start-Aufbau oder leer**.
+- **Neu in 0.1.16:** die **Handy-Fernsteuerung** mit vier Reitern: **Start** (Live-Bild, Blackout, Master, Szene, WEITER, Tempo, Testbild, Bildschirm wach halten), **Szenen** (alle Szenen, Blende, Übergang), **Ebenen** (Mixer mit der Deckkraft jeder Ebene, Clips, Mischmodus, Text-Clips ändern, Uhr-Clips, Farben) und **Show** (WEITER, Zurück, Alles stoppen, Ablauf); sie lässt sich wie eine App auf den Home-Bildschirm legen ([Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-phone-remote.html)). **Behoben:** In der Galerie zeigt die Ziel-Ebene die Namen der Ebenen, und die Vorschaubilder der Partikel-Objekte zeigen den richtigen Körper.
 - **Neu in 0.1.15:** ein **Vorschau-Fenster** für einen zweiten Bildschirm mit Ebenen-Vorschau und Live-Bild ([Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-outputs.html#preview-window)); **Uhr- und Zeit-Clips**: Uhrzeit, Countdown bis Uhrzeit oder mit Dauer, Stoppuhr, Datum, BPM und Timecode ([Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-media.html#clock-and-time)); ein SHOW-Cue kann **zu einer Uhrzeit starten** ([Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-show.html#start-at-a-time)); **ShowPaket exportieren** mit dem Namen der Show, und **.vjlink-Dateien öffnen per Doppelklick** ([Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-projects.html#show-package)); Partikel-Objekte als **echter 3D-Körper** mit den Effekten Partikel, **Verwehen**, Schmelzen, Jelly, Auflösen, Verdrehen und Zersplittern (einzelne Teile fliegen für sich) ([Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-particles.html#effects)); bis zu **20 Ebenen**; mit LJ-Link sitzen **Takt 1 und alle 2/4 Takte auf der Eins und der Phrase**.
 - **Behoben in 0.1.15:** Der NDI-Ausgang sendet unter Windows mit Bildschirm-Skalierung (z. B. 125 %) wieder; vorher waren Empfänger verbunden, bekamen aber 0 Bilder/s.
 - **Neu in 0.1.14:** **Einstellungen → NDI** zeigt die Version der NDI-Laufzeit, lässt die **Netzwerkkarte** wählen, über die NDI sendet, und zeigt jeden NDI-Ausgang mit Empfängern und Datenrate ([Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-ndi.html#ndi-settings)); eine **Netzwerkkarte für Art-Net und sACN**, damit ein anderes Pult im WLAN nicht stört ([Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-connections.html#network-adapter)).

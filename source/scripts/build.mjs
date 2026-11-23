@@ -24,7 +24,9 @@ await cp("src/renderer/output.html", "dist/renderer/output.html");
 await cp("src/renderer/monitor.html", "dist/renderer/monitor.html");
 await cp("src/renderer/style.css", "dist/renderer/style.css");
 await mkdir("dist/renderer/remote", { recursive: true });
-for (const name of ["index.html", "remote.css"]) await cp(`src/remote/${name}`, `dist/renderer/remote/${name}`);
+for (const name of ["index.html", "remote.css", "manifest.webmanifest"]) await cp(`src/remote/${name}`, `dist/renderer/remote/${name}`);
+// Symbol für „Zum Home-Bildschirm“: das Programm-Symbol (entsteht mit scripts/logo)
+await cp("build/icon.png", "dist/renderer/remote/icon.png");
 await build({ ...common, entryPoints: ["src/remote/remote.ts"], outfile: "dist/renderer/remote/remote.js",
   platform: "browser", format: "iife", target: ["chrome90", "safari15", "firefox90"] });
 // Startanimation der Link-Suite (Baustein aus dem Suite-Launcher): Stil und Bilder; das Skript bündelt esbuild

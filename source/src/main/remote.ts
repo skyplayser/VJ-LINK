@@ -9,7 +9,12 @@ const ASSETS = new Map([
   ["/", ["index.html", "text/html; charset=utf-8"]],
   ["/remote.css", ["remote.css", "text/css; charset=utf-8"]],
   ["/remote.js", ["remote.js", "text/javascript; charset=utf-8"]],
+  // Zum Home-Bildschirm: App-Name und Symbol (das Programm-Symbol aus scripts/logo)
+  ["/manifest.webmanifest", ["manifest.webmanifest", "application/manifest+json; charset=utf-8"]],
+  ["/icon.png", ["icon.png", "image/png"]],
 ]);
+/** Bevorzugter Port der Handy-Fernsteuerung. */
+export const REMOTE_PORT = 48731;
 const isPrivate = (ip: string): boolean => /^10\.|^192\.168\.|^172\.(1[6-9]|2\d|3[01])\./.test(ip);
 
 async function jsonBody(req: IncomingMessage): Promise<unknown> {
@@ -17,7 +22,7 @@ async function jsonBody(req: IncomingMessage): Promise<unknown> {
   let length = 0;
   for await (const chunk of req) {
     length += chunk.length;
-    if (length > 1024) { req.destroy(); return null; }
+    if (length > 2048) { req.destroy(); return null; }
     chunks.push(chunk);
   }
   try { return JSON.parse(Buffer.concat(chunks).toString("utf8")); } catch { return null; }
@@ -40,8 +45,18 @@ export class PhoneRemote {
   private sequence = new Map<RemoteEffect, number>();
   private thumbnails = new Map<string, Buffer>();
   private requested = new Map<string, number>();
+  /** Live-Vorschau des Ausgangs: letztes Bild und wann es kam; angefragt nur, solange das Handy sie ansieht. */
+  private preview: { image: Buffer; at: number } | null = null;
+  private previewAsked = 0;
 
-  constructor(private webRoot: string, private dispatch: (command: RemoteCommand) => void, private requestThumbnail?: (clip: string) => void) {}
+  constructor(private webRoot: string, private dispatch: (command: RemoteCommand) => void, private requestThumbnail?: (clip: string) => void,
+    private requestPreview?: () => void) {}
+
+  /** Bild der Live-Vorschau vom Hauptfenster (JPEG, klein). */
+  setPreview(data: string): void {
+    if (!this.server || data.length > 120_000 || !/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(data)) return;
+    this.preview = { image: Buffer.from(data.slice("data:image/jpeg;base64,".length), "base64"), at: Date.now() };
+  }
 
   info(): RemoteInfo {
     const addresses = [...new Set(Object.values(networkInterfaces()).flatMap(list =>
@@ -52,11 +67,19 @@ export class PhoneRemote {
     };
   }
 
-  setState(state: RemoteState): void { if (this.server) this.state = state; }
+  setState(state: RemoteState): void {
+    if (!this.server) return;
+    // Clip mit neuem Namen (z. B. Text vom Handy geändert): altes Vorschaubild verwerfen
+    const names = new Map(state.layers.flatMap(l => l.clips.map(c => [c.id, c.name] as const)));
+    const before = this.state ? new Map(this.state.layers.flatMap(l => l.clips.map(c => [c.id, c.name] as const))) : null;
+    if (before) for (const [id, name] of names) if (before.has(id) && before.get(id) !== name) this.thumbnails.delete(id);
+    this.state = state;
+  }
   clearState(): void {
     this.state = null;
     this.thumbnails.clear();
     this.requested.clear();
+    this.preview = null;
     this.releaseAll();
   }
 
@@ -79,10 +102,12 @@ export class PhoneRemote {
     server.maxConnections = 24;
     server.keepAliveTimeout = 2000;
     try {
-      await new Promise<void>((resolve, reject) => {
+      // Fester Port, damit ein Symbol auf dem Home-Bildschirm des Handys nach einem Neustart weiter passt; belegt: irgendeiner
+      const listen = (port: number) => new Promise<void>((resolve, reject) => {
         server.once("error", reject);
-        server.listen(0, address, () => { server.off("error", reject); resolve(); });
+        server.listen(port, address, () => { server.off("error", reject); resolve(); });
       });
+      try { await listen(REMOTE_PORT); } catch { await listen(0); }
       if (attempt !== this.attempt) { server.close(); return this.info(); }
       this.server = server;
       this.address = address;
@@ -109,6 +134,7 @@ export class PhoneRemote {
     this.state = null;
     this.thumbnails.clear();
     this.requested.clear();
+    this.preview = null;
     if (server) { server.close(); server.closeAllConnections(); }
     return this.info();
   }
@@ -146,7 +172,7 @@ export class PhoneRemote {
       res.end(JSON.stringify(body));
     };
     res.setHeader("X-Content-Type-Options", "nosniff");
-    res.setHeader("Content-Security-Policy", "default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src blob:; frame-ancestors 'none'; form-action 'none'; base-uri 'none'");
+    res.setHeader("Content-Security-Policy", "default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' blob:; media-src blob:; manifest-src 'self'; frame-ancestors 'none'; form-action 'none'; base-uri 'none'");
     const host = `${this.address}:${this.port}`;
     if (!this.server || req.headers.host !== host) { reply(403); return; }
     const file = req.method === "GET" && ASSETS.get(req.url ?? "");
@@ -172,6 +198,16 @@ export class PhoneRemote {
     }
     if (!this.token || req.headers.authorization !== `Bearer ${this.token}`) { reply(401); return; }
     if (req.method === "GET" && req.url === "/api/state") { reply(200, this.state); return; }
+    if (req.method === "GET" && req.url === "/api/preview") {
+      // Das Hauptfenster schickt Bilder nur, solange gefragt wird (höchstens alle 250 ms ein Auftrag)
+      const now = Date.now();
+      if (now - this.previewAsked > 250 && this.requestPreview) { this.previewAsked = now; this.requestPreview(); }
+      if (this.preview && now - this.preview.at < 3000) {
+        res.writeHead(200, { "Content-Type": "image/jpeg", "Cache-Control": "no-store" });
+        res.end(this.preview.image); return;
+      }
+      reply(202); return;
+    }
     if (req.method === "GET" && req.url?.startsWith("/api/thumb?")) {
       const clip = new URLSearchParams(req.url.slice("/api/thumb?".length)).get("clip");
       if (!clip || !this.state?.layers.some(layer => layer.clips.some(item => item.id === clip))) { reply(404); return; }

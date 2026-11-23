@@ -6,6 +6,7 @@ const bridge: VjBridge = {
   remoteStart: address => ipcRenderer.invoke("remote:start", address),
   remoteStop: () => ipcRenderer.invoke("remote:stop"),
   remoteThumbnail: (clip, data) => { ipcRenderer.send("remote:thumbnail", clip, data); },
+  remotePreview: data => { ipcRenderer.send("remote:preview", data); },
   remoteState: state => { ipcRenderer.send("remote:state", state); },
   onControl: cb => { ipcRenderer.on("control", (_e, ev: ControlEvent) => cb(ev)); },
   publishFrame: f => { ipcRenderer.send("frame", f); },

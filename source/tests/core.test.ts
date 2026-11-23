@@ -2325,3 +2325,39 @@ describe("Anordnung folgt der Größe eines Ausgangs (NDI-Ausgang mit freier Gr�
     expect(parseProject(JSON.stringify(bad))!.outputs.screens[0]!.nat).toBeUndefined();
   });
 });
+
+describe("Handy-Fernsteuerung: Szenen und SHOW", () => {
+  it("nimmt Szene und SHOW-Befehle an, Ebenen bis 20, verwirft Unsinn", async () => {
+    const { remoteCommand } = await import("../src/core/remote");
+    expect(remoteCommand({ kind: "scene", index: 3 })).toEqual({ kind: "scene", index: 3 });
+    expect(remoteCommand({ kind: "scene", index: -1 })).toBeNull();
+    expect(remoteCommand({ kind: "scene", index: 1.5 })).toBeNull();
+    for (const action of ["go", "back", "stop"]) expect(remoteCommand({ kind: "show", action })).toEqual({ kind: "show", action });
+    expect(remoteCommand({ kind: "show", action: "delete" })).toBeNull();
+    expect(remoteCommand({ kind: "clip", stack: "main", layer: 15, id: "tunnel" })).toEqual({ kind: "clip", stack: "main", layer: 15, id: "tunnel" });
+    expect(remoteCommand({ kind: "clip", stack: "main", layer: 20, id: "tunnel" })).toBeNull();
+  });
+});
+
+describe("Handy-Fernsteuerung: Regler, Text, Zeit, Tempo", () => {
+  it("lässt nur freigegebene Regler zu", async () => {
+    const { remoteCommand } = await import("../src/core/remote");
+    for (const id of ["master", "blackout", "fx.master", "transition.beats", "transition.style", "scene.next", "scene.auto", "test.toggle", "layer.1.opacity", "layer.20.blend", "tc.start"])
+      expect(remoteCommand({ kind: "control", id, value: 0.5 }), id).toEqual({ kind: "control", id, value: 0.5 });
+    for (const id of ["layer.21.opacity", "layer.1.clip", "settings.reset", "tempo.factor", "master.x"])
+      expect(remoteCommand({ kind: "control", id, value: 0.5 }), id).toBeNull();
+    expect(remoteCommand({ kind: "control", id: "master", value: 2 })).toBeNull();
+  });
+  it("Tempo, Text, Zeit, Cue, Bild", async () => {
+    const { remoteCommand } = await import("../src/core/remote");
+    expect(remoteCommand({ kind: "bpm", value: 128.04 })).toEqual({ kind: "bpm", value: 128.04 });
+    expect(remoteCommand({ kind: "bpm", value: 10 })).toBeNull();
+    expect(remoteCommand({ kind: "text", layer: 4, clip: "img:ab12", text: "NEXT: DJ MAX\nLIVE" })).toEqual({ kind: "text", layer: 4, clip: "img:ab12", text: "NEXT: DJ MAX\nLIVE" });
+    expect(remoteCommand({ kind: "text", layer: 4, clip: "tunnel", text: "x" })).toBeNull();
+    expect(remoteCommand({ kind: "text", layer: 4, clip: "img:ab12", text: "x".repeat(241) })).toBeNull();
+    expect(remoteCommand({ kind: "time", layer: 0, field: "target", value: "23:30" })).toEqual({ kind: "time", layer: 0, field: "target", value: "23:30" });
+    expect(remoteCommand({ kind: "time", layer: 0, field: "style", value: "x" })).toBeNull();
+    expect(remoteCommand({ kind: "cueNext", index: 2 })).toEqual({ kind: "cueNext", index: 2 });
+    expect(remoteCommand({ kind: "stack", stack: "b2" })).toEqual({ kind: "stack", id: "b2" });
+  });
+});

@@ -4,7 +4,7 @@ import { modelClip, type ModelLibrary } from "./modellib";
 import type { ControlContext } from "../core/control";
 import { CATEGORY_LABEL, EFFECTS, POST_EFFECTS, READY_GENERATORS, type EffectCategory, type EffectDef } from "../core/effects";
 import { mediaClip } from "../core/media";
-import { addClip, defaultLayer, forgetClip, MAX_EFFECTS, type ShowState } from "../core/show";
+import { addClip, defaultLayer, forgetClip, layerName, MAX_EFFECTS, type ShowState } from "../core/show";
 import { videoClip } from "../core/video";
 import { camClip } from "../core/camera";
 import { Engine } from "../engine/engine";
@@ -74,6 +74,8 @@ export class Gallery {
   /** Einmal pro Bild, solange die Galerie offen ist. */
   tick(nowMs: number): void {
     if (!this.root.offsetParent || nowMs < this.nextDraw) return;
+    // Ebenen umbenannt, hinzugefügt oder entfernt, während die Galerie offen ist: Auswahl nachziehen
+    if (this.layerSel.isConnected && document.activeElement !== this.layerSel && this.layerSig !== this.d.ctx.show.layers.map((l, i) => layerName(l, i)).join("|")) this.fillLayers(true);
     // Fehlen noch Vorschaubilder und laufen keine Ausgänge: bei jedem Bild weiter (Visuals werden je Durchlauf übersetzt)
     this.nextDraw = nowMs + (this.queue.length && !this.d.live?.() ? 0 : 32);
     if (!this.live.isConnected) this.start();
@@ -136,11 +138,20 @@ export class Gallery {
     else this.renderMedia(main, info);
   }
 
+  /** „Ebene 2 · Linien“: Nummer und Name wie im Clip-Raster (ohne eigenen Namen „Basis“ bzw. „Overlay“). */
+  private layerLabel(i: number): string { return `${t("Ebene {n}", { n: i + 1 })} · ${layerName(this.d.ctx.show.layers[i], i)}`; }
+  private layerSig = "";
+  /** Auswahl der Ziel-Ebene füllen; die Wahl bleibt, sonst die im Hauptfenster gewählte Ebene. */
+  private fillLayers(keep: boolean): void {
+    const layers = this.d.ctx.show.layers;
+    this.layerSig = layers.map((l, i) => layerName(l, i)).join("|");
+    const prev = keep && this.layerSel.value !== "" ? Number(this.layerSel.value) : this.d.currentLayer();
+    this.layerSel.replaceChildren(...layers.map((_, i) => new Option(this.layerLabel(i), String(i))));
+    this.layerSel.value = String(Math.max(0, Math.min(prev, layers.length - 1)));
+  }
   private layerPicker(): HTMLElement {
     const row = el("div", "gal-layer");
-    this.layerSel.replaceChildren();
-    this.d.ctx.show.layers.forEach((l, i) => this.layerSel.append(new Option(`${t("Ebene {n}", { n: i + 1 })}${(l as { name?: string }).name ? ` · ${(l as { name?: string }).name}` : ""}`, String(i))));
-    this.layerSel.value = String(Math.min(this.d.currentLayer(), this.d.ctx.show.layers.length - 1));
+    this.fillLayers(false);
     this.layerSel.setAttribute("aria-label", t("Ziel-Ebene"));
     row.append(el("span", "am-cap", t("Ziel-Ebene")), this.layerSel);
     return row;
@@ -223,7 +234,7 @@ export class Gallery {
     addClip(l, id);
     if (play) l.clip = id;
     this.d.changed();
-    this.d.toast(play ? t("Läuft jetzt auf Ebene {n}.", { n: i + 1 }) : t("In Ebene {n} aufgenommen.", { n: i + 1 }));
+    this.d.toast(play ? t("Läuft jetzt auf {layer}.", { layer: this.layerLabel(i) }) : t("In {layer} aufgenommen.", { layer: this.layerLabel(i) }));
   }
 
   // ---- Effekte ----------------------------------------------------------------------
@@ -247,10 +258,10 @@ export class Gallery {
       add.addEventListener("click", () => {
         const i = this.target(), l = this.d.ctx.show.layers[i];
         if (!l) return;
-        if (l.effects.length >= MAX_EFFECTS) { this.d.toast(t("Ebene {n} hat schon {max} Effekte.", { n: i + 1, max: MAX_EFFECTS })); return; }
+        if (l.effects.length >= MAX_EFFECTS) { this.d.toast(t("{layer} hat schon {max} Effekte.", { layer: this.layerLabel(i), max: MAX_EFFECTS })); return; }
         l.effects.push({ id: fx.id, on: true, amount: 0.5 });
         this.d.changed(); this.d.selectLayer(i);
-        this.d.toast(t("{name} liegt jetzt im Effekt-Stapel von Ebene {n} (Stärke 50 %).", { name: fx.name, n: i + 1 }));
+        this.d.toast(t("{name} liegt jetzt im Effekt-Stapel von {layer} (Stärke 50 %).", { name: fx.name, layer: this.layerLabel(i) }));
       });
       info.append(add);
     };
@@ -289,7 +300,7 @@ export class Gallery {
         const add = el("button", "icon", "+"); add.title = t("In die Ziel-Ebene legen");
         add.addEventListener("click", () => {
           const i = this.target(), l = this.d.ctx.show.layers[i]; if (!l) return;
-          addClip(l, it.clip); this.d.changed(); this.d.toast(t("„{name}“ in Ebene {n}.", { name: it.name, n: i + 1 }));
+          addClip(l, it.clip); this.d.changed(); this.d.toast(t("„{name}“ in {layer}.", { name: it.name, layer: this.layerLabel(i) }));
         });
         row.append(el("small", "", t(it.kind)), add);
         if (it.remove) {

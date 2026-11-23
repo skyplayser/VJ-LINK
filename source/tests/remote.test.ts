@@ -7,7 +7,7 @@ describe("Handy-Fernsteuerung", () => {
   it("prüft Befehle und unterstützt Farbvorlagen", () => {
     expect(remoteCommand({ kind: "clip", stack: "main", layer: 2, id: "rain" })).toEqual({ kind: "clip", stack: "main", layer: 2, id: "rain" });
     for (const invalid of [
-      { kind: "clip", stack: "main", layer: 8, id: null },
+      { kind: "clip", stack: "main", layer: 20, id: null },
       { kind: "assign", stack: "..", layer: 0, slot: 0 },
       { kind: "color", slot: 5, preset: 0 },
       { kind: "strobeValue", control: "speed", value: Infinity },

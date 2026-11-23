@@ -132,6 +132,8 @@ const phone = new PhoneRemote(rendererFile("remote"), command => {
   if (control && !control.isDestroyed()) control.webContents.send("control", { type: "remote", command });
 }, clip => {
   if (control && !control.isDestroyed()) control.webContents.send("control", { type: "remote-thumbnail", clip });
+}, () => {
+  if (control && !control.isDestroyed()) control.webContents.send("control", { type: "remote-preview" });
 });
 
 function secureWindow(opts: Electron.BrowserWindowConstructorOptions, prefs: Electron.WebPreferences = {}): BrowserWindow {
@@ -849,6 +851,7 @@ app.whenReady().then(async () => {
   ipcMain.handle("remote:info", e => fromControl(e) ? phone.info() : null);
   ipcMain.handle("remote:start", (e, address: unknown) => fromControl(e) && typeof address === "string" ? phone.start(address) : null);
   ipcMain.handle("remote:stop", e => fromControl(e) ? phone.stop() : null);
+  ipcMain.on("remote:preview", (e, data: unknown) => { if (fromControl(e) && typeof data === "string") phone.setPreview(data); });
   ipcMain.on("remote:thumbnail", (e, clip: unknown, data: unknown) => {
     if (fromControl(e) && typeof clip === "string" && typeof data === "string") phone.setThumbnail(clip, data);
   });

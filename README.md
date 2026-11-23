@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <img alt="Status: beta 0.1.15" src="https://img.shields.io/badge/status-beta%200.1.15-FF5C93">
+  <img alt="Status: beta 0.1.16" src="https://img.shields.io/badge/status-beta%200.1.16-FF5C93">
   <img alt="macOS and Windows, free" src="https://img.shields.io/badge/macOS%20%7C%20Windows-free-3DDC84">
   <img alt="License: EPL-2.0" src="https://img.shields.io/badge/license-EPL--2.0-60a5fa">
   <a href="https://github.com/skyplayser/VJ-LINK/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/skyplayser/VJ-LINK/total?label=downloads&color=a78bfa"></a>
@@ -38,7 +38,7 @@ It runs locally. There is no account, no cloud and no telemetry. The only connec
 and a problem report, when you send one.
 
 > [!WARNING]
-> **This is the beta 0.1.15.** After a full test day (bugs, workflows, interface and a security test) it is a lot more robust
+> **This is the beta 0.1.16.** After a full test day (bugs, workflows, interface and a security test) it is a lot more robust
 > than the first alpha, but large parts have still not met real stage hardware. Please try it before an important show, and
 > tell us what you find: **Help → Report a problem** in the program.
 
@@ -74,6 +74,7 @@ and a problem report, when you send one.
   with font, glow, outline and box.
 - **From LJ-Link:** tempo, beat phase, phrases and track changes, a *Now Playing* lower third and the DJ waveform as clips.
 - **New in 0.1.12:** the **particle object**: 3D bodies made of thousands of sticks that explode on the beat or the bass and snap back, rotation per axis, five built-in bodies and your own **OBJ/STL** models ([wiki](https://skyplayser.github.io/VJ-LINK/wiki-particles.html), needs a strong graphics card); the arrangement **Separate**, where every output shows its own image, e.g. two identical screens with different visuals ([wiki](https://skyplayser.github.io/VJ-LINK/wiki-outputs.html#each-output-its-own-picture)); **modulation with a range** from–to ([wiki](https://skyplayser.github.io/VJ-LINK/wiki-modulation.html#range)); and *New project* **with starter setup or empty**.
+- **New in 0.1.16:** the **phone remote** with four tabs: **Start** (live picture, blackout, master, scene, GO, tempo, test pattern, keep the screen awake), **Scenes** (all scenes, fade, transition), **Layers** (mixer with the opacity of every layer, clips, blend mode, change text clips, clock clips, colours) and **Show** (GO, back, stop all, running order); it can sit on the home screen like an app ([wiki](https://skyplayser.github.io/VJ-LINK/wiki-phone-remote.html)). **Fixed:** in the gallery the target layer shows the layer names, and the previews of the particle objects show the right body.
 - **New in 0.1.15:** a **preview window** for a second screen with the layer preview and the live picture ([wiki](https://skyplayser.github.io/VJ-LINK/wiki-outputs.html#preview-window)); **clock and time clips**: clock, countdown to a time or for a duration, stopwatch, date, BPM and timecode ([wiki](https://skyplayser.github.io/VJ-LINK/wiki-media.html#clock-and-time)); a SHOW cue can **start at a time of day** ([wiki](https://skyplayser.github.io/VJ-LINK/wiki-show.html#start-at-a-time)); **Export show package** with the name of the show, and **.vjlink files open with a double click** ([wiki](https://skyplayser.github.io/VJ-LINK/wiki-projects.html#show-package)); particle objects as a **real 3D body** with the effects Particles, **Drift**, Melt, Jelly, Dissolve, Twist and Shatter (separate parts fly on their own) ([wiki](https://skyplayser.github.io/VJ-LINK/wiki-particles.html#effects)); up to **20 layers**; with LJ-Link **bar 1 and every 2/4 bars land on the downbeat and the phrase**.
 - **Fixed in 0.1.15:** the NDI output sends again on Windows with display scaling (e.g. 125 %); before, receivers were connected but got 0 frames/s.
 - **New in 0.1.14:** **Settings → NDI** shows the version of the NDI runtime, lets you choose the **network adapter** NDI sends over and shows every NDI output with receivers and data rate ([wiki](https://skyplayser.github.io/VJ-LINK/wiki-ndi.html#ndi-settings)); a **network adapter for Art-Net and sACN**, so another console on the Wi-Fi does not interfere ([wiki](https://skyplayser.github.io/VJ-LINK/wiki-connections.html#network-adapter)).

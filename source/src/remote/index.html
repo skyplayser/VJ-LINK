@@ -4,7 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0C0E13">
-<meta name="description" content="Lokale VJ-Link-Fernsteuerung für Clips, Farben, Tempo und Lichteffekte.">
+<meta name="description" content="Lokale VJ-Link-Fernsteuerung für SHOW, Szenen, Ebenen, Farben, Tempo und Lichteffekte.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="VJ-Link">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icon.png">
+<link rel="icon" href="/icon.png">
 <title>VJ-Link Remote</title>
 <link rel="stylesheet" href="/remote.css">
 <script defer src="/remote.js"></script>
@@ -14,6 +21,12 @@
   <div class="brand"><span class="mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>VJ-Link<span class="remote-word" data-i18n>Fernsteuerung</span></div>
   <span id="status" role="status" class="status">Nicht verbunden</span>
 </header>
+<nav class="tabs" id="tabs" role="tablist" aria-label="Bereiche" data-i18n-aria hidden>
+  <button role="tab" data-tab="start" type="button" data-i18n>Start</button>
+  <button role="tab" data-tab="scenes" type="button" data-i18n>Szenen</button>
+  <button role="tab" data-tab="layers" type="button" data-i18n>Ebenen</button>
+  <button role="tab" data-tab="show" type="button">Show</button>
+</nav>
 <main>
   <section class="pair card" id="pair">
     <h1 data-i18n>Fernsteuerung koppeln</h1>
@@ -27,21 +40,124 @@
   </section>
 
   <div id="controls" hidden>
-    <section class="card" aria-labelledby="clip-title">
-      <div class="section-head"><h1 id="clip-title" data-i18n>Clips</h1><span class="subtle" id="stack"></span></div>
-      <div id="layers" class="layers" aria-label="Ebenen" data-i18n-aria></div>
-      <div class="clip-grid" id="clips"></div>
-    </section>
-    <section class="card" aria-labelledby="color-title">
-      <div class="section-head"><h2 id="color-title" data-i18n>Farben</h2><button id="apply-color" class="small" type="button" data-i18n>Auf Ebene anwenden</button></div>
-      <div id="slots" class="slots" aria-label="Farbslots" data-i18n-aria></div>
-      <div id="presets" class="presets" aria-label="Farbvorlagen" data-i18n-aria></div>
-    </section>
-    <section class="card rates" aria-labelledby="strobe-title">
-      <h2 id="strobe-title" data-i18n>Strobe-Regler</h2>
-      <label><span data-i18n>Geschwindigkeit</span> <input id="speed" type="range" min="0" max="100" step="1"></label>
-      <label><span data-i18n>Intensität</span> <input id="intensity" type="range" min="0" max="100" step="1"></label>
-    </section>
+    <!-- START: alles Wichtige auf einen Blick -->
+    <div class="panel" data-panel="start" role="tabpanel">
+      <section class="card">
+        <div class="section-head"><h1 data-i18n>Live</h1><span class="subtle" id="outputs"></span></div>
+        <div class="live-box"><img id="live" alt="Live-Bild des Ausgangs" data-i18n-alt><span id="live-wait" class="subtle" data-i18n>Live-Bild wird geladen …</span></div>
+      </section>
+      <section class="card">
+        <button id="blackout" class="blackout" type="button" aria-pressed="false">BLACKOUT</button>
+        <label class="fader"><span>Master</span><input data-ctl="master" type="range" min="0" max="1000" step="1"><b data-val="master"></b></label>
+        <label class="fader"><span data-i18n>Effekte</span><input data-ctl="fx.master" type="range" min="0" max="1000" step="1"><b data-val="fx.master"></b></label>
+      </section>
+      <section class="card">
+        <div class="section-head"><h2 data-i18n>Szene</h2><b id="start-scene" class="now"></b></div>
+        <div class="row3"><button data-trigger="scene.prev" type="button" data-i18n>◀ Zurück</button><button data-toggle="scene.auto" type="button">Auto</button><button data-trigger="scene.next" type="button" data-i18n>Weiter ›</button></div>
+      </section>
+      <section class="card" id="start-show" hidden>
+        <div class="section-head"><h2>Show</h2><span class="subtle" id="start-cue"></span></div>
+        <button class="primary go" data-show="go" type="button"><span data-i18n>WEITER</span><small id="start-go-label"></small></button>
+      </section>
+      <section class="card">
+        <div class="section-head"><h2>Tempo</h2><span class="subtle" id="tempo-src2"></span></div>
+        <div class="bpm-row">
+          <button id="bpm-down" type="button" aria-label="0,1 BPM langsamer" data-i18n-aria>−0,1</button>
+          <input id="bpm-in" inputmode="decimal" aria-label="BPM eingeben" data-i18n-aria>
+          <button id="bpm-up" type="button" aria-label="0,1 BPM schneller" data-i18n-aria>+0,1</button>
+          <button id="bpm-set" type="button" data-i18n>Setzen</button>
+        </div>
+      </section>
+      <section class="card rates">
+        <h2 data-i18n>Licht</h2>
+        <label><span data-i18n>Geschwindigkeit</span> <input id="speed" type="range" min="0" max="100" step="1"></label>
+        <label><span data-i18n>Intensität</span> <input id="intensity" type="range" min="0" max="100" step="1"></label>
+        <div class="row3"><button data-toggle="strobe.on" type="button"><span data-i18n>Strobe</span><small data-i18n>Dauer-An</small></button><button data-toggle="strobe.white" type="button"><span data-i18n>Strobe White</span><small data-i18n>Dauer-An</small></button><button data-toggle="blinder.on" type="button"><span>Blinder</span><small data-i18n>Dauer-An</small></button></div>
+      </section>
+      <section class="card">
+        <div class="section-head"><h2 data-i18n>Einrichten</h2><span class="subtle" id="test-name"></span></div>
+        <div class="row3"><button data-trigger="test.prev" type="button" aria-label="Voriges Testbild" data-i18n-aria>◀</button><button data-toggle="test.toggle" type="button" data-i18n>Testbild</button><button data-trigger="test.next" type="button" aria-label="Nächstes Testbild" data-i18n-aria>▶</button></div>
+        <p class="hint" data-i18n>Testbild auf allen Ausgängen, zum Ausrichten von Beamern direkt an der Leinwand.</p>
+      </section>
+      <section class="card">
+        <h2 data-i18n>Handy</h2>
+        <button id="awake" type="button" aria-pressed="false" data-i18n>Bildschirm wach halten</button>
+        <p class="hint" data-i18n>Als App auf den Home-Bildschirm: iPhone im Teilen-Menü „Zum Home-Bildschirm“, Android im Browser-Menü „Zum Startbildschirm hinzufügen“. Nach einem Neustart von VJ-Link einmal neu koppeln.</p>
+      </section>
+    </div>
+
+    <!-- SZENEN -->
+    <div class="panel" data-panel="scenes" role="tabpanel" hidden>
+      <section class="card">
+        <div class="section-head"><h1 data-i18n>Szenen</h1><span class="subtle" id="scene-now"></span></div>
+        <div class="scene-grid" id="scenes" aria-label="Szenen" data-i18n-aria></div>
+        <div class="row3 gap-top"><button data-trigger="scene.prev" type="button" data-i18n>◀ Zurück</button><button data-toggle="scene.auto" type="button">Auto</button><button data-trigger="scene.next" type="button" data-i18n>Weiter ›</button></div>
+      </section>
+      <section class="card">
+        <h2 data-i18n>Übergang</h2>
+        <label class="fader"><span data-i18n>Blende</span><input data-ctl="transition.beats" type="range" min="0" max="1000" step="1"><b data-val="transition.beats"></b></label>
+        <div class="stepper"><button id="style-prev" type="button" aria-label="Vorige Übergangsart" data-i18n-aria>◀</button><b data-val="transition.style"></b><button id="style-next" type="button" aria-label="Nächste Übergangsart" data-i18n-aria>▶</button></div>
+      </section>
+    </div>
+
+    <!-- EBENEN -->
+    <div class="panel" data-panel="layers" role="tabpanel" hidden>
+      <section class="card" id="image-card" hidden>
+        <div class="section-head"><h2 data-i18n>Bild</h2></div>
+        <div class="seg" id="images"></div>
+      </section>
+      <section class="card">
+        <div class="section-head"><h1 data-i18n>Ebenen</h1><span class="subtle" id="stack"></span></div>
+        <div class="mixer" id="mixer"></div>
+      </section>
+      <section class="card" aria-labelledby="clip-title">
+        <div class="section-head"><h2 id="clip-title"><span data-i18n>Clips</span> · <span id="layer-name"></span></h2></div>
+        <div id="layers" class="layers" aria-label="Ebenen" data-i18n-aria></div>
+        <div class="clip-grid" id="clips"></div>
+        <div class="seg gap-top" id="blend" aria-label="Mischmodus" data-i18n-aria></div>
+      </section>
+      <section class="card" id="text-card" hidden>
+        <h2 data-i18n>Text</h2>
+        <div id="texts"></div>
+      </section>
+      <section class="card" id="time-card" hidden>
+        <div class="section-head"><h2 id="time-title"></h2><button id="time-restart" class="small" type="button" data-i18n>Neu starten</button></div>
+        <div class="form-grid">
+          <label><span data-i18n>Ziel-Uhrzeit</span><input id="time-target" inputmode="numeric" placeholder="00:00"></label>
+          <label><span data-i18n>Minuten</span><input id="time-minutes" inputmode="decimal"></label>
+          <label><span data-i18n>Zeile darüber</span><input id="time-label" maxlength="60"></label>
+          <label><span data-i18n>Text bei 0</span><input id="time-end" maxlength="60"></label>
+        </div>
+      </section>
+      <section class="card" aria-labelledby="color-title">
+        <div class="section-head"><h2 id="color-title" data-i18n>Farben</h2><button id="apply-color" class="small" type="button" data-i18n>Auf Ebene anwenden</button></div>
+        <div id="slots" class="slots" aria-label="Farbslots" data-i18n-aria></div>
+        <div id="presets" class="presets" aria-label="Farbvorlagen" data-i18n-aria></div>
+      </section>
+    </div>
+
+    <!-- SHOW -->
+    <div class="panel" data-panel="show" role="tabpanel" hidden>
+      <section class="card show" id="show-card">
+        <div class="section-head"><h1>Show</h1><span class="subtle" id="show-count"></span></div>
+        <p class="hint" id="show-empty" data-i18n hidden>Noch keine Cues. Den Ablauf legst du im Tab SHOW am Rechner an.</p>
+        <div class="show-state">
+          <div><small data-i18n>Läuft</small><b id="show-current">–</b><span id="show-remaining" class="subtle"></span></div>
+          <div><small data-i18n>Als Nächstes</small><b id="show-next">–</b></div>
+        </div>
+        <button class="primary go" data-show="go" type="button"><span data-i18n>WEITER</span><small id="show-go-label"></small></button>
+        <div class="show-row"><button data-show="back" type="button" data-i18n>◀ Zurück</button><button id="show-stop" class="stop" type="button" data-i18n>Alles stoppen</button></div>
+      </section>
+      <section class="card">
+        <div class="section-head"><h2 data-i18n>Ablauf</h2><span class="subtle" data-i18n>Antippen = als Nächstes</span></div>
+        <div class="cue-list" id="cues"></div>
+      </section>
+      <section class="card">
+        <h2>Timecode</h2>
+        <div class="row3 gap-top"><button data-trigger="tc.start" type="button">Start</button><button data-trigger="tc.stop" type="button" data-i18n>Stopp</button><button data-trigger="tc.zero" type="button" data-i18n>Auf Start</button></div>
+        <p class="hint" data-i18n>Steuert die eigene Timecode-Uhr von VJ-Link (Einstellungen → Timecode).</p>
+      </section>
+    </div>
   </div>
 </main>
 <section id="transport" class="transport" aria-label="Live-Steuerung" data-i18n-aria hidden>

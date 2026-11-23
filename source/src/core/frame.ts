@@ -49,6 +49,7 @@ export const frameBeat = (f: Frame, nowMs: number): number =>
 export type ControlEvent =
   | { type: "remote"; command: RemoteCommand }
   | { type: "remote-thumbnail"; clip: string }
+  | { type: "remote-preview" }
   | { type: "dmx"; source: "artnet" | "sacn"; universe: number; data: Uint8Array }
   | { type: "osc"; address: string; args: (number | string | boolean | null)[]; tags?: string }
   | { type: "lj"; raw: string }
@@ -184,6 +185,8 @@ export interface VjBridge {
   remoteStop?(): Promise<RemoteInfo>;
   remoteState?(state: RemoteState): void;
   remoteThumbnail?(clip: string, data: string): void;
+  /** Live-Vorschau des Ausgangs für das Handy (JPEG als data-URL). */
+  remotePreview?(data: string): void;
   onControl(cb: (e: ControlEvent) => void): void;
   publishFrame(f: Frame): void;
   /** Grafikkarte hat den WebGL-Kontext verloren: Hauptprozess öffnet das Fenster neu. */

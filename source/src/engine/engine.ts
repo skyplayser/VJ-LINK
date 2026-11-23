@@ -797,7 +797,10 @@ export class Engine {
       const base = show.layers[c.layer];
       if (!base || c.w < 4 || c.h < 4) continue;
       const l: LayerState = { ...base, clip: c.clip, opacity: 1 };
-      const img = this.renderLayer(l, `t${c.layer}.${c.col}`, this.thumbTime[c.layer]!, c.w, c.h, show, beat, pulse, bands, false);
+      // Partikel-Objekte je Clip eigene Fläche: sonst verwandelt sich die Form vom vorigen Vorschaubild (Galerie rechnet
+      // alle nacheinander in derselben Zelle) und das Bild zeigt noch das vorige Objekt
+      const key = `t${c.layer}.${c.col}${isParticleClip(c.clip) ? `:${c.clip}` : ""}`;
+      const img = this.renderLayer(l, key, this.thumbTime[c.layer]!, c.w, c.h, show, beat, pulse, bands, false);
       if (!img) continue;
       gl.useProgram(this.comp.p);
       gl.uniform1i(this.loc(this.comp, "uTex"), 0);

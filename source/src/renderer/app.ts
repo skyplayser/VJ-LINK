@@ -18,7 +18,7 @@ import { Engine } from "../engine/engine";
 import { GEN_IDS } from "../engine/shaders";
 import { TempoClock } from "../core/tempo";
 import { DmxDecoder, DMX_MODE_STANDARD_CHANNELS, CH, channelListCsv } from "../core/dmx";
-import { handleLj, handleOsc, recallScene, tickAuto, tickTransition, tickVideoStarts, type ControlContext } from "../core/control";
+import { handleLj, handleOsc, recallScene, showBack, showGo, showStop, tickAuto, tickTransition, tickVideoStarts, type ControlContext } from "../core/control";
 import { CLUB_STANDARD_RULES, newLjState, parseLjMessage } from "../core/ljlink";
 import { CATEGORY_LABEL, EFFECTS, EFFECT_BY_ID, POST_EFFECTS, READY_GENERATORS, type EffectCategory } from "../core/effects";
 import { BLEND_MODES, COLOR_SOURCES_ALL, DRIVES, type Drive, MAX_LAYERS, addClip, addLayer, defaultScenes, moveClip, removeClip, removeLayer, SLOT_NAMES, defaultShow, type BlendMode, type ColorSource } from "../core/show";
@@ -28,14 +28,16 @@ import { LibraryPanel } from "./librarypanel";
 import { AudioIn } from "./audioin";
 import { applyProfile, MAX_PROFILES, parseProfiles, PROFILE_NAME_MAX, type OutputProfile } from "../core/outputprofile";
 import { RemoteThumbs } from "./remotethumbs";
-import { presetRgb, remotePairingUrl, type RemoteCommand, type RemoteEffect, type RemoteInfo } from "../core/remote";
+import { REMOTE_STATE_CONTROLS, presetRgb, remotePairingUrl, type RemoteCommand, type RemoteControlValue, type RemoteEffect, type RemoteInfo, type RemoteShow, type RemoteState } from "../core/remote";
 import { editDeviceOutput } from "./deviceoutput";
 import { OutputTab } from "./outputtab";
 import { ResPanel } from "./respanel";
 import { assignSeparate, canvasBounds, defaultLayout, imageForScreen, resAspect, type DeviceEffects, type DeviceOutput, type OutputLayout, type OutputRes } from "../core/layout";
 import { TimecodeClock, MtcDecoder, formatFrames, parseTc, tcToFrames } from "../core/timecode";
 import { TcPanel, defaultTcSettings, type TcSettings } from "./tcpanel";
-import { cueRenders, cueTick, isVideoClip, newCueState, videoClip, videoIdOf, type CueEnv } from "../core/video";
+import { cueRenders, cueSetNext, cueStatus, cueTick, goLabel, isVideoClip, newCueState, videoClip, videoIdOf, type CueEnv } from "../core/video";
+import { TIME_CLIP_NAME, defaultTime, isTimeClip, parseClock } from "../core/timeclip";
+import type { LayerState } from "../core/show";
 import { VideoLibrary, isVideoFile } from "./videolib";
 import { ModelLibrary, isModelFile, modelClip } from "./modellib";
 import { NdiSettings, ndiErrorText } from "./ndisettings";
@@ -81,7 +83,7 @@ import { ChatUi } from "./chat";
 import { timelineOverride } from "../core/video";
 import { KickDetector, liveBands } from "../core/audio";
 const kickDet = new KickDetector();
-import { LayerClock, TEST_IDS, TEST_PATTERNS, stepTestPattern, transitionProgress } from "../core/show";
+import { LayerClock, TEST_IDS, TEST_PATTERNS, TRANSITION_IDS, stepTestPattern, transitionProgress } from "../core/show";
 
 // Sprache zuerst, damit alle Texte gleich in der richtigen Sprache entstehen; Menü und Dialoge des Hauptprozesses folgen
 const uiLang = initLang();
@@ -216,6 +218,30 @@ function applyRemote(command: RemoteCommand, now: number): void {
     case "tap": ctx.tempo.tap(now); break;
     case "color": ctx.show.slots[command.slot] = presetRgb(command.preset); break;
     case "strobeValue": ctx.show.strobe[command.control] = command.value; break;
+    // Szene und SHOW-Ablauf vom Handy (bedienen ist auch im Sperrmodus erlaubt)
+    case "scene": if (command.index < ctx.scenes.length) recallScene(ctx, command.index, now); break;
+    case "control": setControl(ctx, command.id, command.value); break;
+    case "bpm": ctx.tempo.setManual(command.value, now); break;
+    case "cueNext": if (command.index < ctx.cues.list.length) cueSetNext(ctx.cues, command.index); break;
+    case "stack": if (imagesOn() && imageList(ctx.show).some(im => im.id === command.id) && ctx.show.canvas !== command.id) editImage(command.id); break;
+    case "text": void remoteText(command.layer, command.clip, command.text); break;
+    case "time": {
+      const l = ctx.show.layers[command.layer];
+      if (!l || !l.clips.some(isTimeClip)) break;
+      const tm = (l.time ??= defaultTime());
+      const v = command.value.trim();
+      if (command.field === "restart") l.videoStart = { clip: l.clip, ms: now, beat: l.videoStart.beat };
+      else if (command.field === "target") { const sec = parseClock(v); if (sec !== null) tm.target = v; }
+      else if (command.field === "minutes") { const m = Number(v.replace(",", ".")); if (Number.isFinite(m) && m >= 0.1 && m <= 1440) tm.minutes = m; }
+      else tm[command.field] = v.slice(0, 60);
+      layerPanel.update(true);
+      break;
+    }
+    case "show":
+      if (command.action === "go") showGo(ctx, now);
+      else if (command.action === "back") showBack(ctx);
+      else showStop(ctx, now);
+      break;
     case "clip":
     case "assign": {
       if (command.stack !== (ctx.show.canvas ?? MAIN_STACK)) return;
@@ -252,6 +278,7 @@ function onControl(e: ControlEvent): void {
     }
     case "remote": applyRemote(e.command, now); break;
     case "remote-thumbnail": phoneThumbs.request(e.clip); break;
+    case "remote-preview": phonePreviewUntil = now + 1500; break;
     case "osc": {
       if (e.address.startsWith("/vjlink/")) { handleOsc(ctx, { address: e.address, args: e.args, tags: e.tags }, now); break; }
       const input = { p: "osc" as const, address: e.address.slice(0, 120) };
@@ -1560,6 +1587,49 @@ let engine: Engine | null = null;
 // LJ-Link: Now-Playing-Bauchbinde, DJ-Wellenform, gemeinsamer Status
 const djLink = new DjLink(ctx, bridge ?? null, () => engine);
 djLink.hold = settings.ljHold;
+/** Text eines Text-Clips vom Handy ändern (nur Clips in der Zeile dieser Ebene; neu gezeichnet wie im Text-Editor). */
+async function remoteText(layer: number, clip: string, text: string): Promise<void> {
+  const l = ctx.show.layers[layer];
+  const item = l?.clips.includes(clip) ? library.items.find(i => mediaClip(i.id) === clip) : undefined;
+  if (!item?.text || !text.trim()) return;
+  const spec = { ...item.text, text };
+  const cv = document.createElement("canvas"); drawText(cv, spec);
+  const p = { id: item.id, name: textName(spec), dataUrl: cv.toDataURL("image/png") };
+  await library.load(p);
+  item.text = spec; item.name = p.name;
+  bridge?.addMedia(p);
+  rebuildGrid(); libraryPanel.render();
+}
+/** Handy: Text-Clips einer Zeile und ihr Zeit-Clip (für Ebenen → Text und Zeit). */
+function remoteLayerExtras(l: LayerState): { texts?: { id: string; text: string }[]; time?: NonNullable<RemoteState["layers"][number]["time"]> } {
+  const texts = l.clips.flatMap(id => { const it = id.startsWith("img:") ? library.items.find(i => mediaClip(i.id) === id) : undefined; return it?.text ? [{ id, text: it.text.text }] : []; });
+  const tc = l.clip && isTimeClip(l.clip) ? l.clip : l.clips.find(isTimeClip);
+  const tm = l.time ?? defaultTime();
+  return { ...(texts.length ? { texts } : {}),
+    ...(tc ? { time: { clip: tc, name: TIME_CLIP_NAME[tc], target: tm.target, minutes: tm.minutes, label: tm.label, end: tm.end } } : {}) };
+}
+/** Stand der Regler, die das Handy zeigt. */
+function remoteControls(): Record<string, RemoteControlValue> {
+  return Object.fromEntries(REMOTE_STATE_CONTROLS.flatMap(id => { const d = resolveControl(id); return d ? [[id, { v: d.get(ctx), ...(d.format ? { text: d.format(ctx) } : {}),
+    ...(id === "transition.style" ? { steps: TRANSITION_IDS.length } : {}) }]] : []; }));
+}
+/** SHOW-Ablauf für die Handy-Fernsteuerung: laufender Cue mit Restzeit, nächster Cue, was WEITER tut. */
+function remoteShow(now: number): RemoteShow {
+  const s = ctx.cues, list = s.list;
+  const cur = list[s.run.current];
+  const st = cur ? cueStatus(s, cur, now, cueEnv) : null;
+  const nx = list[s.run.next];
+  return {
+    count: list.length,
+    current: cur && st?.live ? `${s.run.current + 1} · ${cur.name}` : "",
+    remaining: st?.live && st.remaining !== null ? Math.ceil(st.remaining) : null,
+    next: nx ? `${s.run.next + 1} · ${nx.name}` : "",
+    goLabel: list.length ? goLabel(s, now, cueEnv) : "",
+    list: list.map((c, i) => `${i + 1} · ${c.name}`),
+    currentIndex: cur && st?.live ? s.run.current : -1,
+    nextIndex: nx ? s.run.next : -1,
+  };
+}
 /** Status von VJ-Link für LJ-Link. */
 function vjStatus(): VjStatus {
   return {
@@ -1620,6 +1690,9 @@ function setPill(id: string, state: "ok" | "off" | "warn", text?: string): void 
 }
 
 let phoneRunning = false, lastPhoneState = 0;
+/** Live-Vorschau fürs Handy: bis wann gefragt, wann zuletzt geschickt. */
+let phonePreviewUntil = 0, lastPhonePreview = 0;
+let phonePreviewCanvas: HTMLCanvasElement | null = null;
 const phoneThumbs = new RemoteThumbs(id => library.image(id), id => videoLib.posters.get(id),
   (clip, data) => bridge?.remoteThumbnail?.(clip, data));
 const phoneNetwork = $<HTMLSelectElement>("phone-network");
@@ -1753,7 +1826,8 @@ function frame(rafTime: number = performance.now()): void {
   { const own = tcClock.ownNow(now), tcn = tcClock.now(now) ?? (own.running || own.frames > 0 ? own : null); if (tcn) shown = { ...shown, tcNow: { frames: tcn.frames, fps: tcn.fps, running: tcn.running, at: now } }; }
   // Projektionsmapping: Live-Vorschauen der Bilder (je Bild abwechselnd eins, nur jedes zweite Bild), dann das bearbeitete groß
   const cv = shown.canvas ?? MAIN_STACK;
-  const renderMonitor = draw && (!!preview.offsetParent || videoLib.items.length > 0); // Der Monitor spielt Videoton ab.
+  // Der Monitor spielt Videoton ab; die Handy-Vorschau braucht ihn auch, wenn er gerade nicht zu sehen ist
+  const renderMonitor = draw && (!!preview.offsetParent || videoLib.items.length > 0 || now < phonePreviewUntil);
   if (draw) renderTurn++;
   if (engine && renderMonitor && imagesOn() && tileCanvases.size > 1 && renderTurn % 4 === 0) {
     const ids = [...tileCanvases.keys()].filter(id => id !== cv);
@@ -1767,6 +1841,14 @@ function frame(rafTime: number = performance.now()): void {
     if (renderMonitor) {
       engine?.render(showForImage(shown, cv), beat, now, ctx.tempo.bpm, null, lt);
       if (imagesOn() && renderTurn % 2 === 0) { const c = tileCanvases.get(cv); c?.getContext("2d")?.drawImage(preview, 0, 0, c.width, c.height); }
+      // Handy: kleines Bild der Ausgangs-Vorschau, höchstens 4× je Sekunde und nur, solange das Handy fragt
+      if (now < phonePreviewUntil && now - lastPhonePreview > 250 && preview.width > 0 && bridge?.remotePreview) {
+        lastPhonePreview = now;
+        const pc = (phonePreviewCanvas ??= document.createElement("canvas"));
+        pc.width = 360; pc.height = Math.max(1, Math.round(360 * preview.height / preview.width));
+        pc.getContext("2d")?.drawImage(preview, 0, 0, pc.width, pc.height);
+        try { bridge.remotePreview(pc.toDataURL("image/jpeg", 0.62)); } catch { /* ohne Bild */ }
+      }
     }
     thumbs.draw(now);
     gallery.tick(now);
@@ -1798,8 +1880,12 @@ function frame(rafTime: number = performance.now()): void {
     bridge?.remoteState?.({
       lang: getLang(), bpm: ctx.tempo.bpm, tempoSource: SOURCE_LABEL[ctx.tempo.source] ?? ctx.tempo.source, stack,
       stackName: imageList(ctx.show).find(im => im.id === stack)?.name ?? t("Hauptbild"),
-      layers: ctx.show.layers.map((l, i) => ({ name: layerName(l, i), active: l.clip, clips: layerClips(i) })),
+      layers: ctx.show.layers.map((l, i) => ({ name: layerName(l, i), active: l.clip, clips: layerClips(i), opacity: l.opacity, blend: l.blend, color: l.colorSource, ...remoteLayerExtras(l) })),
       slots: ctx.show.slots, speed: ctx.show.strobe.speed, intensity: ctx.show.strobe.intensity,
+      scenes: ctx.scenes.map(sc => sc.name), scene: ctx.show.scene - 1, show: remoteShow(now),
+      controls: remoteControls(), testPattern: TEST_PATTERNS.find(p => p.id === ctx.show.testPattern)?.label ?? "",
+      outputs: displays.filter(d => d.open).length,
+      ...(multiImage() ? { images: imageList(ctx.show).map(im => ({ id: im.id, name: im.name })) } : {}),
     });
   }
   if (now - lastUi > 100) { lastUi = now; updateUi(now, beat); syncCanvases(); djLink.tick(now, vjStatus); showGpuPrep(now); }
