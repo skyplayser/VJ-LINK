@@ -118,6 +118,9 @@ td.n{font-family:var(--mono);color:var(--dim)}
 /* ---- Fader-Leiste ---- */
 .deck{display:flex;gap:6px;align-items:stretch;padding:8px 12px 10px;background:var(--panel);border-top:1px solid var(--line);overflow-x:auto;flex:none}
 .dg{display:flex;flex-direction:column;gap:6px;padding:6px 10px;background:var(--bg);border:1px solid var(--line);border-radius:6px;flex:none}
+/* Viele Ebenen (bis 20): die Ebenen-Fader scrollen in ihrer Gruppe, Strobe, Tempo und Szenen bleiben sichtbar */
+.dg.dg-ebenen{flex:0 1 auto;min-width:240px}
+.dg-ebenen .faders{overflow-x:auto;overflow-y:hidden;padding-bottom:4px;scrollbar-width:thin}
 .dg h3{margin:0;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-weight:600}
 .faders{display:flex;gap:10px;align-items:flex-end;flex:1}
 .fader{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:38px;align-self:stretch}
@@ -606,6 +609,21 @@ body.mapping .cell-edit,body.modding .cell-edit{display:none}
 .img-rename{position:absolute;left:3px;right:3px;bottom:3px;font:600 11px system-ui,sans-serif;background:#000;color:#fff;border:1px solid #22c8f0;border-radius:3px;padding:1px 4px}
 /* Mapping-Modus: Einzelvorschau unsichtbar (rechnet für die Kacheln) */
 .mon.mapping .mon-box{position:absolute;left:-10000px;top:0;width:640px;height:360px;flex:none}
+/* Vorschau-Fenster offen: es ersetzt die Ausgangs-Vorschau im Tab VISUALS, das Clip-Raster bekommt den Platz.
+   Die Vorschau rechnet unsichtbar weiter (Videoton, Bilder-Kacheln). */
+.mon-ext-note{display:none;color:var(--dim);font-weight:600}
+body.mon-ext #tab-visuals .mon-ext-note{display:inline}
+body.mon-ext #tab-visuals .left{grid-template-rows:auto auto minmax(0,1fr)}
+body.mon-ext #tab-visuals .mon-box{position:absolute;left:-10000px;top:0;width:640px;height:360px;flex:none}
+/* Mehrere Bilder: die Live-Kacheln sind im Vorschau-Fenster; hier bleibt eine schmale Leiste (Name, Helligkeit, ✎, ×, + Bild) */
+body.mon-ext #tab-visuals .img-tiles{flex:none;height:auto;flex-wrap:wrap}
+body.mon-ext #tab-visuals .img-tile{height:44px;aspect-ratio:auto!important;width:170px;flex:none;background:var(--panel)}
+body.mon-ext #tab-visuals .img-tile canvas{display:none}
+body.mon-ext #tab-visuals .img-tile .img-name{left:28px;top:5px;bottom:auto;text-shadow:none;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.mon-ext #tab-visuals .img-tile .img-pen,body.mon-ext #tab-visuals .img-tile .img-x{opacity:1;background:transparent}
+body.mon-ext #tab-visuals .img-tile .img-gain{opacity:.8}
+body.mon-ext #tab-visuals .img-add{height:44px}
+body.mon-ext #tab-visuals .canvas-pick > p.muted{display:none}
 .mon.mapping{position:relative}
 /* SHOW: Bild wählen, Timeline */
 .cue-img{font-size:11px;color:var(--dim);font-weight:500;letter-spacing:0;text-transform:none;margin-left:8px}
@@ -821,8 +839,8 @@ body.mapping [data-ctl][data-mapped][data-map-sel]{outline:3px solid #fff!import
 .top{gap:6px 10px}
 .tabs button{padding:6px 11px}
 .top-break{flex-basis:100%;height:0;order:1}
-.top > .audio-wrap,.top > .tc-pill,.top > .status{order:2}
-@media (min-width:1800px){.top-break{display:none}.top > .audio-wrap,.top > .tc-pill,.top > .status{order:0}}
+.top > .audio-wrap,.top > .tc-pill,.top > .status,.top > .clock-bar{order:2}
+@media (min-width:1800px){.top-break{display:none}.top > .audio-wrap,.top > .tc-pill,.top > .status,.top > .clock-bar{order:0}}
 /* Ablauf: Liste bleibt sichtbar, Zeitleiste gibt nach */
 .cue-list{min-height:140px;grid-auto-rows:max-content}
 .cue-tl{flex-shrink:1;overflow:auto;max-height:45vh}
@@ -1032,3 +1050,12 @@ input[type=range].modded{accent-color:color-mix(in srgb,var(--accent) calc(35% +
 .set-sec .ndi-out small{font-size:11px;color:var(--dim)}
 .set-sec .ndi-out .ok{color:var(--ok, #4cd68a)}
 .set-sec .ndi-out .warn{color:var(--warn)}
+
+/* ---- Uhrzeit-Leiste (Punktmatrix wie eine LED-Bühnenuhr) ---- */
+.clock-bar{display:flex;align-items:center;gap:8px;height:32px;padding:0 10px;background:#1c1d20;border:1px solid var(--line);border-radius:4px;margin-left:auto}
+.clock-bar[hidden]{display:none}
+.clk-label{font:10px var(--mono);text-transform:uppercase;letter-spacing:.12em;color:#8a8f98}
+.clock-bar.tc .clk-label{color:#f5a623}
+.clk-dots{height:21px;color:#f5a623;display:block}
+.clk-side{font:10px var(--mono);color:#8a8f98;white-space:nowrap}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}

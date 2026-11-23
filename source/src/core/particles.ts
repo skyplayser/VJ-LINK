@@ -1,4 +1,4 @@
-// Partikel-Objekt: ein 3D-Körper, dessen Oberfläche aus vielen Stäbchen bzw. Punkten besteht. Auf den Beat
+// Partikel-Objekt: ein 3D-Körper, dessen Oberfläche aus vielen leuchtenden Staubkörnern besteht. Auf den Beat
 // fliegen sie auseinander und kehren zurück. Hier: Einstellungen je Ebene, die eingebauten Körper (im Code
 // erzeugt, keine fremden Modelle) und die Abtastung der Oberfläche. Gezeichnet wird in src/engine/particles.ts.
 // Verfahren (Lehrbuch): Dreiecke nach Fläche gewichtet abtasten, Punkte mit Normale, Reihenfolge gemischt.
@@ -22,7 +22,22 @@ export type ParticleTrigger = typeof PARTICLE_TRIGGERS[number];
 /** Beats zwischen zwei Explosionen. */
 export const TRIGGER_BEATS: Record<Exclude<ParticleTrigger, "hold" | "bass">, number> = { beat: 1, bar: 4, "2bars": 8, "4bars": 16 };
 
+/**
+ * Verhalten des Objekts: „burst“ Partikel (zerfällt zu Staub und fliegt auseinander); die anderen verformen den
+ * Körper als Ganzes: „melt“ Schmelzen (sackt zusammen und zerfließt zur Pfütze), „jelly“ (wabbelt), „dissolve“
+ * Auflösen (brennt von oben weg, steigt als Rauch auf), „twist“ Verdrehen, „shatter“ Zersplittern (feste Stücke),
+ * „still“ ohne Effekt.
+ */
+export const PARTICLE_MODES = ["burst", "melt", "jelly", "dissolve", "twist", "shatter", "still", "drift"] as const;
+/** Reihenfolge in der Bedienung (die Liste oben bleibt so, gespeicherte Nummern im Shader ändern sich nicht). */
+export const PARTICLE_MODE_ORDER: readonly ParticleMode[] = ["burst", "drift", "melt", "jelly", "dissolve", "twist", "shatter", "still"];
+export type ParticleMode = typeof PARTICLE_MODES[number];
+/** Anstieg des Effekts in Beats (Partikel: fester schneller Anstieg im Shader). */
+export const MODE_ATTACK: Record<ParticleMode, number> = { burst: 0.12, drift: 1.6, melt: 1.4, jelly: 0, dissolve: 1.2, twist: 0.8, shatter: 0.12, still: 0 };
+
 export interface ParticleSettings {
+  /** Effekt (fehlt in älteren Projekten = Partikel). */
+  mode: ParticleMode;
   /** Weite der Explosion 0–1 (0 = ruhig). */
   explode: number;
   trigger: ParticleTrigger;
@@ -43,22 +58,30 @@ export interface ParticleSettings {
   angZ: number;
   /** Dicke der Partikel, 1 = normal. */
   size: number;
-  /** Länge der Stäbchen, 0 = runde Punkte, 1 = normal. */
-  length: number;
   /** Anzahl in Tausend. */
   count: number;
+  /**
+   * Form deckend: in Ruhe eine geschlossene, beleuchtete Fläche (Logo sieht aus wie das Logo), erst beim Sprengen
+   * zerfällt sie in leuchtenden Staub. Fehlt = Vorgabe: an für eigene Modelle und alle Körper-Verhalten, aus beim
+   * Partikel-Effekt der eingebauten Körper.
+   */
+  solid?: boolean;
 }
+
+/** Gilt „Form deckend“ für diesen Clip? */
+export const particleSolid = (p: ParticleSettings, clip: string | null | undefined): boolean =>
+  p.solid ?? ((p.mode ?? "burst") !== "burst" || (!!clip && isModelClip(clip)));
 
 export const PARTICLE_LIMITS = {
   explode: [0, 1], ret: [0.25, 4], scatter: [0, 1], rpmX: [-30, 30], rpm: [-30, 30], rpmZ: [-30, 30],
-  angX: [-180, 180], angY: [-180, 180], angZ: [-180, 180], size: [0.3, 3], length: [0, 3], count: [5, 200],
+  angX: [-180, 180], angY: [-180, 180], angZ: [-180, 180], size: [0.3, 3], count: [5, 200],
 } as const;
 export type ParticleNumKey = keyof typeof PARTICLE_LIMITS;
 
 /** Vorgabe: ruhig für 3 Ausgänge mit 60 fps ab Apple M2 (siehe Hinweis im Bedienfeld). */
 export const PARTICLE_DEFAULT_COUNT = 40;
 export const defaultParticles = (): ParticleSettings =>
-  ({ explode: 0.45, trigger: "bar", ret: 0.75, scatter: 0.6, spin: true, rpm: 4, rpmX: 0, rpmZ: 0, angX: 10, angY: 20, angZ: 0, size: 1, length: 1, count: PARTICLE_DEFAULT_COUNT });
+  ({ mode: "burst", explode: 0.45, trigger: "bar", ret: 0.75, scatter: 0.6, spin: true, rpm: 4, rpmX: 0, rpmZ: 0, angX: 10, angY: 20, angZ: 0, size: 1, count: PARTICLE_DEFAULT_COUNT });
 
 /** Höchstzahl, die je Körper abgetastet wird (die Anzahl zeichnet davon die ersten N). */
 export const PARTICLE_MAX = PARTICLE_LIMITS.count[1] * 1000;
@@ -72,26 +95,33 @@ export function parseParticles(v: unknown): ParticleSettings | undefined {
   const n = (k: ParticleNumKey) => (typeof o[k] === "number" && Number.isFinite(o[k]) ? clampN(o[k] as number, L[k][0], L[k][1]) : d[k]);
   return {
     explode: n("explode"), ret: n("ret"), scatter: n("scatter"), rpm: n("rpm"), rpmX: n("rpmX"), rpmZ: n("rpmZ"),
-    angX: n("angX"), angY: n("angY"), angZ: n("angZ"), size: n("size"), length: n("length"), count: n("count"),
+    angX: n("angX"), angY: n("angY"), angZ: n("angZ"), size: n("size"), count: n("count"),
     trigger: PARTICLE_TRIGGERS.includes(o.trigger as ParticleTrigger) ? o.trigger as ParticleTrigger : d.trigger,
     spin: typeof o.spin === "boolean" ? o.spin : d.spin,
+    mode: PARTICLE_MODES.includes(o.mode as ParticleMode) ? o.mode as ParticleMode : d.mode,
+    ...(typeof o.solid === "boolean" ? { solid: o.solid } : {}),
   };
 }
 
 /** Explosion jetzt: Beats seit dem letzten Auslöser und Weite (Hüllkurve rechnet der Shader). */
-export function explodeState(p: ParticleSettings, beat: number): { since: number; amp: number; ret: number; pulseSince: number; pulseAmp: number; hold: number } {
+export function explodeState(p: ParticleSettings, beat: number): { since: number; amp: number; ret: number; pulseSince: number; pulseAmp: number; hold: number; atk: number } {
   const ex = clampN(p.explode, 0, 1);
-  if (p.trigger === "hold") return { since: 99, amp: 0, ret: 1, pulseSince: 99, pulseAmp: 0, hold: ex };
+  const mode = p.mode ?? "burst";
+  if (mode === "still") return { since: 99, amp: 0, ret: 1, pulseSince: 99, pulseAmp: 0, hold: 0, atk: 0 };
+  // Zwischen-Puls nur beim Sprengen und beim Jelly (die anderen Körper bleiben bis zum Auslöser ruhig)
+  const pulse = mode === "burst" || mode === "jelly";
+  if (p.trigger === "hold") return { since: 99, amp: 0, ret: 1, pulseSince: 99, pulseAmp: 0, hold: ex, atk: MODE_ATTACK[mode] };
   // Bass: Weite kommt aus der Hüllkurve (BassEnvelope), nicht aus dem Takt
-  if (p.trigger === "bass") return { since: 99, amp: 0, ret: 1, pulseSince: 99, pulseAmp: 0, hold: 0 };
+  if (p.trigger === "bass") return { since: 99, amp: 0, ret: 1, pulseSince: 99, pulseAmp: 0, hold: 0, atk: MODE_ATTACK[mode] };
   const per = TRIGGER_BEATS[p.trigger];
   const since = beat - Math.floor(beat / per) * per;
-  // Rückkehr muss vor dem nächsten Auslöser fertig sein
-  const ret = Math.min(clampN(p.ret, 0.25, 4), per - 0.15);
+  // Anstieg und Rückkehr müssen vor dem nächsten Auslöser fertig sein
+  const atk = Math.min(MODE_ATTACK[mode], per * 0.45);
+  const ret = Math.max(0.1, Math.min(clampN(p.ret, 0.25, 4), per - 0.15 - (mode === "burst" ? 0 : atk)));
   // Zwischen den Explosionen ein leichter Puls auf jedem Beat
   const pb = beat - Math.floor(beat);
   const onHit = per === 1 || since < 1;
-  return { since, amp: ex, ret, pulseSince: onHit ? 99 : pb, pulseAmp: onHit ? 0 : ex * 0.12, hold: 0 };
+  return { since, amp: ex, ret, pulseSince: onHit ? 99 : pb, pulseAmp: onHit || !pulse ? 0 : ex * 0.12, hold: 0, atk };
 }
 
 /** Drehwinkel je Achse in Bogenmaß: feste Lage plus Drehtempo (U/min) mal Ebenen-Zeit. */
@@ -109,7 +139,7 @@ export function bassTarget(p: ParticleSettings, bass: number): number {
 
 /**
  * Hüllkurve für den Bass-Auslöser: schnell hinaus (fast sofort), weich zurück in „Rückkehr“ (Beats).
- * Liefert Weite und Geschwindigkeit (je Beat, für die Streckung der Stäbchen).
+ * Liefert Weite und Geschwindigkeit (je Beat).
  */
 export class BassEnvelope {
   private v = 0;
@@ -273,12 +303,16 @@ export function sampleSurfaceColored(m: TriMesh, n: number, seed = 7, colorAt?: 
   const p = m.pos, nt = Math.floor(p.length / 9);
   if (nt === 0 || n <= 0) return null;
   const cdf = new Float64Array(nt), fn = new Float32Array(nt * 3);
+  // Nach innen gewickelte Netze (Volumen negativ): Flächennormalen umdrehen, damit sie nach außen zeigen
+  let vol = 0;
+  for (let o = 0; o + 8 < p.length; o += 9) vol += p[o]! * (p[o + 4]! * p[o + 8]! - p[o + 5]! * p[o + 7]!) - p[o + 1]! * (p[o + 3]! * p[o + 8]! - p[o + 5]! * p[o + 6]!) + p[o + 2]! * (p[o + 3]! * p[o + 7]! - p[o + 4]! * p[o + 6]!);
+  const flip = vol < 0 ? -1 : 1;
   let tot = 0;
   for (let t = 0; t < nt; t++) {
     const o = t * 9;
     const e1: V3 = [p[o + 3]! - p[o]!, p[o + 4]! - p[o + 1]!, p[o + 5]! - p[o + 2]!];
     const e2: V3 = [p[o + 6]! - p[o]!, p[o + 7]! - p[o + 1]!, p[o + 8]! - p[o + 2]!];
-    const c = cross(e1, e2), l = len(c);
+    const c0 = cross(e1, e2), c: V3 = [c0[0] * flip, c0[1] * flip, c0[2] * flip], l = len(c);
     tot += Number.isFinite(l) ? l / 2 : 0;
     cdf[t] = tot;
     if (l > 0) { fn[t * 3] = c[0] / l; fn[t * 3 + 1] = c[1] / l; fn[t * 3 + 2] = c[2] / l; }
@@ -315,7 +349,7 @@ export function sampleSurfaceColored(m: TriMesh, n: number, seed = 7, colorAt?: 
   return { pts: out, col };
 }
 
-/** Zufallswerte je Partikel (4 je Punkt), unabhängig vom Körper: beim Formwechsel bleibt jedes Stäbchen es selbst. */
+/** Zufallswerte je Partikel (4 je Punkt), unabhängig vom Körper: beim Formwechsel bleibt jedes Korn es selbst. */
 export function particleRandoms(n: number, seed = 99): Float32Array {
   const R = rng(seed), out = new Float32Array(n * 4);
   for (let i = 0; i < out.length; i++) out[i] = R();

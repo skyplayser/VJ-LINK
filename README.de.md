@@ -6,7 +6,7 @@
 
 <p align="center">
   Live-Visuals, gesteuert von deinem Lichtpult.<br>
-  155 Visuals, 50 Effekte, Szenen und Ausgänge – im Takt der Musik.
+  162 Visuals, 50 Effekte, Szenen und Ausgänge – im Takt der Musik.
 </p>
 
 <p align="center">
@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <img alt="Stand: Beta 0.1.14" src="https://img.shields.io/badge/Stand-Beta%200.1.14-FF5C93">
+  <img alt="Stand: Beta 0.1.15" src="https://img.shields.io/badge/Stand-Beta%200.1.15-FF5C93">
   <img alt="macOS und Windows, kostenlos" src="https://img.shields.io/badge/macOS%20%7C%20Windows-kostenlos-3DDC84">
   <img alt="Lizenz: EPL-2.0" src="https://img.shields.io/badge/Lizenz-EPL--2.0-60a5fa">
   <a href="https://github.com/skyplayser/VJ-LINK/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/skyplayser/VJ-LINK/total?label=Downloads&color=a78bfa"></a>
@@ -38,15 +38,15 @@ und danach höchstens einmal pro Stunde bei GitHub nach der neuesten Version; ab
 Fehlermeldung, wenn du eine schickst.
 
 > [!WARNING]
-> **Das ist die Beta 0.1.14.** Nach einem kompletten Testtag (Fehler, Arbeitsabläufe, Oberfläche und Sicherheitstest) ist sie
+> **Das ist die Beta 0.1.15.** Nach einem kompletten Testtag (Fehler, Arbeitsabläufe, Oberfläche und Sicherheitstest) ist sie
 > deutlich robuster als die erste Alpha, aber große Teile haben noch keine echte Bühnentechnik gesehen. Probier sie bitte vor
 > einer wichtigen Show aus, und sag uns, was dir auffällt: **Hilfe → Fehler melden** im Programm.
 
 ## Was du bekommst
 
-- **155 Visuals in 15 Kategorien:** Minimal und Monochrom, 3D und Raum, Fraktale, Demoscene, Heilige Geometrie, Daten und
+- **162 Visuals in 16 Kategorien:** Minimal und Monochrom, 3D und Raum, Fraktale, Demoscene, Heilige Geometrie, Daten und
   Glitch, Op-Art, Organisch und Flüssig, Audio und Equalizer, Partikel, Retro und Synthwave, Geometrie und Tunnel, Licht und
-  Raum sowie 16 Laser-Looks für einen Beamer im Nebel. Für VJ-Link geschrieben, alle reagieren auf Beat oder Audio. Einige kleine
+  Raum, Uhr und Zeit (Uhrzeit, Countdown, Stoppuhr, Datum, BPM, Timecode) sowie 16 Laser-Looks für einen Beamer im Nebel. Für VJ-Link geschrieben, alle reagieren auf Beat oder Audio. Einige kleine
   Bausteine folgen veröffentlichten Code-Beispielen unter MIT-Lizenz – siehe „Shader credits“ in
   [THIRD_PARTY.md](https://github.com/skyplayser/VJ-LINK/blob/main/source/THIRD_PARTY.md).
 - **50 Effekte** in einem Stapel mit bis zu sechs je Ebene: Feedback, Datamosh, Slit-Scan, VHS, Bloom, Kaleidoskop, Halbton,
@@ -75,6 +75,8 @@ Fehlermeldung, wenn du eine schickst.
   Leuchten, Kontur und Kasten.
 - **Aus LJ-Link:** Tempo, Beat-Phase, Phrasen und Trackwechsel, eine *Now-Playing*-Bauchbinde und die DJ-Waveform als Clips.
 - **Neu in 0.1.12:** das **Partikel-Objekt**: 3D-Körper aus Tausenden Stäbchen, die auf den Beat oder den Bass explodieren und zurückschnellen, Drehung je Achse, fünf eingebaute Körper und eigene **OBJ/STL**-Modelle ([Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-particles.html), braucht eine starke Grafikkarte); die Anordnung **Getrennt**, bei der jeder Ausgang sein eigenes Bild zeigt, z. B. zwei gleiche Bildschirme mit verschiedenen Visuals ([Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-outputs.html#each-output-its-own-picture)); **Modulation mit Bereich** von–bis ([Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-modulation.html#range)); und *Neues Projekt* **mit Start-Aufbau oder leer**.
+- **Neu in 0.1.15:** ein **Vorschau-Fenster** für einen zweiten Bildschirm mit Ebenen-Vorschau und Live-Bild ([Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-outputs.html#preview-window)); **Uhr- und Zeit-Clips**: Uhrzeit, Countdown bis Uhrzeit oder mit Dauer, Stoppuhr, Datum, BPM und Timecode ([Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-media.html#clock-and-time)); ein SHOW-Cue kann **zu einer Uhrzeit starten** ([Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-show.html#start-at-a-time)); **ShowPaket exportieren** mit dem Namen der Show, und **.vjlink-Dateien öffnen per Doppelklick** ([Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-projects.html#show-package)); Partikel-Objekte als **echter 3D-Körper** mit den Effekten Partikel, **Verwehen**, Schmelzen, Jelly, Auflösen, Verdrehen und Zersplittern (einzelne Teile fliegen für sich) ([Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-particles.html#effects)); bis zu **20 Ebenen**; mit LJ-Link sitzen **Takt 1 und alle 2/4 Takte auf der Eins und der Phrase**.
+- **Behoben in 0.1.15:** Der NDI-Ausgang sendet unter Windows mit Bildschirm-Skalierung (z. B. 125 %) wieder; vorher waren Empfänger verbunden, bekamen aber 0 Bilder/s.
 - **Neu in 0.1.14:** **Einstellungen → NDI** zeigt die Version der NDI-Laufzeit, lässt die **Netzwerkkarte** wählen, über die NDI sendet, und zeigt jeden NDI-Ausgang mit Empfängern und Datenrate ([Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-ndi.html#ndi-settings)); eine **Netzwerkkarte für Art-Net und sACN**, damit ein anderes Pult im WLAN nicht stört ([Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-connections.html#network-adapter)).
 - **Behoben in 0.1.14:** Punkte und Kanten des Partikel-Objekts decken voll, auch über anderen Ebenen, und helle Glanzlichter fressen nicht mehr weiß aus. Seit 0.1.13 bleibt die Liste in *+ Clips* beim Antippen eines Clips an ihrer Stelle.
 - **Neu in 0.1.10:** **NDI®-Ausgang** (bis zu vier Quellen mit eigenem Namen, freier Größe und Bildrate; [Wiki](https://skyplayser.github.io/VJ-LINK/de/wiki-ndi.html)),
@@ -94,7 +96,7 @@ Fehlermeldung, wenn du eine schickst.
 <table>
   <tr>
     <td width="50%"><img src="docs/images/de/show.png" alt="SHOW-Tab mit Ablauf und Timeline"><br><sub><b>SHOW.</b> Ablauf mit WEITER und einer Timeline für Szenen und Effekte.</sub></td>
-    <td width="50%"><img src="docs/images/de/gallery.png" alt="Galerie mit allen 155 Visuals"><br><sub><b>Galerie.</b> 155 Visuals und 50 Effekte mit Live-Vorschau.</sub></td>
+    <td width="50%"><img src="docs/images/de/gallery.png" alt="Galerie mit allen 162 Visuals"><br><sub><b>Galerie.</b> 162 Visuals und 50 Effekte mit Live-Vorschau.</sub></td>
   </tr>
   <tr>
     <td><img src="docs/images/de/mapping.png" alt="MIDI-Mapping"><br><sub><b>Mapping.</b> Element anklicken, Fader am Controller bewegen.</sub></td>

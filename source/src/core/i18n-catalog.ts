@@ -5,11 +5,18 @@ import type { EffectCategory } from "./effects";
 export const CATEGORY_EN: Record<EffectCategory, string> = {
   minimal: "Minimal and monochrome", space3d: "3D and space", fractal: "Fractals", demo: "Demoscene", sacred: "Sacred geometry", data: "Data and glitch", opart: "Op art and patterns", organic: "Organic and fluid",
   audio: "Audio and equalizer", geometry: "Geometry and tunnels", particles: "Particles and nature", retro: "Retro and analog",
-  optical: "Light and space", laser: "Laser (projector in haze)", lj: "LJ-Link (DJ)", tools: "Tools",
+  optical: "Light and space", laser: "Laser (projector in haze)", lj: "LJ-Link (DJ)", tools: "Tools", time: "Clock and time",
 };
 
 /** Visuals: ID → [Name, Info]. */
 export const EFFECT_EN: Record<string, readonly [string, string]> = {
+  "time-clock": ["Clock", "Current time, large, optionally with seconds. Style: clean, digital or LED dots."],
+  "time-countdown": ["Countdown to time", "Counts down to a time of day (e.g. 00:00 on New Year's Eve), then 00:00 or your own text. The last 10 seconds pulse."],
+  "time-timer": ["Countdown (duration)", "Counts down a fixed time (e.g. 10 minutes) from the moment the clip starts. Then 00:00 or your own text."],
+  "time-stopwatch": ["Stopwatch", "Counts up from the moment the clip starts."],
+  "time-date": ["Date", "Weekday and date, in the language of the interface."],
+  "time-bpm": ["BPM display", "Current tempo, large, with the beats of the bar below."],
+  "time-timecode": ["Timecode display", "Running timecode (received via Art-Net/MIDI or from the own clock), large, like on a lighting desk. Settings → Timecode."],
   "bar-spectrum": ["Bar spectrum", "Level bars per frequency band, green to red."],
   "radial-eq": ["Circle equalizer", "Frequency ring with rays pointing outwards."],
   "oscilloscope": ["Oscilloscope", "The audio signal as a neon line."],
@@ -168,11 +175,11 @@ export const EFFECT_EN: Record<string, readonly [string, string]> = {
   "neon-triangles": ["Neon triangles", "Triangles grow out of the center while rotating."],
   "kaleido-burst": ["Kaleido explosion", "Twelvefold kaleidoscope with rays."],
   "infinity-loop": ["Infinity loop", "A comet of light runs along a horizontal eight."],
-  "pobj-cross": ["Particle cross", "3D cross made of thousands of sticks that fly apart on the beat and come back. Needs a strong graphics card (Apple M2 or comparable and up)."],
-  "pobj-cube": ["Particle cube", "Cube made of sticks that explodes on the beat and reassembles. Needs a strong graphics card (Apple M2 or comparable and up)."],
-  "pobj-sphere": ["Particle sphere", "Sphere made of sticks that fly apart on the beat. Needs a strong graphics card (Apple M2 or comparable and up)."],
-  "pobj-torus": ["Particle torus", "Ring (torus) made of sticks that explodes on the beat. Needs a strong graphics card (Apple M2 or comparable and up)."],
-  "pobj-star": ["Particle star", "Five-pointed 3D star made of sticks that flies apart on the beat. Needs a strong graphics card (Apple M2 or comparable and up)."],
+  "pobj-cross": ["Particle cross", "3D cross made of thousands of glowing dust grains that fly apart on the beat and come back. Needs a strong graphics card (Apple M2 or comparable and up)."],
+  "pobj-cube": ["Particle cube", "Cube made of glowing dust that explodes on the beat and reassembles. Needs a strong graphics card (Apple M2 or comparable and up)."],
+  "pobj-sphere": ["Particle sphere", "Sphere made of glowing dust that flies apart on the beat. Needs a strong graphics card (Apple M2 or comparable and up)."],
+  "pobj-torus": ["Particle torus", "Ring (torus) made of glowing dust that explodes on the beat. Needs a strong graphics card (Apple M2 or comparable and up)."],
+  "pobj-star": ["Particle star", "Five-pointed 3D star made of glowing dust that flies apart on the beat. Needs a strong graphics card (Apple M2 or comparable and up)."],
 };
 
 /** Effekte im Stapel: ID → [Name, Info]. */

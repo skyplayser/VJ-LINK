@@ -2,6 +2,7 @@
 // lesen, Oberfläche einmal abtasten und als kompakte Punktwolke speichern (eigenes Format „VJPC“).
 // Eigener Code, keine Fremdbibliothek. Die Ausgabefenster laden nur noch die fertige Punktwolke.
 import { PARTICLE_MAX, normalizeMesh, sampleSurfaceColored, type TriMesh } from "./particles";
+import { buildRenderMesh, decodeRenderMesh, encodeRenderMesh, meshBytes, RENDER_MAX_TEX, type RenderMesh } from "./rendermesh";
 
 export const MODEL_EXTS = ["obj", "stl"] as const;
 /** Größte Modelldatei (Text-OBJ werden schnell groß). */
@@ -188,29 +189,36 @@ export function colorSource(m: ParsedMesh, mats: readonly ObjMaterial[], texture
 
 // ---- Punktwolke „VJPC“ -----------------------------------------------------------------------
 // Kopf (16 Bytes): „VJPC“, Version, Anzahl, Merkmale (Bit 0 = Farben). Dann Float32 Position+Normale
-// (6 je Punkt), dann bei Farben 4 Bytes RGBA je Punkt.
+// (6 je Punkt), dann bei Farben 4 Bytes RGBA je Punkt. Version 2: danach der Körper als Dreiecksnetz
+// (Block „VJMS“, siehe rendermesh.ts). Version 1 (ohne Netz) bleibt lesbar.
 const MAGIC = 0x4350_4a56; // „VJPC“ little endian
 
-export interface PointCloud { n: number; pts: Float32Array; col: Uint8Array | null }
+export interface PointCloud { n: number; pts: Float32Array; col: Uint8Array | null; mesh?: RenderMesh | null }
 
 export function encodePointCloud(pc: PointCloud): Uint8Array {
-  const bytes = 16 + pc.n * 24 + (pc.col ? pc.n * 4 : 0);
+  const base = 16 + pc.n * 24 + (pc.col ? pc.n * 4 : 0);
+  const bytes = base + (pc.mesh ? meshBytes(pc.mesh) : 0);
   const out = new Uint8Array(bytes), dv = new DataView(out.buffer);
-  dv.setUint32(0, MAGIC, true); dv.setUint32(4, 1, true); dv.setUint32(8, pc.n, true); dv.setUint32(12, pc.col ? 1 : 0, true);
+  dv.setUint32(0, MAGIC, true); dv.setUint32(4, pc.mesh ? 2 : 1, true); dv.setUint32(8, pc.n, true); dv.setUint32(12, pc.col ? 1 : 0, true);
   out.set(new Uint8Array(pc.pts.buffer, pc.pts.byteOffset, pc.n * 24), 16);
   if (pc.col) out.set(pc.col.subarray(0, pc.n * 4), 16 + pc.n * 24);
+  if (pc.mesh) encodeRenderMesh(pc.mesh, out, base);
   return out;
 }
 
 export function decodePointCloud(buf: ArrayBuffer): PointCloud | null {
   if (buf.byteLength < 16) return null;
   const dv = new DataView(buf);
-  if (dv.getUint32(0, true) !== MAGIC || dv.getUint32(4, true) !== 1) return null;
+  const ver = dv.getUint32(4, true);
+  if (dv.getUint32(0, true) !== MAGIC || (ver !== 1 && ver !== 2)) return null;
   const n = dv.getUint32(8, true), hasCol = (dv.getUint32(12, true) & 1) === 1;
-  if (n === 0 || n > PARTICLE_MAX || buf.byteLength !== 16 + n * 24 + (hasCol ? n * 4 : 0)) return null;
+  const base = 16 + n * 24 + (hasCol ? n * 4 : 0);
+  if (n === 0 || n > PARTICLE_MAX || (ver === 1 ? buf.byteLength !== base : buf.byteLength <= base)) return null;
   const pts = new Float32Array(buf, 16, n * 6);
   if (!pts.every(Number.isFinite)) return null;
-  return { n, pts, col: hasCol ? new Uint8Array(buf, 16 + n * 24, n * 4) : null };
+  const mesh = ver === 2 ? decodeRenderMesh(buf, base) : null;
+  if (ver === 2 && !mesh) return null;
+  return { n, pts, col: hasCol ? new Uint8Array(buf, 16 + n * 24, n * 4) : null, mesh };
 }
 
 /**
@@ -220,9 +228,39 @@ export function decodePointCloud(buf: ArrayBuffer): PointCloud | null {
 export function meshToPointCloud(m: ParsedMesh, mats: readonly ObjMaterial[] = [], textures: ReadonlyMap<string, Rgba> = new Map(), n = PARTICLE_MAX): PointCloud {
   const base: TriMesh = m.nrm ? { pos: m.pos, nrm: m.nrm } : { pos: m.pos };
   const norm = normalizeMesh(base);
-  const s = sampleSurfaceColored(norm, n, 7, colorSource(m, mats, textures));
+  const src = colorSource(m, mats, textures);
+  const s = sampleSurfaceColored(norm, n, 7, src);
   if (!s) throw new MeshError("Das Modell hat keine Oberfläche (alle Flächen sind leer).");
-  return { n, pts: s.pts, col: s.col };
+  return { n, pts: s.pts, col: s.col, mesh: modelRenderMesh(m, norm, mats, textures, src) };
+}
+
+/**
+ * Der Körper als Dreiecksnetz: gleiche Normierung wie die Punktwolke; Farben je Ecke aus Material oder
+ * Eckfarben, Texturen (bis zu RENDER_MAX_TEX) bleiben echte Texturen mit UV.
+ */
+export function modelRenderMesh(m: ParsedMesh, norm: TriMesh, mats: readonly ObjMaterial[], textures: ReadonlyMap<string, Rgba>,
+  src = colorSource(m, mats, textures)): RenderMesh | null {
+  const nt = norm.pos.length / 9;
+  const byName = new Map(mats.map(x => [x.name, x]));
+  const texNames: string[] = [];
+  const layer = src ? new Uint8Array(nt).fill(255) : undefined;
+  const rgb = src ? new Uint8Array(nt * 9) : undefined;
+  for (let t = 0; t < nt && src; t++) {
+    const mi = m.mat ? m.mat[t]! : -1;
+    const mt = mi >= 0 ? byName.get(m.materials[mi]!) : undefined;
+    const tn = mt?.mapKd && textures.has(mt.mapKd) && m.uv ? mt.mapKd : null;
+    let li = tn ? texNames.indexOf(tn) : -1;
+    if (tn && li < 0 && texNames.length < RENDER_MAX_TEX) { texNames.push(tn); li = texNames.length - 1; }
+    if (li >= 0) { layer![t] = li; rgb!.fill(255, t * 9, t * 9 + 9); continue; }
+    // ohne Textur (oder mehr Texturen als erlaubt): Farbe an jeder Ecke
+    const corner = [[1, 0, 0], [0, 1, 0], [0, 0, 1]] as const;
+    corner.forEach(([w, u, v], c) => { const col = src(t, w, u, v); rgb![t * 9 + c * 3] = col[0]; rgb![t * 9 + c * 3 + 1] = col[1]; rgb![t * 9 + c * 3 + 2] = col[2]; });
+  }
+  return buildRenderMesh({
+    pos: norm.pos, ...(norm.nrm ? { nrm: norm.nrm } : {}), ...(m.uv ? { uv: m.uv } : {}),
+    ...(rgb ? { rgb } : {}), ...(layer ? { layer } : {}),
+    ...(texNames.length ? { textures: texNames.map(nm => textures.get(nm)!) } : {}),
+  });
 }
 
 /** Eintrag der Modell-Bibliothek (im Projekt gespeichert; die Punktwolke liegt im Ordner „models“). */

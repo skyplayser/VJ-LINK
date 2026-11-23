@@ -1,5 +1,6 @@
 // Zustand der Show: wird vom Pult, von OSC, von LJ-Link und von der Oberfläche verändert.
 import type { ParticleSettings } from "./particles";
+import type { TimeSettings } from "./timeclip";
 import { defaultCam, type CamSettings, type CameraSource } from "./camera";
 import { STARTER_CLIP_IDS } from "./effects";
 import { defaultVideo, type CueRender, type PlayStart, type VideoSettings } from "./video";
@@ -40,7 +41,7 @@ export type Rgb = readonly [number, number, number]; // 0–1
 
 /** Ebenen beim Start. Weitere lassen sich bis MAX_LAYERS hinzufügen. */
 export const LAYER_COUNT = 4;
-export const MAX_LAYERS = 8;
+export const MAX_LAYERS = 20;
 /** Das Pult-Profil „Standard“ hat Kanäle für so viele Ebenen. */
 export const DMX_LAYERS = 4;
 export const SLOT_NAMES = ["A", "B", "C", "D", "E"] as const;
@@ -77,6 +78,8 @@ export interface LayerState {
   chase?: ChaseSettings;
   /** Partikel-Objekt: Explosion, Drehung, Stäbchen (fehlt = Vorgabe). */
   particles?: ParticleSettings;
+  /** Zeit-Clip (Uhrzeit, Countdown, Stoppuhr …): Stil und Ziel (fehlt = Vorgabe). */
+  time?: TimeSettings;
 }
 
 export type MediaAnim = "none" | "pulse" | "spin" | "bounce" | "float" | "wobble" | "zoom";
@@ -254,6 +257,8 @@ export interface ShowState {
   slots: Rgb[];
   /** Audio-Analyse 0–1, vom Audio-Eingang oder aus LJ-Link-Wellenform. */
   audio: AudioState;
+  /** Laufender Timecode (Empfang oder eigene Uhr) zum Zeitpunkt `at` (Epoch-ms), für den Clip „Timecode“; nur live, nie im Projekt. */
+  tcNow?: { frames: number; fps: number; running: boolean; at: number };
 }
 
 /** Standard-Stapel: drei Effekte mit Stärke 0, damit „Effekt 1–3“ am Pult sofort etwas bewirken. */
@@ -278,7 +283,7 @@ export const cloneLayer = (l: LayerState): LayerState =>
   ({ ...l, clips: [...l.clips], effects: l.effects.map(e => ({ ...e })), media: { ...l.media }, video: { ...l.video }, cam: { ...l.cam }, videoStart: { ...l.videoStart },
     colorSlots: [...(l.colorSlots ?? [0, 1])], laser: { ...(l.laser ?? defaultLaser()) },
     chase: l.chase ? { ...l.chase, clips: [...l.chase.clips] } : defaultChase(),
-    ...(l.particles ? { particles: { ...l.particles } } : {}) });
+    ...(l.particles ? { particles: { ...l.particles } } : {}), ...(l.time ? { time: { ...l.time } } : {}) });
 
 /** Palette einer Ebene: die gewählten Slots (bei „multi“), sonst leer. */
 export function layerPalette(l: Pick<LayerState, "colorSource" | "colorSlots">, slots: readonly Rgb[]): Rgb[] {
@@ -437,16 +442,19 @@ function applyStack(layers: LayerState[], patches: readonly (Partial<LayerState>
     if (patch.colorSlots) layer.colorSlots = [...patch.colorSlots];
     if (patch.chase) layer.chase = { ...patch.chase, clips: [...patch.chase.clips] };
     if (patch.particles) layer.particles = { ...patch.particles };
+    if (patch.time) layer.time = { ...patch.time };
   });
 }
 
 export const clamp01 = (v: number): number => (v < 0 ? 0 : v > 1 ? 1 : v);
 
-/** Ebene oben anfügen. Gibt den neuen Index zurück oder -1, wenn schon MAX_LAYERS da sind. */
-export function addLayer(state: ShowState): number {
+/** Ebene oben anfügen (`empty`: ohne Clips). Gibt den neuen Index zurück oder -1, wenn schon MAX_LAYERS da sind. */
+export function addLayer(state: ShowState, empty = false): number {
   if (state.layers.length >= MAX_LAYERS) return -1;
   const l = defaultLayer();
   l.blend = "add";
+  // Von Hand angelegt („+ Ebene“): leere Zeile, Clips kommen über „+ Clips“ (Vorlagen füllen sie selbst)
+  if (empty) { l.clips = []; l.clip = null; }
   state.layers.push(l);
   return state.layers.length - 1;
 }
@@ -592,6 +600,20 @@ export function showForImage(sh: ShowState, id: string, cueImage: string): ShowS
   if (!layers) return sh;
   return { ...sh, cues, stackGain, layers, stacks: { ...sh.stacks, [MAIN_STACK]: layers },
     transition: sh.transition ? { ...sh.transition, from: sh.transition.fromStacks?.[id] ?? sh.transition.from } : null };
+}
+
+/**
+ * Ebenen-Vorschau (Vorschau-Fenster): nur diese Ebene, mit ihren Effekten und in voller Deckkraft, ohne das,
+ * was über dem ganzen Bild liegt (Master, Blackout, Blinder, Strobe, SHOW-Ablauf, Übergang). So sieht man eine
+ * Ebene, bevor sie live geht. Unbekannte Ebene: schwarzes Bild.
+ */
+export function soloLayer(sh: ShowState, index: number): ShowState {
+  const layers = sh.layers.map((l, i) => (i === index ? { ...l, opacity: 1 } : { ...l, opacity: 0 }));
+  return {
+    ...sh, layers, stacks: { ...sh.stacks, [MAIN_STACK]: layers }, master: 1, blackout: false, blackoutFlash: false,
+    blinder: 0, blinderOn: false, strobe: { ...sh.strobe, on: false, flash: false, untilBeat: 0, white: false, whiteFlash: false },
+    cues: [], transition: null, testCard: false, stackGain: { [MAIN_STACK]: 1 },
+  };
 }
 
 /** Bild entfernen (Bild 1 bleibt immer). */

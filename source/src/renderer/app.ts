@@ -39,6 +39,7 @@ import { cueRenders, cueTick, isVideoClip, newCueState, videoClip, videoIdOf, ty
 import { VideoLibrary, isVideoFile } from "./videolib";
 import { ModelLibrary, isModelFile, modelClip } from "./modellib";
 import { NdiSettings, ndiErrorText } from "./ndisettings";
+import { ClockBar } from "./clockbar";
 import { isModelClip, modelIdOf } from "../core/particles";
 import { VideoPool } from "./videopool";
 import { VideoPanel } from "./videopanel";
@@ -102,6 +103,8 @@ interface Settings {
   ljHold: number;
   /** Sichere Blitze: Strobe & Co. höchstens 3 × pro Sekunde (Standard an). */
   safeFlash: boolean;
+  /** Uhrzeit-Leiste oben (Standard an) und statt der Uhrzeit Art-Net-Timecode aus dem Netz (Alpha, Standard aus). */
+  clock: boolean; clockTc: boolean;
   /** Beim Start und stündlich bei GitHub nach Updates fragen (Standard an). */
   autoUpdate: boolean;
   /** Sicherheitshinweis zum Live-Betrieb einmal bestätigt. */
@@ -118,7 +121,7 @@ interface Settings {
     lightIface: string };
 }
 function loadSettings(): Settings {
-  const d: Settings = { universe: 0, sacn: 1, address: 1, uiScale: "auto", audioDevice: "", audioGain: 1, audioScope: "audio", audioOut: "", tc: defaultTcSettings(), ljHost: "", ljHold: 15, safeFlash: true, autoUpdate: true, safetyAck: false, farewell: true,
+  const d: Settings = { universe: 0, sacn: 1, address: 1, uiScale: "auto", audioDevice: "", audioGain: 1, audioScope: "audio", audioOut: "", tc: defaultTcSettings(), ljHost: "", ljHold: 15, safeFlash: true, clock: true, clockTc: false, autoUpdate: true, safetyAck: false, farewell: true,
     net: { artnet: true, sacn: true, osc: true, lj: true, link: true, midi: true, oscPort: 8000, lightIface: "" } };
   try {
     const raw = JSON.parse(localStorage.getItem("vjlink.settings") ?? "{}") as Partial<Settings>;
@@ -257,7 +260,7 @@ function onControl(e: ControlEvent): void {
       mappings.dispatch(ctx, input, oscValue(a, e.tags?.[0], e.address), typeof a === "number" ? a : undefined);
       break;
     }
-    case "timecode": tcClock.receive(e.tc, e.fps, "artnet", now, e.from); break;
+    case "timecode": tcClock.receive(e.tc, e.fps, "artnet", now, e.from); clockBar.feed(e.tc, e.fps); break;
     case "link":
       linkState = { connected: e.connected, peers: e.peers, bpm: e.bpm };
       if (e.connected && e.bpm > 0) ctx.tempo.update("link", e.bpm, now, e.beat);
@@ -265,9 +268,20 @@ function onControl(e: ControlEvent): void {
     case "lj": { const m = parseLjMessage(e.raw); if (m) handleLj(ctx, m, now); break; }
     case "lj-connection": if (e.clients === 0) ctx.lj.connected = false; break;
     case "status": netStatus = e.status; updateLightState(); break;
+    // Vorschau-Fenster: dort gewählte Ebene übernehmen; offen/zu für Knopf und Bildversand
+    case "monitor-select": if (e.layer < ctx.show.layers.length) fxPanel.select(e.layer); break;
+    case "monitor-image": if (imagesOn() && imageList(ctx.show).some(im => im.id === e.image) && ctx.show.canvas !== e.image) editImage(e.image); break;
+    case "monitor":
+      monitorOpen = e.open; $("mon-win-btn").classList.toggle("on", e.open); $("mon-win-btn").setAttribute("aria-pressed", String(e.open));
+      document.body.classList.toggle("mon-ext", e.open);
+      break;
   }
 }
 bridge?.onControl(onControl);
+let monitorOpen = false;
+$("mon-win-btn").hidden = !bridge?.toggleMonitor;
+$("mon-win-btn").setAttribute("aria-pressed", "false");
+$("mon-win-btn").addEventListener("click", () => { void bridge?.toggleMonitor?.(); });
 
 // ---- Tabs -----------------------------------------------------------------------------
 document.querySelectorAll<HTMLButtonElement>(".tabs button").forEach(b => b.addEventListener("click", () => {
@@ -597,7 +611,7 @@ async function importFiles(files: FileList | File[], layer: number): Promise<voi
     const where = t("Ebene {n}", { n: layer + 1 });
     // Eine Meldung statt zwei (die zweite hat die erste sofort überschrieben)
     toast(bg ? `${where}: ${bg === "white" ? t("Logo auf weißem Hintergrund erkannt – der Hintergrund wird ausgeblendet (Grafik → Freistellen).") : t("Logo auf schwarzem Hintergrund erkannt – der Hintergrund wird ausgeblendet (Grafik → Freistellen).")}`
-      : `${where}: ${isModelClip(first) ? t("3D-Modell geladen. Explosion, Drehung und Stäbchen stellst du rechts unter „Partikel-Objekt“ ein.") : isVideoClip(first) ? t("Video geladen. Loop und Takt stellst du rechts unter „Video“ ein.") : t("Grafik geladen. Position und Animation stellst du rechts unter „Grafik“ ein.")}`);
+      : `${where}: ${isModelClip(first) ? t("3D-Modell geladen. Explosion, Drehung und Größe stellst du rechts unter „Partikel-Objekt“ ein.") : isVideoClip(first) ? t("Video geladen. Loop und Takt stellst du rechts unter „Video“ ein.") : t("Grafik geladen. Position und Animation stellst du rechts unter „Grafik“ ein.")}`);
   }
 }
 $<HTMLInputElement>("file-input").addEventListener("change", e => {
@@ -803,6 +817,8 @@ const tcPanel = new TcPanel(tcClock, settings.tc, saveSettings, {
 });
 ctx.tc = tcClock;
 const setBox = $("settings");
+const clockBar = new ClockBar($("clock-bar"), settings, saveSettings, () => netStatus?.artnet.off ? "off" : netStatus?.artnet.error ? "error" : "on");
+clockBar.mountSettings(document.querySelector<HTMLElement>('.set-sec[data-sec="ui"]')!);
 const ndiSettings = new NdiSettings($("set-ndi"), bridge, () => { closeSettings(); document.querySelector<HTMLButtonElement>('.tabs [data-tab="output"]')?.click(); });
 const SEC_TITLE: Record<string, string> = { audio: t("set.audio"), timecode: t("set.timecode"), midi: t("set.midi"), dmx: t("set.dmx"), ndi: "NDI®", ui: t("set.ui"), update: t("set.update"), safety: t("set.safety"), chat: t("Suite-Chat"), about: t("set.about") };
 function openSettings(sec = "audio"): void {
@@ -909,7 +925,7 @@ function updateLightState(): void {
 }
 // Ebenen hinzufügen
 $("layer-add").addEventListener("click", () => {
-  const i = addLayer(ctx.show);
+  const i = addLayer(ctx.show, true);
   if (i < 0) { toast(t("Höchstens {n} Ebenen.", { n: MAX_LAYERS })); return; }
   rebuildGrid(); rebuildDeck(); fxPanel.select(i);
 });
@@ -1040,16 +1056,16 @@ function renderProfiles(): void {
   box.replaceChildren(row, saveRow);
 }
 
-/** Showpaket für USB (Projektmenü): Projekt mit allen Medien in einen neuen Ordner, danach geprüft. */
+/** ShowPaket exportieren (Projektmenü): Show benennen, mit allen Medien in einen eigenen Ordner (z. B. USB-Stick), danach geprüft. */
 async function runPackage(check: boolean): Promise<void> {
-  if (!check) toast(t("Showpaket wird geschrieben und geprüft …"));
+  if (!check) toast(t("ShowPaket wird geschrieben und geprüft …"));
   let result: ShowPackageResult | null | undefined;
   try { result = check ? await bridge?.verifyShowPackage?.() : await bridge?.exportShowPackage?.(currentJson()); }
   catch (error) { result = { error: (error as Error).message }; }
   if (!result) return;
   if (result.error || result.missing?.length) {
     toast([result.error, result.missing?.length ? t("Fehlende Medien: {names}", { names: result.missing.join(", ") }) : ""].filter(Boolean).join(" · "));
-  } else toast(t("Showpaket vollständig · {file}", { file: result.file ?? "" }));
+  } else toast(t("ShowPaket vollständig · {file}", { file: result.file ?? "" }));
 }
 $("proj-pkg-export").addEventListener("click", () => { closeProjMenu(); void runPackage(false); });
 $("proj-pkg-check").addEventListener("click", () => { closeProjMenu(); void runPackage(true); });
@@ -1732,6 +1748,9 @@ function frame(rafTime: number = performance.now()): void {
       stackGain: Object.fromEntries([...new Set([...Object.keys(tlo.gains), ...Object.keys(shown.stackGain ?? {})])]
         .map(id => [id, (tlo.gains[id] ?? 1) * (shown.stackGain?.[id] ?? 1)])) };
   }
+  // Timecode für den Clip „Timecode-Anzeige“ (jedes Fenster zählt zwischen den Bildern selbst weiter)
+  // (Empfang, sonst die eigene Uhr, auch wenn das Senden aus ist, sobald sie einmal gestartet wurde)
+  { const own = tcClock.ownNow(now), tcn = tcClock.now(now) ?? (own.running || own.frames > 0 ? own : null); if (tcn) shown = { ...shown, tcNow: { frames: tcn.frames, fps: tcn.fps, running: tcn.running, at: now } }; }
   // Projektionsmapping: Live-Vorschauen der Bilder (je Bild abwechselnd eins, nur jedes zweite Bild), dann das bearbeitete groß
   const cv = shown.canvas ?? MAIN_STACK;
   const renderMonitor = draw && (!!preview.offsetParent || videoLib.items.length > 0); // Der Monitor spielt Videoton ab.
@@ -1753,7 +1772,7 @@ function frame(rafTime: number = performance.now()): void {
     gallery.tick(now);
   }
 
-  if (now - lastPublish > 33 && bridge && displays.some(d => d.open)) {
+  if (now - lastPublish > 33 && bridge && (displays.some(d => d.open) || monitorOpen)) {
     lastPublish = now;
     const t = ctx.tempo.snapshot;
     const f: Frame = {
@@ -1763,6 +1782,12 @@ function frame(rafTime: number = performance.now()): void {
       monitorPixels: Object.fromEntries(displays.filter(d => !d.window && !d.ndi).map(d => [d.id, displayPixels(d)])),
       openOutputs: displays.filter(d => d.open).map(d => d.id),
       layerClock: layerClock.snap(now),
+      ...(monitorOpen ? { monitor: {
+        layer: fxPanel.layer, image: cv, aspect: previewAspect(),
+        imageName: multiImage() ? imageList(ctx.show).find(im => im.id === cv)?.name ?? "" : "",
+        layers: ctx.show.layers.map((l, i) => ({ name: layerName(l, i), clip: l.clip ? layerClips(i).find(c => c.id === l.clip)?.name ?? "" : "" })),
+        images: multiImage() ? imageList(ctx.show).map(im => ({ id: im.id, name: im.name, on: imageShownOn(im.id) })) : [],
+      } } : {}),
     };
     bridge.publishFrame(JSON.parse(JSON.stringify(f)) as Frame);
   }
@@ -2333,6 +2358,12 @@ function editImage(id: string): void {
   canvasSig = ""; tilesSig = "";
   rebuildGrid(); rebuildDeck(); fxPanel.select(0); libraryPanel.close();
   syncCanvases();
+}
+
+/** Wo ein Bild läuft: Ausgänge (Getrennt) bzw. Leinwände (Mapping), Namen wie rechts in der Bild-Auswahl. */
+function imageShownOn(id: string): string[] {
+  return separateOn() ? openOutputs().filter(d => imageForScreen(outLayout, d.id) === id).map(d => d.label)
+    : (outLayout.surfaces ?? []).filter(sf => (sf.image ?? MAIN_STACK) === id).map(sf => sf.name);
 }
 
 /** Gibt es mehrere Bilder (Projektionsmapping, Getrennt)? Nur dann bedeutet „nur andere Bilder“ etwas. */

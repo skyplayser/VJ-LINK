@@ -1,5 +1,6 @@
 // Projektdatei: Szenen, Ebenen, Farben, Grafik-Liste. Wird automatisch gespeichert und beim Start geladen.
 import { MODEL_CLIP_PREFIX, parseParticles } from "./particles";
+import { parseClock, parseTime } from "./timeclip";
 import type { ModelItem } from "./meshfile";
 import { CAM_LOOKS, defaultCam, isValidCamId, type CamSettings, type CameraSource } from "./camera";
 import type { ControlContext } from "./control";
@@ -134,7 +135,7 @@ function cue(v: unknown): Cue | null {
     t: num(b.t, 0, 0, 86400), len: num(b.len, 1, 0.05, 86400),
     kind: oneOf(b.kind, ["strobe", "flash", "white", "wflash", "blinder", "blackout"] as const, "strobe"),
   }));
-  c.start = oneOf(v.start, ["manual", "after", "with", "timecode"] as const, "manual");
+  c.start = oneOf(v.start, ["manual", "after", "with", "timecode", "clock"] as const, "manual");
   c.wait = num(v.wait, 0, 0, 3600);
   c.trimIn = num(v.trimIn, 0, 0, 86400); c.trimOut = num(v.trimOut, 0, 0, 86400);
   c.loop = oneOf(v.loop, ["off", "count", "untilGo", "forever"] as const, "off");
@@ -150,6 +151,7 @@ function cue(v: unknown): Cue | null {
   c.tcAction = oneOf(v.tcAction, ["start", "stop", "locate"] as const, "start");
   c.tcTarget = typeof v.tcTarget === "string" && /^\d{2}:\d{2}:\d{2}[:;]\d{2}$/.test(v.tcTarget) ? v.tcTarget : "00:00:00:00";
   c.tc = typeof v.tc === "string" && /^\d{2}:\d{2}:\d{2}[:;]\d{2}$/.test(v.tc) ? v.tc : "00:00:00:00";
+  c.clock = typeof v.clock === "string" && parseClock(v.clock) !== null ? v.clock.trim() : "20:00";
   return c;
 }
 
@@ -267,6 +269,7 @@ function partialLayer(v: unknown): Partial<LayerState> | null {
   if ("speed" in v) out.speed = num(v.speed, 1, -4, 4);
   if ("strobe" in v) out.strobe = num(v.strobe, 0, 0, 8);
   const pt = parseParticles(v.particles); if (pt) out.particles = pt;
+  const tm = parseTime(v.time); if (tm) out.time = tm;
   const fx = effects(v.effects); if (fx) out.effects = fx;
   const md = media(v.media); if (md) out.media = md;
   const vd = video(v.video); if (vd) out.video = vd;

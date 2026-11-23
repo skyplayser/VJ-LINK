@@ -36,7 +36,7 @@ export const WAVE_FPS = 150;
 
 export type LjMessage =
   | { t: "hello"; version: number; privacy: boolean; app?: string }
-  | { t: "tempo"; bpm: number; beat: number; masterDeck?: number }
+  | { t: "tempo"; bpm: number; beat: number; masterDeck?: number; bar?: number; phraseBeat?: number }
   | { t: "deck"; deck: LjDeck }
   | { t: "event"; kind: "track"; deck: number }
   | { t: "event"; kind: "phrase"; deck: number; phrase: Phrase }
@@ -56,10 +56,12 @@ export interface LjState {
   loopActive: boolean;
   /** Letzte Position je Deck (Zeitpunkt der Meldung in ms). */
   pos: Map<number, { ms: number; v: number; at: number }>;
+  /** Ganze Beats, um die der Zähler von LJ-Link verschoben wird, damit Takt-Eins und Phrasen-Anfang passen. */
+  beatOff: number;
 }
 
 export const newLjState = (): LjState =>
-  ({ connected: false, privacy: false, decks: new Map(), masterDeck: null, loopActive: false, pos: new Map() });
+  ({ connected: false, privacy: false, decks: new Map(), masterDeck: null, loopActive: false, pos: new Map(), beatOff: 0 });
 
 /** Gültige Deck-Nummer (1–16); begrenzt auch den Speicher für Decks, falls jemand Unsinn sendet. */
 export const MAX_DECKS = 16;
@@ -99,7 +101,9 @@ export function parseLjMessage(raw: string): LjMessage | null {
     case "hello": return fin(o.version) ? { t: "hello", version: o.version, privacy: o.privacy === true, ...(txt(o.app, 60) ? { app: txt(o.app, 60) } : {}) } : null;
     case "tempo":
       if (!fin(o.bpm) || !fin(o.beat)) return null;
-      return { t: "tempo", bpm: o.bpm, beat: o.beat, ...(isDeckNo(o.masterDeck) ? { masterDeck: o.masterDeck } : {}) };
+      return { t: "tempo", bpm: o.bpm, beat: o.beat, ...(isDeckNo(o.masterDeck) ? { masterDeck: o.masterDeck } : {}),
+        ...(Number.isInteger(o.bar) && (o.bar as number) >= 1 && (o.bar as number) <= 4 ? { bar: o.bar as number } : {}),
+        ...(Number.isInteger(o.phraseBeat) && (o.phraseBeat as number) >= 1 && (o.phraseBeat as number) <= 100000 ? { phraseBeat: o.phraseBeat as number } : {}) };
     case "deck": { const deck = cleanDeck(o.deck); return deck ? { t: "deck", deck } : null; }
     case "event": {
       if (!isDeckNo(o.deck)) return null;
@@ -184,4 +188,25 @@ function matches(w: RuleTrigger, m: Extract<LjMessage, { t: "event" }>): boolean
     case "loop": return w.kind === "loop" && w.active === m.active;
     case "track": return true;
   }
+}
+
+const mod = (a: number, n: number) => ((a % n) + n) % n;
+/**
+ * Verschiebung des Beat-Zählers auf das Raster des Tracks: LJ-Link zählt ab dem ersten Beat des Tracks und behält
+ * nach Sprüngen (Loop, Cue, Master-Wechsel) nur den Bruchteil; die Eins im Takt (`bar` 1–4) und der Anfang der
+ * Phrase (`phraseBeat`, 1 = erster Beat) schickt es aber mit. Mit Phrase gilt ein 16er-Raster (4 Takte ab
+ * Phrasen-Anfang), sonst ein 4er-Raster. Nahe an einer Beat-Grenze wird nichts geändert (Rundung beim Sender).
+ */
+export function alignBeat(prev: number, beat: number, bar?: number, phraseBeat?: number): number {
+  const f = beat - Math.floor(beat);
+  if (f > 0.95 || f < 0.05) return prev;
+  const cur = Math.floor(beat + prev);
+  let period: number, target: number;
+  if (phraseBeat !== undefined) { period = 16; target = mod(phraseBeat - 1, 16); }
+  else if (bar !== undefined) { period = 4; target = bar - 1; }
+  else return prev;
+  if (mod(cur, period) === target) return prev;
+  let d = mod(target - cur, period);
+  if (d > period / 2) d -= period;
+  return prev + d;
 }

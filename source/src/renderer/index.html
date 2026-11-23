@@ -19,8 +19,8 @@
       <button role="menuitem" data-proj="open"><span data-i18n>Projekt öffnen …</span> <kbd>⌘O</kbd></button>
       <button role="menuitem" data-proj="save"><span data-i18n>Speichern</span> <kbd>⌘S</kbd></button>
       <button role="menuitem" data-proj="saveAs"><span data-i18n>Speichern unter …</span> <kbd>⇧⌘S</kbd></button>
-      <button role="menuitem" id="proj-pkg-export" data-i18n>Showpaket für USB …</button>
-      <button role="menuitem" id="proj-pkg-check" data-i18n>Showpaket prüfen …</button>
+      <button role="menuitem" id="proj-pkg-export" data-i18n title="Show mit allen Medien in einen eigenen Ordner, z. B. auf einen USB-Stick, und gleich prüfen" data-i18n-title>ShowPaket exportieren …</button>
+      <button role="menuitem" id="proj-pkg-check" data-i18n>ShowPaket prüfen …</button>
       <button role="menuitem" id="proj-start" data-i18n>Startbildschirm</button>
       <div class="proj-recent" id="proj-recent"></div>
     </div>
@@ -48,6 +48,7 @@
       <span class="meter" id="audio-meter"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span id="audio-label">AUDIO</span>
     </button>
   </div>
+  <div class="clock-bar" id="clock-bar" hidden></div>
   <button class="pill tc-pill" id="tc-btn" title="Timecode (Einstellungen)" data-i18n-title>TC <span id="tc-val">--:--:--:--</span></button>
   <div class="tempo">
     <button class="bpm" id="bpm" data-ctl="tempo.bpm" title="Klicken, Zahl eingeben, mit Enter bestätigen" data-i18n-title>120.00</button>
@@ -92,7 +93,7 @@
     <div class="left">
       <div class="monrow">
         <div class="mon">
-          <div class="lbl"><b data-i18n>● AUSGANG</b><span class="res-wrap"><span id="mon-info">–</span><button class="btn small-btn res-btn" id="res-btn" type="button" title="Auflösung des Ausgabebilds: Auto, feste Pixel oder Format" data-i18n-title>Auflösung</button></span></div>
+          <div class="lbl"><b><span data-i18n>● AUSGANG</span> <span class="mon-ext-note" data-i18n>im Vorschau-Fenster</span></b><span class="res-wrap"><span id="mon-info">–</span><button class="btn small-btn res-btn" id="mon-win-btn" type="button" title="Vorschau-Fenster für einen zweiten Bildschirm: Ebenen-Vorschau und Live-Bild" data-i18n-title><span data-i18n>Vorschau-Fenster</span></button><button class="btn small-btn res-btn" id="res-btn" type="button" title="Auflösung des Ausgabebilds: Auto, feste Pixel oder Format" data-i18n-title>Auflösung</button></span></div>
           <div class="mon-box" id="mon-box"><canvas id="preview" width="640" height="360" aria-label="Vorschau des Ausgangs" data-i18n-aria></canvas></div>
           <div class="img-tiles" id="img-tiles" hidden></div>
         </div>

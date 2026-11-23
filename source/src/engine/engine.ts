@@ -12,8 +12,10 @@ import { chaseAt } from "../core/chase";
 import { devicePlacement, fitRect, renderSize, type DeviceEffects, type DeviceOutput, type Mask, type OutputRes, type View, type Warp } from "../core/layout";
 import { clipVideoTime, isVideoClip, loopRange, videoIdOf, type CueRender, type Fit } from "../core/video";
 import { HISTORY_FX, COMPOSITE_FRAG, FINAL_FRAG, GEN_IDS, genFrag, postFrag, IMAGE_FRAG, MASK_FRAG, MESH_FRAG, MESH_VERT, POST_FRAG, POST_IDS, SOLID_FRAG, VERT, WARP_FRAG, DJWAVE_FRAG } from "./shaders";
-import { t } from "../core/i18n";
+import { getLang, t } from "../core/i18n";
 import { isParticleClip } from "../core/particles";
+import { defaultTime, isTimeClip, timeView } from "../core/timeclip";
+import { drawTimeClip, timePulse, TIME_H, TIME_W, type TimeFill } from "./timeclip";
 import { ParticleRenderer } from "./particles";
 
 const COLOR_MODE: Record<ColorSource, number> = {
@@ -103,6 +105,9 @@ export class Engine {
   private meshVao: WebGLVertexArrayObject;
   private meshBuf: WebGLBuffer;
   private media = new Map<string, { tex: WebGLTexture; w: number; h: number }>();
+  /** Zeit-Clips: Zeichenfläche und zuletzt gezeichneter Stand je Ebene (neu nur, wenn sich die Anzeige ändert). */
+  private timeCanvas: HTMLCanvasElement | null = null;
+  private timeKeys = new Map<string, string>();
   private videoTex = new Map<string, WebGLTexture>();
   private black: WebGLTexture | null = null;
   private nowMs = 0;
@@ -225,6 +230,7 @@ export class Engine {
   /** Ist das Visual dieses Clips übersetzt? Startet die Übersetzung, falls nötig. Medien und Kameras: immer true. */
   clipReady(clip: string | null): boolean {
     if (isParticleClip(clip)) return this.baseReady() && this.particles.objectReady(clip!);
+    if (isTimeClip(clip)) return this.baseReady();
     const gen = clip ? GEN_IDS.indexOf(clip as typeof GEN_IDS[number]) : -1;
     if (!this.baseReady()) return false;
     return gen < 0 || this.genProg(gen) !== null || this.genP.get(gen)?.state === "failed";
@@ -335,6 +341,27 @@ export class Engine {
         if (fade <= 0) return null;
       }
     }
+    if (isTimeClip(l.clip)) {
+      // Zeit-Clip: Schrift aus der eigenen Uhr, als Bild der Ebene (Farbe, Effekte, Lage wie bei Grafiken)
+      const s = l.time ?? defaultTime();
+      const start = l.videoStart.clip === l.clip ? l.videoStart.ms : this.nowMs;
+      const v = timeView(l.clip, s, this.nowMs, start, this.bpm, beat, getLang(), show.tcNow);
+      // Farbe aus der Farbquelle der Ebene (Original = Weiß)
+      const css = (c: readonly number[]) => `rgb(${c.map(x => Math.round(x * 255)).join(",")})`;
+      const src = l.colorSource;
+      const fill: TimeFill = src === "original" ? { kind: "solid", a: "#ffffff" } : src === "rainbow" ? { kind: "rainbow" }
+        : src === "multi" ? { kind: "grad", stops: layerPalette(l, show.slots).map(css) }
+        : src === "gradient" ? { kind: "grad", stops: colors(src, show.slots, l).map(css) } : { kind: "solid", a: css(colors(src, show.slots, l)[0]) };
+      const id = `time:${fbKey}`, key = JSON.stringify([v.main, v.label, v.sub, s.style, s.size, fill]);
+      if (this.timeKeys.get(id) !== key || !this.media.has(id)) {
+        this.timeCanvas ??= Object.assign(document.createElement("canvas"), { width: TIME_W, height: TIME_H });
+        const c = this.timeCanvas.getContext("2d");
+        if (c) { drawTimeClip(c, v, s, fill); this.setMedia(id, this.timeCanvas, TIME_W, TIME_H); this.timeKeys.set(id, key); }
+      }
+      media = this.media.get(id);
+      if (!media) return null;
+      fade = timePulse(v, s);
+    }
     let camLayer = false;
     let camMaskTex: WebGLTexture | null = null;
     if (isCamClip(l.clip)) {
@@ -377,6 +404,8 @@ export class Engine {
       const im = this.img;
       const tf = isVideo
         ? { x: 0, y: 0, rotation: 0, scale: fitScale(l.video.fit, w / h, media.w / Math.max(1, media.h), media.h, h) }
+        // Zeit-Clips: Lage aus dem Abschnitt „Lage“ der Ebene, ohne Animation (die Zeit soll ruhig stehen)
+        : isTimeClip(l.clip) ? (() => { const lz = l.laser ?? defaultLaser(); return { x: lz.x * 0.5, y: lz.y * 0.5, scale: lz.size, rotation: ((lz.rot ?? 0) * Math.PI) / 180 }; })()
         // Antrieb „Statisch“: Grafiken (auch Now Playing) stehen still, nur Lage, Größe und Drehung gelten
         : mediaTransform(l.drive === "static" ? { ...l.media, anim: "none" } : l.media, drv.beat, time);
       gl.useProgram(im.p);

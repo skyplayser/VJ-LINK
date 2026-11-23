@@ -1,6 +1,6 @@
 {
   "name": "vj-link",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "productName": "VJ-Link",
   "description": "Einfache VJ-Software für LJs: Lichtpult, OSC und LJ-Link steuern die Visuals.",
   "private": true,
@@ -51,6 +51,15 @@
       "LICENSE"
     ],
     "asar": true,
+    "fileAssociations": [
+      {
+        "ext": "vjlink",
+        "name": "VJ-Link Show",
+        "description": "VJ-Link Show",
+        "role": "Editor",
+        "rank": "Owner"
+      }
+    ],
     "npmRebuild": false,
     "afterPack": "scripts/after-pack.cjs",
     "mac": {

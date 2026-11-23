@@ -1,9 +1,10 @@
 // Ebene: Antrieb (Takt, Audio, ruhig), Farben (auch mehrere Slots) und bei Laser-Visuals Lage, Größe und Stärke.
 import type { ControlContext } from "../core/control";
-import { CHASE_ORDER_LABEL, DRIVE_LABEL, PARTICLE_TRIGGER_LABEL } from "../core/controls";
-import { PARTICLE_DEFAULT_COUNT, PARTICLE_LIMITS, PARTICLE_TRIGGERS, defaultParticles, isParticleClip, type ParticleNumKey } from "../core/particles";
+import { CHASE_ORDER_LABEL, DRIVE_LABEL, PARTICLE_MODE_LABEL, PARTICLE_TRIGGER_LABEL } from "../core/controls";
+import { PARTICLE_DEFAULT_COUNT, PARTICLE_LIMITS, PARTICLE_MODES, PARTICLE_MODE_ORDER, PARTICLE_TRIGGERS, defaultParticles, isParticleClip, particleSolid, type ParticleNumKey } from "../core/particles";
 import { CHASE_ORDERS, CHASE_STEPS, chaseAt, chaseList, chaseStep, defaultChase } from "../core/chase";
 import { EFFECT_BY_ID } from "../core/effects";
+import { TIME_CLIP_NAME, TIME_STYLES, defaultTime, isTimeClip, parseClock, type TimeClipId, type TimeStyle } from "../core/timeclip";
 import { t } from "../core/i18n";
 import {
   DRIVES, LASER_LIMITS, SLOT_NAMES, defaultLaser, layerName, toggleColorSlot,
@@ -43,9 +44,20 @@ const PARTICLE_FIELDS: ParticleField[] = [
   { key: "angY", label: t("Winkel Y (drehen)"), scale: 1, unit: "°" },
   { key: "angZ", label: t("Winkel Z (rollen)"), scale: 1, unit: "°" },
   { key: "size", label: t("Partikelgröße"), scale: 100, unit: " %" },
-  { key: "length", label: t("Länge (0 = Punkte)"), scale: 100, unit: " %" },
   { key: "count", label: t("Anzahl"), scale: 1, unit: ` ${t("Tsd.")}`, step: 5 },
 ];
+
+/** Kurzbeschreibung der Effekte (Hinweis unter der Auswahl und Tooltip). */
+const MODE_HINT: Record<(typeof PARTICLE_MODES)[number], string> = {
+  burst: t("Partikel: auf den Auslöser bricht der Körper auf, die Körner schießen heraus, wirbeln davon und kehren zurück."),
+  drift: t("Verwehen: eine glühende Kante wandert durch den Körper; dahinter zerfällt er zu Staub, der davonweht, dann setzt er sich wieder zusammen."),
+  melt: t("Schmelzen: der Körper sackt zusammen, tropft und zerfließt zu einer glänzenden Pfütze, dann wächst er zurück."),
+  jelly: t("Jelly: ein glänzender Körper wie Wackelpudding, staucht sich und schwingt nach. Mit „Bass“ oder „Halten“ wabbelt er dauernd."),
+  dissolve: t("Auflösen: der Körper brennt von oben weg, an der Kante glüht es, das Weggebrannte steigt als Rauch auf."),
+  twist: t("Verdrehen: der Körper verwindet sich wie ein ausgewrungenes Tuch und dreht sich zurück."),
+  shatter: t("Zersplittern: der Körper bricht in feste Stücke, die sich drehen, auseinanderfliegen und zurückkehren."),
+  still: t("Ohne: nur das Objekt, ohne Effekt. Drehung und Lage wirken weiter."),
+};
 
 const rgbCss = (c: readonly number[]) => `rgb(${c.map(v => Math.round(v * 255)).join(",")})`;
 
@@ -74,12 +86,13 @@ export class LayerPanel {
     const isLz = (id: string | null) => !!id && EFFECT_BY_ID.get(id)?.category === "laser";
     const isLaser = l.clip ? isLz(l.clip) : l.clips.some(isLz);
     const isGen = !l.clip || EFFECT_BY_ID.get(l.clip)?.kind === "generator" || isParticleClip(l.clip);
+    const timeClip = l.clip && isTimeClip(l.clip) ? l.clip : (l.clips.find(isTimeClip) as TimeClipId | undefined) ?? null;
     const slots = this.ctx.show.slots.map(rgbCss).join(";");
     const c = l.chase;
     const isPart = l.clip ? isParticleClip(l.clip) : l.clips.some(isParticleClip);
     const pp = l.particles;
-    const sig = `${isPart}|${pp?.trigger}|${pp?.spin}|${this.layerOf()}|${l.laser?.override ? 1 : 0}|${l.drive}|${l.colorSource}|${(l.colorSlots ?? []).join(",")}|${isLaser}|${isGen}|${slots}|${c?.on}|${c?.beats}|${c?.order}|${(c?.clips ?? []).join(",")}|${l.clips.join(",")}`;
-    if (force || sig !== this.sig || l !== this.built) { this.sig = sig; this.built = l; this.build(l, isLaser, isGen, isPart); }
+    const sig = `${isPart}|${pp?.mode}|${pp?.trigger}|${pp?.spin}|${pp && particleSolid(pp, l.clip)}|${this.layerOf()}|${l.laser?.override ? 1 : 0}|${l.drive}|${l.colorSource}|${(l.colorSlots ?? []).join(",")}|${isLaser}|${isGen}|${slots}|${c?.on}|${c?.beats}|${c?.order}|${(c?.clips ?? []).join(",")}|${l.clips.join(",")}|${timeClip}|${l.time?.style}|${l.time?.seconds}|${l.time?.pulse}`;
+    if (force || sig !== this.sig || l !== this.built) { this.sig = sig; this.built = l; this.build(l, isLaser, isGen, isPart, timeClip); }
     this.updateChase(l);
     const z = l.laser ?? defaultLaser();
     for (const f of LASER_FIELDS) {
@@ -97,12 +110,25 @@ export class LayerPanel {
     }
   }
 
-  /** Partikel-Objekt: Explosion auf den Beat, Drehung, Stäbchen oder Punkte, Anzahl. */
+  /** Partikel-Objekt: leuchtender Staub, Explosion auf den Beat, Drehung, Größe, Anzahl. */
   private buildParticles(l: LayerState, n: number): void {
     const p = (l.particles ??= defaultParticles());
     this.root.append(el("h4", "lp-sub", t("Partikel-Objekt")));
-    // Auslöser
-    const tr = el("div", "lp-row"); tr.append(el("span", "lp-lab", t("Auslöser")));
+    // Effekt: wie das Objekt auf den Auslöser reagiert (oder gar nicht)
+    const mode = p.mode ?? "burst";
+    const mr = el("div", "lp-row"); mr.append(el("span", "lp-lab", t("Effekt")));
+    const ms = el("div", "seg2 lp-seg lp-chase-seg"); ms.setAttribute("role", "radiogroup"); ms.dataset.ctl = `layer.${n + 1}.particles.mode`;
+    for (const k of PARTICLE_MODE_ORDER) {
+      const b = el("button", mode === k ? "on" : "", PARTICLE_MODE_LABEL[k]);
+      b.setAttribute("role", "radio"); b.setAttribute("aria-checked", String(mode === k));
+      b.title = MODE_HINT[k];
+      b.addEventListener("click", () => { p.mode = k; this.update(true); });
+      ms.append(b);
+    }
+    mr.append(ms); this.root.append(mr);
+    this.root.append(el("p", "muted small lp-hint", MODE_HINT[mode]));
+    // Auslöser (nicht bei „Ohne“)
+    const tr = el("div", "lp-row"); tr.hidden = mode === "still"; tr.append(el("span", "lp-lab", t("Auslöser")));
     const seg = el("div", "seg2 lp-seg lp-chase-seg"); seg.setAttribute("role", "radiogroup"); seg.dataset.ctl = `layer.${n + 1}.particles.trigger`;
     for (const k of PARTICLE_TRIGGERS) {
       const b = el("button", p.trigger === k ? "on" : "", PARTICLE_TRIGGER_LABEL[k]);
@@ -111,19 +137,30 @@ export class LayerPanel {
       seg.append(b);
     }
     tr.append(seg); this.root.append(tr);
-    if (p.trigger === "hold") this.root.append(el("p", "muted small lp-hint", t("Halten: Der Regler „Explosion“ hält die Partikel direkt auseinander, z. B. von einem Fader am Pult. Bei 0 % ist die Form geschlossen.")));
-    if (p.trigger === "bass") this.root.append(el("p", "muted small lp-hint", t("Bass: Je härter der Bass (Audio-Eingang oder LJ-Link), desto weiter fliegen die Partikel. „Explosion“ ist die Stärke, „Rückkehr“ wie schnell sie sich wieder sammeln. Ohne Audio bleibt die Form geschlossen.")));
+    if (mode !== "still" && p.trigger === "hold") this.root.append(el("p", "muted small lp-hint", t("Halten: Der Regler „Explosion“ hält die Partikel direkt auseinander, z. B. von einem Fader am Pult. Bei 0 % ist die Form geschlossen.")));
+    if (mode !== "still" && p.trigger === "bass") this.root.append(el("p", "muted small lp-hint", t("Bass: Je härter der Bass (Audio-Eingang oder LJ-Link), desto weiter fliegen die Partikel. „Explosion“ ist die Stärke, „Rückkehr“ wie schnell sie sich wieder sammeln. Ohne Audio bleibt die Form geschlossen.")));
     // Drehung an/aus
     const sr = el("div", "lp-row"); sr.append(el("span", "lp-lab", t("Drehung")));
     const spin = el("button", `btn small-btn toggle${p.spin ? " on" : ""}`, p.spin ? t("An") : t("Aus"));
     spin.setAttribute("aria-pressed", String(p.spin)); spin.dataset.ctl = `layer.${n + 1}.particles.spin`;
     spin.addEventListener("click", () => { p.spin = !p.spin; this.update(true); });
     sr.append(spin); this.root.append(sr);
+    // Form deckend: in Ruhe geschlossene Fläche (Logo sieht aus wie das Logo), erst beim Sprengen Staub
+    const solidOn = particleSolid(p, l.clip);
+    const fr = el("div", "lp-row"); fr.append(el("span", "lp-lab", t("Form deckend")));
+    const solid = el("button", `btn small-btn toggle${solidOn ? " on" : ""}`, solidOn ? t("An") : t("Aus"));
+    solid.setAttribute("aria-pressed", String(solidOn)); solid.dataset.ctl = `layer.${n + 1}.particles.solid`;
+    solid.title = t("An: In Ruhe ist die Form eine geschlossene Fläche in ihren Farben, z. B. ein Logo. Erst beim Sprengen zerfällt sie in leuchtenden Staub. Aus: immer Staub.");
+    solid.addEventListener("click", () => { p.solid = !solidOn; this.update(true); });
+    fr.append(solid); this.root.append(fr);
     for (const f of PARTICLE_FIELDS) {
       if (f.spinOnly && !p.spin) continue;
+      // Ohne Effekt keine Stärke und Rückkehr; Streuung gibt es nur beim Sprengen
+      if (mode === "still" && (f.key === "explode" || f.key === "ret")) continue;
+      if (mode !== "burst" && f.key === "scatter") continue;
       if (f.sub) this.root.append(el("p", "muted small lp-hint", f.sub));
       const [lo, hi] = PARTICLE_LIMITS[f.key];
-      const row = el("label", "mrow"); row.append(el("span", "", f.label));
+      const row = el("label", "mrow"); row.append(el("span", "", f.key === "explode" && mode !== "burst" ? t("Stärke") : f.label));
       const input = el("input"); input.type = "range";
       input.min = String(lo * f.scale); input.max = String(hi * f.scale); input.step = String(f.step ?? 1);
       input.dataset.ctl = `layer.${n + 1}.particles.${f.key}`;
@@ -144,7 +181,68 @@ export class LayerPanel {
     const reset = el("button", "btn small-btn", t("Partikel zurücksetzen"));
     reset.addEventListener("click", () => { l.particles = defaultParticles(); this.update(true); });
     this.root.append(reset);
-    this.root.append(el("p", "muted small lp-hint gpu-hint", t("Braucht eine starke Grafikkarte. Ziel: 3 Bildschirme mit 60 fps ab Apple M2 (oder vergleichbar) bei bis zu {n} Tsd. Partikeln. Ruckelt es, „Anzahl“ senken oder „Länge“ auf 0 (Punkte). Doppelklick setzt einen Regler auf 0 (Rückkehr, Größe und Anzahl auf die Vorgabe).", { n: PARTICLE_DEFAULT_COUNT })));
+    this.root.append(el("p", "muted small lp-hint gpu-hint", t("Braucht eine starke Grafikkarte. Ziel: 3 Bildschirme mit 60 fps ab Apple M2 (oder vergleichbar) bei bis zu {n} Tsd. Partikeln. Ruckelt es, „Anzahl“ senken. Doppelklick setzt einen Regler auf 0 (Rückkehr, Größe und Anzahl auf die Vorgabe).", { n: PARTICLE_DEFAULT_COUNT })));
+  }
+
+  /** Zeit-Clip: Stil, Sekunden, Ziel bzw. Dauer, Zeilen, Größe, Pulsieren; Neustart für Dauer und Stoppuhr. */
+  private buildTime(l: LayerState, n: number, clip: TimeClipId): void {
+    const s = (l.time ??= defaultTime());
+    this.root.append(el("h4", "lp-sub", TIME_CLIP_NAME[clip]));
+    const STYLE_LABEL: Record<TimeStyle, string> = { clean: t("Klar"), digital: t("Digital"), led: t("LED") };
+    const STYLE_HINT: Record<TimeStyle, string> = { clean: t("Fette Schrift, gut lesbar auf großen Leinwänden."), digital: t("Gleich breite Ziffern wie eine Digitaluhr."), led: t("Leuchtpunkte wie eine LED-Bühnenuhr (nur Ziffern; Text bleibt klar).") };
+    const sr = el("div", "lp-row"); sr.append(el("span", "lp-lab", t("Stil")));
+    const seg = el("div", "seg2 lp-seg"); seg.setAttribute("role", "radiogroup"); seg.setAttribute("aria-label", t("Stil"));
+    for (const st of TIME_STYLES) {
+      const b = el("button", s.style === st ? "on" : "", STYLE_LABEL[st]);
+      b.setAttribute("role", "radio"); b.setAttribute("aria-checked", String(s.style === st)); b.title = STYLE_HINT[st];
+      b.addEventListener("click", () => { s.style = st; this.update(true); });
+      seg.append(b);
+    }
+    sr.append(seg); this.root.append(sr);
+    const toggle = (label: string, on: boolean, set: (v: boolean) => void, hint = "") => {
+      const r = el("div", "lp-row"); r.append(el("span", "lp-lab", label));
+      const b = el("button", `btn small-btn toggle${on ? " on" : ""}`, on ? t("An") : t("Aus"));
+      b.setAttribute("aria-pressed", String(on)); if (hint) b.title = hint;
+      b.addEventListener("click", () => { set(!on); this.update(true); });
+      r.append(b); this.root.append(r);
+    };
+    const text = (label: string, value: string, ph: string, set: (v: string) => void, max = 60, valid: (v: string) => boolean = () => true) => {
+      const r = el("div", "lp-row"); r.append(el("span", "lp-lab", label));
+      const i = el("input", "lp-name"); i.value = value; i.placeholder = ph; i.maxLength = max; i.setAttribute("aria-label", label);
+      i.addEventListener("input", () => { const ok = valid(i.value); i.setAttribute("aria-invalid", String(!ok)); i.classList.toggle("bad", !ok); if (ok) set(i.value); });
+      i.addEventListener("keydown", e => { if (e.key === "Enter") i.blur(); });
+      r.append(i); this.root.append(r);
+      return i;
+    };
+    if (clip === "time-clock" || clip === "time-countdown" || clip === "time-timer") toggle(t("Sekunden"), s.seconds, v => { s.seconds = v; });
+    if (clip === "time-countdown") {
+      text(t("Ziel-Uhrzeit"), s.target, "00:00", v => { s.target = v.trim(); }, 8, v => parseClock(v) !== null);
+      this.root.append(el("p", "muted small lp-hint", t("Zählt bis zu dieser Uhrzeit (HH:MM oder HH:MM:SS, Uhr dieses Rechners). Ist sie vorbei, steht bis 30 Minuten danach 00:00 bzw. der Text bei 0, dann zählt es auf das nächste Mal.")));
+    }
+    if (clip === "time-timer") {
+      const r = el("label", "mrow"); r.append(el("span", "", t("Minuten")));
+      const i = el("input"); i.type = "number"; i.min = "0.1"; i.max = "1440"; i.step = "0.5"; i.value = String(s.minutes); i.setAttribute("aria-label", t("Dauer in Minuten"));
+      i.addEventListener("change", () => { const v = Number(i.value); if (Number.isFinite(v) && v >= 0.1 && v <= 1440) s.minutes = v; else i.value = String(s.minutes); });
+      r.append(i); this.root.append(r);
+    }
+    if (clip === "time-timer" || clip === "time-stopwatch") {
+      const b = el("button", "btn small-btn", t("Neu starten"));
+      b.title = t("Zählt ab jetzt neu (startet auch, wenn der Clip neu ausgelöst wird)");
+      b.addEventListener("click", () => { l.videoStart = { clip: l.clip, ms: Date.now(), beat: l.videoStart.beat }; });
+      this.root.append(b);
+    }
+    if (clip === "time-timecode") this.root.append(el("p", "muted small lp-hint", t("Zeigt den Timecode, den VJ-Link empfängt (Art-Net, MIDI) oder selbst erzeugt. Einschalten unter Einstellungen → Timecode. Ohne Timecode steht --:--:--:--.")));
+    text(t("Zeile darüber"), s.label, clip === "time-bpm" ? "BPM" : clip === "time-date" ? t("Wochentag") : t("z. B. DOORS OPEN IN"), v => { s.label = v; });
+    if (clip === "time-countdown" || clip === "time-timer") {
+      text(t("Text bei 0"), s.end, t("z. B. HAPPY NEW YEAR"), v => { s.end = v; });
+      toggle(t("Letzte 10 s pulsieren"), s.pulse, v => { s.pulse = v; });
+    }
+    const sz = el("label", "mrow"); sz.append(el("span", "", t("Größe")));
+    const si = el("input"); si.type = "range"; si.min = "20"; si.max = "100"; si.step = "1"; si.value = String(Math.round(s.size * 100)); si.setAttribute("aria-label", t("Größe"));
+    const sv = el("span", "mval", `${Math.round(s.size * 100)} %`);
+    si.addEventListener("input", () => { s.size = Number(si.value) / 100; sv.textContent = `${si.value} %`; });
+    sz.append(si, sv); this.root.append(sz);
+    this.root.append(el("p", "muted small lp-hint", t("Die Schrift ist weiß; Farbe, Leuchten und Lage kommen wie bei Grafiken von der Ebene (Farben, Effekte, Lage). Jeder Ausgang rechnet die Zeit selbst, alle zeigen dasselbe.")));
   }
 
   /**
@@ -228,7 +326,7 @@ export class LayerPanel {
     if (u.info.textContent !== txt) u.info.textContent = txt;
   }
 
-  private build(l: LayerState, isLaser: boolean, isGen: boolean, isPart = false): void {
+  private build(l: LayerState, isLaser: boolean, isGen: boolean, isPart = false, timeClip: TimeClipId | null = null): void {
     const n = this.layerOf();
     this.root.replaceChildren();
     this.ranges.clear();
@@ -287,6 +385,7 @@ export class LayerPanel {
 
     this.buildChase(l, n);
     if (isPart) this.buildParticles(l, n);
+    if (timeClip) this.buildTime(l, n, timeClip);
 
     // Lage, Größe, Drehung (jedes Visual); Stärke und XY-Override nur bei Lasern
     if (!isGen) return;

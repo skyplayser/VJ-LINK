@@ -1,5 +1,6 @@
 // Videos: als Clip in den Visuals (loopt, auch im Takt) und als Cue im SHOW-Ablauf.
 // Alles hier ist reine Rechnung, damit jedes Fenster (Vorschau, Ausgänge) dieselbe Stelle zeigt.
+import { parseClock } from "./timeclip";
 import { parseTc, tcToFrames, type TcNow } from "./timecode";
 import { t } from "./i18n";
 
@@ -71,7 +72,7 @@ export function clipVideoTime(v: VideoSettings, start: PlayStart, duration: numb
 
 export type CueKind = "video" | "image" | "camera" | "black" | "scene" | "tcsignal";
 export type TcAction = "start" | "stop" | "locate";
-export type CueStart = "manual" | "after" | "with" | "timecode";
+export type CueStart = "manual" | "after" | "with" | "timecode" | "clock";
 export type CueEnd = "hold" | "fade" | "next";
 export type CueLoop = "off" | "count" | "untilGo" | "forever";
 export type CueOver = "replace" | "over";
@@ -107,6 +108,8 @@ export interface Cue {
   over: CueOver;
   /** Start per Timecode, z. B. „00:20:00:00“. */
   tc: string;
+  /** Start um Uhrzeit (Uhr dieses Rechners), „HH:MM“ oder „HH:MM:SS“. */
+  clock: string;
   /** Timecode-Befehl: eigene Uhr starten (ab Zeit), anhalten oder auf eine Zeit springen. */
   tcAction: TcAction;
   tcTarget: string;
@@ -137,7 +140,7 @@ export function newCue(kind: CueKind, name: string, media: string | null = null,
   return {
     id, name, kind, media, scene: 1, start: "manual", wait: 0,
     trimIn: 0, trimOut: 0, loop: kind === "video" ? "off" : "off", loopCount: 2, loopRange: false, loopIn: 0, loopOut: 0,
-    end: kind === "video" ? "hold" : "hold", fadeIn: 0.5, fadeOut: 1, hold: 0, volume: 1, fit: "fill", over: "replace", tc: "00:00:00:00", tcAction: "start", tcTarget: "00:00:00:00",
+    end: kind === "video" ? "hold" : "hold", fadeIn: 0.5, fadeOut: 1, hold: 0, volume: 1, fit: "fill", over: "replace", tc: "00:00:00:00", clock: "20:00", tcAction: "start", tcTarget: "00:00:00:00",
   };
 }
 export function newCueId(): string { return "c" + Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-3); }
@@ -166,7 +169,8 @@ export interface ActiveCue {
 }
 
 export interface CueRun { active: ActiveCue[]; next: number; current: number }
-export interface CueState { list: Cue[]; run: CueRun; /** Letzter gesehener Timecode (Bilder). */ lastTc?: number | null; /** Zeit des letzten WEITER (Doppelklick-Schutz). */ lastGoMs?: number }
+export interface CueState { list: Cue[]; run: CueRun; /** Letzter gesehener Timecode (Bilder). */ lastTc?: number | null; /** Zeit des letzten WEITER (Doppelklick-Schutz). */ lastGoMs?: number;
+  /** Uhrzeit beim letzten Durchlauf (Start um Uhrzeit). */ lastClockMs?: number }
 export const newCueState = (): CueState => ({ list: [], run: { active: [], next: 0, current: -1 }, lastTc: null });
 
 /** Was ein Fenster zeichnen muss: Datei, Stelle, Deckkraft. */
@@ -402,8 +406,39 @@ function tickTimecode(s: CueState, nowMs: number, env: CueEnv): void {
   });
 }
 
+/** Nächster bzw. letzter Zeitpunkt (Epoch-ms) einer Uhrzeit am Tag von `dayMs` (lokale Zeit, Sommerzeit richtig). */
+function clockAt(dayMs: number, sec: number): number {
+  const d = new Date(dayMs);
+  d.setHours(Math.floor(sec / 3600), Math.floor(sec / 60) % 60, sec % 60, 0);
+  return d.getTime();
+}
+/**
+ * Uhrzeit: Cues mit Start „Uhrzeit“ beginnen, wenn die Uhr die Zeit erreicht (auch über Mitternacht). Nach einer
+ * Pause von mehr als 5 Sekunden (Ruhezustand, Uhr gestellt) wird nichts nachgeholt.
+ */
+function tickClock(s: CueState, nowMs: number): void {
+  const prev = s.lastClockMs;
+  s.lastClockMs = nowMs;
+  if (prev === undefined || nowMs <= prev || nowMs - prev > 5000) return;
+  s.list.forEach((c, i) => {
+    if (c.start !== "clock") return;
+    const sec = parseClock(c.clock);
+    if (sec === null) return;
+    const hit = [clockAt(nowMs, sec), clockAt(nowMs - 86_400_000, sec)].some(tm => prev < tm && tm <= nowMs);
+    if (hit && !s.run.active.some(a => a.cueId === c.id && a.fadeOutMs === null)) startAt(s, i, nowMs);
+  });
+}
+/** Wann ein Cue mit Start „Uhrzeit“ als Nächstes beginnt (Epoch-ms), null bei ungültiger Zeit. */
+export function nextClockStart(c: Pick<Cue, "clock">, nowMs: number): number | null {
+  const sec = parseClock(c.clock);
+  if (sec === null) return null;
+  const today = clockAt(nowMs, sec);
+  return today > nowMs ? today : clockAt(nowMs + 86_400_000, sec);
+}
+
 export function cueTick(s: CueState, nowMs: number, env: CueEnv): void {
   tickTimecode(s, nowMs, env);
+  tickClock(s, nowMs);
   for (const ac of [...s.run.active]) {
     const c = byId(s, ac.cueId);
     if (!c) { s.run.active = s.run.active.filter(x => x !== ac); continue; }

@@ -4,7 +4,7 @@ import { app } from "electron";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import type { ShowPackageResult } from "../core/frame";
-import { mediaFolderName, projectHash, packProject, projectRefs, unpackProject, PROJECT_EXT } from "../core/projectfile";
+import { mediaFolderName, projectHash, packProject, projectRefs, showName, unpackProject, PROJECT_EXT } from "../core/projectfile";
 import type { Storage } from "./storage";
 import { t } from "../core/i18n";
 
@@ -109,10 +109,17 @@ export class ProjectFiles {
     return { ok: true, name: this.name, path: file, missing };
   }
 
-  async exportShow(projectJson: string, parent: string): Promise<ShowPackageResult> {
-    const folder = await fs.mkdtemp(path.join(parent, "VJ-Link-Show-"));
+  /** ShowPaket: neuer Ordner „Name“ (gibt es ihn schon: „Name 2“ …) mit „Name.vjlink“ und den Medien daneben. */
+  async exportShow(projectJson: string, parent: string, name = "Show"): Promise<ShowPackageResult> {
+    const base = showName(name);
+    let folder = "";
+    for (let n = 1; n <= 999 && !folder; n++) {
+      const dir = path.join(parent, n === 1 ? base : `${base} ${n}`);
+      try { await fs.mkdir(dir); folder = dir; } catch (e) { if ((e as NodeJS.ErrnoException).code !== "EEXIST") throw e; }
+    }
+    if (!folder) return { error: t("Kein freier Ordnername für „{name}“.", { name: base }) };
     try {
-      const file = path.join(folder, `Show.${PROJECT_EXT}`);
+      const file = path.join(folder, `${path.basename(folder)}.${PROJECT_EXT}`);
       const result = await this.save(projectJson, file, false);
       const checked = await verifyShowPackage(file);
       if (result.missing?.length || checked.error || checked.missing?.length) {

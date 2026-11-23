@@ -16,11 +16,12 @@ await build({ ...common, entryPoints: ["src/main/ndi/ndi-worker.ts"], outfile: "
   platform: "node", format: "cjs", target: "node22", external: ["electron", "koffi"] });
 await build({ ...common, entryPoints: ["src/main/preload.ts"], outfile: "dist/main/preload.js",
   platform: "node", format: "cjs", target: "node22", external: ["electron"] });
-await build({ ...common, loader: { ".png": "dataurl" }, entryPoints: { app: "src/renderer/app.ts", output: "src/renderer/output.ts" },
+await build({ ...common, loader: { ".png": "dataurl" }, entryPoints: { app: "src/renderer/app.ts", output: "src/renderer/output.ts", monitor: "src/renderer/monitor.ts" },
   outdir: "dist/renderer", platform: "browser", format: "iife", target: "chrome120" });
 
 await cp("src/renderer/index.html", "dist/renderer/index.html");
 await cp("src/renderer/output.html", "dist/renderer/output.html");
+await cp("src/renderer/monitor.html", "dist/renderer/monitor.html");
 await cp("src/renderer/style.css", "dist/renderer/style.css");
 await mkdir("dist/renderer/remote", { recursive: true });
 for (const name of ["index.html", "remote.css"]) await cp(`src/remote/${name}`, `dist/renderer/remote/${name}`);

@@ -422,6 +422,39 @@ async function main() {
   log("Einstellungen NDI und Netzwerkkarte", /NDI \d|nicht installiert|not installed/.test(ndiVer) && ndiPage.cards >= 1 && ndiPage.outs >= 1 && ndiPage.bw && lightCards >= 1,
     `${ndiVer || "keine Version"} · ${ndiPage.cards - 1} Karten für NDI, ${lightCards - 1} für Art-Net/sACN · ${ndiPage.outs} NDI-Ausgang`);
 
+  // 17c) Uhrzeit-Leiste: standardmäßig an, zeigt HH:MM der Rechneruhr; Netz-Timecode ist standardmäßig aus
+  const clk = await c.eval("JSON.stringify({ shown: !document.getElementById('clock-bar').hidden, text: document.querySelector('#clock-bar .sr-only')?.textContent || '', tc: document.getElementById('clock-tc')?.checked })").then(JSON.parse);
+  const hhmm = [0, 60000].map(d => new Date(Date.now() - d).toTimeString().slice(0, 5)); // Minutenwechsel
+  log("Uhrzeit-Leiste", clk.shown && hhmm.some(x => clk.text.endsWith(x)) && clk.tc === false, `${clk.text} · Netz-Timecode ${clk.tc ? "an" : "aus"}`);
+
+  // 17d) Vorschau-Fenster: öffnen, Ebene dort wählen (Hauptfenster folgt), Ebenen-Vorschau zeigt etwas, schließen
+  {
+    await c.eval("(() => { const L = __vj.ctx.show.layers; L[1].clips = [...new Set([...(L[1].clips || []), 'plexus'])]; L[1].clip = 'plexus'; L[1].opacity = 0; __vj.rebuild(); return 1; })()");
+    await c.eval("document.querySelector('.tabs [data-tab=\"visuals\"]').click(), 1"); await wait(500);
+    await c.eval("document.getElementById('mon-win-btn').click(), 1");
+    let mp; for (let i = 0; i < 40 && !mp; i++) { await wait(250); mp = (await getJson().catch(() => [])).find(p => p.type === "page" && /monitor\.html/.test(p.url)); }
+    let res = { open: !!mp };
+    if (mp) {
+      const m = new Cdp(mp.webSocketDebuggerUrl); await m.ready;
+      for (let i = 0; i < 40 && !(await m.eval("document.querySelectorAll('#layers button').length").catch(() => 0)); i++) await wait(250);
+      await m.eval("document.querySelectorAll('#layers button')[1].click(), 1"); await wait(1500);
+      const r = await m.eval("JSON.stringify(document.getElementById('pv').getBoundingClientRect())").then(JSON.parse);
+      const sh = await m.send("Page.captureScreenshot", { format: "png", clip: { x: r.x, y: r.y, width: r.width, height: r.height, scale: 0.5 } });
+      res = { open: true, title: await m.eval("document.getElementById('pv-title').textContent"), info: await m.eval("document.getElementById('pv-info').textContent"),
+        bright: sh.result?.data ? pngBrightness(Buffer.from(sh.result.data, "base64")) : -1, btn: await c.eval("document.getElementById('mon-win-btn').classList.contains('on')"),
+        // Hauptfenster: Ausgangs-Vorschau weg (unsichtbar weiter gerechnet), das Clip-Raster bekommt den Platz
+        gridOpen: await c.eval("document.querySelector('.clip-grid').getBoundingClientRect().height"), hid: await c.eval("document.getElementById('preview').getBoundingClientRect().right < 0 && document.body.classList.contains('mon-ext')") };
+      m.ws.close();
+      await c.eval("document.getElementById('mon-win-btn').click(), 1"); await wait(1500);
+      res.closed = !(await getJson().catch(() => [])).some(p => /monitor\.html/.test(p.url));
+      res.back = await c.eval("document.body.classList.contains('mon-ext') ? 0 : document.querySelector('.clip-grid').getBoundingClientRect().height");
+      res.more = res.back > 0 && res.gridOpen > res.back;
+    }
+    await c.eval("(() => { __vj.ctx.show.layers[1].opacity = 1; __vj.rebuild(); return 1; })()");
+    log("Vorschau-Fenster", res.open && /E2/.test(res.title ?? "") && res.bright > 2 && res.btn && res.closed && res.hid && res.more,
+      `${res.title ?? "nicht geöffnet"} · ${res.info ?? ""} · Helligkeit ${res.bright?.toFixed?.(1)} · Raster ${Math.round(res.gridOpen ?? 0)} statt ${Math.round(res.back || 0)} px · geschlossen ${res.closed}`);
+  }
+
   // 18) Größe der Oberfläche
   log("Oberfläche skaliert", inf.zoom > 0, `Zoom × Pixeldichte ${inf.zoom.toFixed(2)}, Fläche ${inf.w} × ${inf.h} CSS-Pixel`);
 

@@ -3,13 +3,13 @@
 import { getLang } from "./i18n";
 import { CATEGORY_EN, EFFECT_EN, POST_EN } from "./i18n-catalog";
 export type EffectCategory = "audio" | "geometry" | "particles" | "retro" | "optical" | "laser" | "lj" | "tools"
-  | "minimal" | "space3d" | "data" | "opart" | "organic" | "fractal" | "demo" | "sacred";
+  | "minimal" | "space3d" | "data" | "opart" | "organic" | "fractal" | "demo" | "sacred" | "time";
 
 /** Anzeigenamen der Kategorien (Galerie, Bibliothek), in dieser Reihenfolge. */
 const CATEGORY_DE: Record<EffectCategory, string> = {
   minimal: "Minimal und Monochrom", space3d: "3D und Raum", fractal: "Fraktale", demo: "Demoscene", sacred: "Heilige Geometrie", data: "Daten und Glitch", opart: "Op-Art und Muster", organic: "Organisch und Flüssig",
   audio: "Audio und Equalizer", geometry: "Geometrie und Tunnel", particles: "Partikel und Natur", retro: "Retro und Analog",
-  optical: "Licht und Raum", laser: "Laser (Beamer im Nebel)", lj: "LJ-Link (DJ)", tools: "Werkzeuge",
+  optical: "Licht und Raum", laser: "Laser (Beamer im Nebel)", lj: "LJ-Link (DJ)", tools: "Werkzeuge", time: "Uhr und Zeit",
 };
 export const CATEGORY_LABEL: Record<EffectCategory, string> = getLang() === "en" ? CATEGORY_EN : CATEGORY_DE;
 export type EffectKind = "generator" | "post" | "master";
@@ -207,12 +207,20 @@ export const EFFECTS: readonly EffectDef[] = [
   e(156, "neon-triangles", "Neon-Dreiecke", "geometry", "generator", "ready", "Dreiecke wachsen drehend aus der Mitte.", ["beat"]),
   e(157, "kaleido-burst", "Kaleido-Explosion", "geometry", "generator", "ready", "Zwölffaches Kaleidoskop mit Strahlen.", ["beat"]),
   e(158, "infinity-loop", "Unendlich-Schleife", "geometry", "generator", "ready", "Lichtkomet läuft eine liegende Acht.", ["beat"]),
-  // Partikel-Objekte: 3D-Körper aus Stäbchen, die auf den Beat auseinanderfliegen (eigene Modelle über die Bibliothek)
-  e(159, "pobj-cross", "Partikel-Kreuz", "space3d", "generator", "ready", "3D-Kreuz aus Tausenden Stäbchen, die auf den Beat auseinanderfliegen und zurückkehren. Braucht eine starke Grafikkarte (ab Apple M2 oder vergleichbar).", ["beat"]),
-  e(160, "pobj-cube", "Partikel-Würfel", "space3d", "generator", "ready", "Würfel aus Stäbchen, explodiert im Takt und setzt sich wieder zusammen. Braucht eine starke Grafikkarte (ab Apple M2 oder vergleichbar).", ["beat"]),
-  e(161, "pobj-sphere", "Partikel-Kugel", "space3d", "generator", "ready", "Kugel aus Stäbchen, die auf den Beat auseinanderfliegen. Braucht eine starke Grafikkarte (ab Apple M2 oder vergleichbar).", ["beat"]),
-  e(162, "pobj-torus", "Partikel-Torus", "space3d", "generator", "ready", "Ring (Torus) aus Stäbchen, explodiert im Takt. Braucht eine starke Grafikkarte (ab Apple M2 oder vergleichbar).", ["beat"]),
-  e(163, "pobj-star", "Partikel-Stern", "space3d", "generator", "ready", "Fünfzackiger 3D-Stern aus Stäbchen, fliegt auf den Beat auseinander. Braucht eine starke Grafikkarte (ab Apple M2 oder vergleichbar).", ["beat"]),
+  // Partikel-Objekte: 3D-Körper aus leuchtendem Staub, der auf den Beat auseinanderfliegen (eigene Modelle über die Bibliothek)
+  e(159, "pobj-cross", "Partikel-Kreuz", "space3d", "generator", "ready", "3D-Kreuz aus Tausenden leuchtender Staubkörner, die auf den Beat auseinanderfliegen und zurückkehren. Braucht eine starke Grafikkarte (ab Apple M2 oder vergleichbar).", ["beat"]),
+  e(160, "pobj-cube", "Partikel-Würfel", "space3d", "generator", "ready", "Würfel aus leuchtendem Staub, explodiert im Takt und setzt sich wieder zusammen. Braucht eine starke Grafikkarte (ab Apple M2 oder vergleichbar).", ["beat"]),
+  e(161, "pobj-sphere", "Partikel-Kugel", "space3d", "generator", "ready", "Kugel aus leuchtendem Staub, der auf den Beat auseinanderfliegt. Braucht eine starke Grafikkarte (ab Apple M2 oder vergleichbar).", ["beat"]),
+  e(162, "pobj-torus", "Partikel-Torus", "space3d", "generator", "ready", "Ring (Torus) aus leuchtendem Staub, explodiert im Takt. Braucht eine starke Grafikkarte (ab Apple M2 oder vergleichbar).", ["beat"]),
+  e(163, "pobj-star", "Partikel-Stern", "space3d", "generator", "ready", "Fünfzackiger 3D-Stern aus leuchtendem Staub, fliegt auf den Beat auseinander. Braucht eine starke Grafikkarte (ab Apple M2 oder vergleichbar).", ["beat"]),
+  // Uhr und Zeit: Schrift, die jedes Fenster selbst aus seiner Uhr zeichnet (Einstellungen im Ebenen-Panel)
+  e(164, "time-clock", "Uhrzeit", "time", "generator", "ready", "Aktuelle Uhrzeit groß im Bild, wahlweise mit Sekunden. Stil: klar, digital oder LED-Punkte."),
+  e(165, "time-countdown", "Countdown bis Uhrzeit", "time", "generator", "ready", "Zählt bis zu einer Uhrzeit herunter (z. B. 00:00 an Silvester), danach 00:00 oder ein eigener Text. Die letzten 10 Sekunden pulsieren."),
+  e(166, "time-timer", "Countdown (Dauer)", "time", "generator", "ready", "Zählt eine feste Zeit herunter (z. B. 10 Minuten), ab dem Moment, in dem der Clip startet. Danach 00:00 oder ein eigener Text."),
+  e(167, "time-stopwatch", "Stoppuhr", "time", "generator", "ready", "Zählt hoch, ab dem Moment, in dem der Clip startet."),
+  e(168, "time-date", "Datum", "time", "generator", "ready", "Wochentag und Datum, in der Sprache der Oberfläche."),
+  e(169, "time-bpm", "BPM-Anzeige", "time", "generator", "ready", "Aktuelles Tempo groß, darunter die Beats im Takt.", ["beat"]),
+  e(170, "time-timecode", "Timecode-Anzeige", "time", "generator", "ready", "Laufender Timecode (empfangen über Art-Net/MIDI oder von der eigenen Uhr) groß im Bild, wie an einem Lichtpult. Einstellungen → Timecode."),
 ];
 
 export const EFFECT_BY_ID: ReadonlyMap<string, EffectDef> = new Map(EFFECTS.map(x => [x.id, x]));

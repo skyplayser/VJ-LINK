@@ -225,3 +225,46 @@ describe("Partikel-Objekt: Bass-Auslöser und Drehung je Achse", () => {
     expect([p.angX, p.angY, p.angZ, p.rpmX, p.rpmZ]).toEqual([10, 20, 0, 0, 0]);
   });
 });
+
+
+describe("Form deckend", () => {
+  it("Vorgabe: eigene Modelle (Logos) deckend, eingebaute Körper Staub; eingestellter Wert gilt immer und bleibt im Projekt", async () => {
+    const { defaultParticles, parseParticles, particleSolid } = await import("../src/core/particles");
+    const d = defaultParticles();
+    expect(particleSolid(d, "mdl:abc")).toBe(true);
+    expect(particleSolid(d, "pobj-sphere")).toBe(false);
+    // Körper-Verhalten sind von sich aus deckend, auch bei eingebauten Körpern
+    expect(particleSolid({ ...d, mode: "melt" }, "pobj-sphere")).toBe(true);
+    expect(particleSolid({ ...d, solid: true }, "pobj-sphere")).toBe(true);
+    expect(particleSolid({ ...d, solid: false }, "mdl:abc")).toBe(false);
+    expect(parseParticles({ solid: true })!.solid).toBe(true);
+    expect(parseParticles({ solid: "ja" })!.solid).toBeUndefined();
+    expect(parseParticles({ length: 1 })).not.toHaveProperty("length");
+  });
+});
+
+describe("Objekt-Effekte", () => {
+  it("Vorgabe Partikel, ältere Projekte ohne Feld ebenso; Ohne hat keinen Auslöser; Puls nur bei Partikel und Jelly", async () => {
+    const { defaultParticles, parseParticles, explodeState } = await import("../src/core/particles");
+    expect(defaultParticles().mode).toBe("burst");
+    expect(parseParticles({})!.mode).toBe("burst");
+    expect(parseParticles({ mode: "melt" })!.mode).toBe("melt");
+    expect(parseParticles({ mode: "lava" })!.mode).toBe("burst");
+    const d = defaultParticles();
+    const still = explodeState({ ...d, mode: "still" }, 0.05);
+    expect(still.amp).toBe(0); expect(still.hold).toBe(0);
+    // Zwischen-Beat (Takt 1 als Auslöser, Beat 2): Puls beim Sprengen und Jelly, nicht bei Wasser
+    expect(explodeState({ ...d, mode: "burst" }, 2.1).pulseAmp).toBeGreaterThan(0);
+    expect(explodeState({ ...d, mode: "jelly" }, 2.1).pulseAmp).toBeGreaterThan(0);
+    expect(explodeState({ ...d, mode: "melt" }, 2.1).pulseAmp).toBe(0);
+    // Verwehen: ruhig, ohne Zwischen-Puls; vorne in der Bedienung direkt nach Partikel
+    expect(explodeState({ ...d, mode: "drift" }, 2.1).pulseAmp).toBe(0);
+    expect(parseParticles({ mode: "drift" })!.mode).toBe("drift");
+    const { PARTICLE_MODE_ORDER, PARTICLE_MODES } = await import("../src/core/particles");
+    expect(PARTICLE_MODE_ORDER.slice(0, 2)).toEqual(["burst", "drift"]);
+    expect([...PARTICLE_MODE_ORDER].sort()).toEqual([...PARTICLE_MODES].sort());
+    // Flüssig: Anstieg + Rückkehr passen in den Takt
+    const w = explodeState({ ...d, mode: "melt", ret: 4 }, 0.5);
+    expect(w.atk + w.ret).toBeLessThanOrEqual(4);
+  });
+});

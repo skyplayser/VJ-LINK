@@ -70,3 +70,12 @@ export function unpackProject(text: string): UnpackedProject | string {
   const mf = typeof r.mediaFolder === "string" && /^[^/\\:]{1,200}$/.test(r.mediaFolder) && r.mediaFolder !== ".." && r.mediaFolder !== "." ? r.mediaFolder : null;
   return { projectJson, images, mediaFolder: mf, videos: projectRefs(projectJson).videos };
 }
+
+/**
+ * Name einer Show (ShowPaket): wird Ordner- und Dateiname, darum ohne Zeichen, die Windows oder macOS in
+ * Dateinamen nicht erlauben, ohne Punkt am Ende, höchstens 80 Zeichen. Leer → „Show“.
+ */
+export function showName(raw: string): string {
+  const s = raw.replace(new RegExp(`\\.${PROJECT_EXT}$`, "i"), "").replace(/[\\/:*?"<>|\u0000-\u001f]/g, " ").replace(/\s+/g, " ").trim().replace(/[. ]+$/, "").slice(0, 80).trim();
+  return /^(con|prn|aux|nul|com\d|lpt\d)$/i.test(s) ? `${s} Show` : s || "Show";
+}

@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, promises as fsp, readFileSync, unlinkSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, promises as fsp, readFileSync, statSync, unlinkSync, writeFileSync } from "node:fs";
 import { BrowserWindow, Menu, app, dialog, ipcMain, nativeImage, powerMonitor, powerSaveBlocker, protocol, screen, session, shell, systemPreferences, type Display, type MenuItemConstructorOptions } from "electron";
 import path from "node:path";
 import { PhoneRemote } from "./remote";
@@ -14,8 +14,9 @@ import { ChatNet } from "./suitechat";
 import { CHAT_PORT } from "../core/suitechat";
 import { detectLauncher, type LauncherInfo } from "./suite/launcher-detect";
 import { introEnabled, introWanted, parseOwnIntro, parseSuiteIntro, type IntroOwn } from "../core/intro";
-import { PROJECT_EXT, projectRefs } from "../core/projectfile";
+import { PROJECT_EXT, projectRefs, showName } from "../core/projectfile";
 import { NdiSender, probeNdiVersion } from "./ndi/ndi";
+import { ndiBitmap } from "./ndi/frame";
 import { execFile } from "node:child_process";
 import os from "node:os";
 import { findAdapter, listAdapters, ndiConfigWithAdapter, parseHardwarePorts, type IfaceEntry, type NetAdapter } from "../core/netiface";
@@ -85,7 +86,32 @@ app.setName("VJ-Link");
 // Nur eine VJ-Link-Instanz: eine zweite würde dieselben Ports (Art-Net, OSC) und dieselben Projektdateien benutzen.
 // Für Tests mit eigenem Datenordner (VJLINK_DATA) gilt das nicht.
 if (!process.env.VJLINK_DATA && !app.requestSingleInstanceLock()) app.exit(0);
-app.on("second-instance", () => {
+// Showdatei per Doppelklick: macOS meldet sie mit „open-file“ (auch vor dem Start), Windows gibt sie als Argument
+// mit (erster Start) bzw. an die laufende Instanz („second-instance“). Geöffnet wird, sobald die Oberfläche bereit ist.
+let pendingOpen: string | null = null;
+let uiReady = false;
+/** Showdatei aus Programm-Argumenten (nur vorhandene .vjlink-Dateien). */
+function showFileArg(argv: readonly string[]): string | null {
+  for (const a of argv.slice(1)) {
+    if (!a || a.startsWith("-") || !a.toLowerCase().endsWith(`.${PROJECT_EXT}`)) continue;
+    try { if (statSync(a).isFile()) return path.resolve(a); } catch { /* gibt es nicht */ }
+  }
+  return null;
+}
+function openShowFile(file: string): void {
+  pendingOpen = file;
+  if (!control || control.isDestroyed() || !uiReady || switching) return;
+  pendingOpen = null;
+  if (control.isMinimized()) control.restore();
+  control.show(); control.focus();
+  // Die Oberfläche fragt bei ungespeicherten Änderungen nach und öffnet dann wie „Zuletzt geöffnet“
+  control.webContents.send("menu", "openPath", file);
+}
+app.on("open-file", (e, file) => { e.preventDefault(); openShowFile(file); });
+{ const f = showFileArg(process.argv); if (f) pendingOpen = f; }
+app.on("second-instance", (_e, argv) => {
+  const f = showFileArg(argv);
+  if (f) { openShowFile(f); return; }
   if (!control || control.isDestroyed()) return;
   if (control.isMinimized()) control.restore();
   control.show(); control.focus();
@@ -157,6 +183,14 @@ function createControl(): void {
     applyScale(); switching = false; updateTitle();
     // LJ-Link PRO meldet Decks nur bei Änderungen: den bekannten Stand nachreichen
     setTimeout(() => net?.replayLj(), 500);
+    // Per Doppelklick übergebene Showdatei öffnen, sobald die Oberfläche ihre Befehle annimmt
+    uiReady = false;
+    setTimeout(() => { uiReady = true; if (pendingOpen) openShowFile(pendingOpen); }, 1500);
+    // Vorschau-Fenster: war es beim letzten Beenden offen, wieder öffnen; sonst Stand an die Oberfläche
+    setTimeout(() => {
+      if (monitor && !monitor.isDestroyed()) control?.webContents.send("control", { type: "monitor", open: true });
+      else if (monitorSaved().open) openMonitor();
+    }, 800);
   });
   control.on("resize", applyScale);
   // Zurück ins Fenster: Link-Suite vielleicht gerade installiert → Hinweis weg (nur feste Orte, schnell)
@@ -199,7 +233,11 @@ function createControl(): void {
     farewellTimer = setTimeout(() => { farewellTimer = null; quitNow = true; app.quit(); }, 2000);
     control.webContents.send("farewell");
   });
-  control.on("closed", () => { control = null; phone.stop(); for (const w of outputs.values()) w.close(); });
+  control.on("closed", () => {
+    control = null; phone.stop(); for (const w of outputs.values()) w.close();
+    // Beim Beenden bleibt das Vorschau-Fenster für den nächsten Start gemerkt
+    if (monitor && !monitor.isDestroyed()) { monitorByApp = true; monitor.close(); }
+  });
 }
 
 // ---- Projektdateien und Menü --------------------------------------------------------------
@@ -261,7 +299,15 @@ async function saveTo(json: string, askPath: boolean): Promise<{ ok: boolean; na
   }
 }
 
+/** Läuft gerade ein Datei-Befehl mit Dialog (z. B. „Änderungen speichern?“)? Dann keinen zweiten starten
+ *  (zweiter Doppelklick auf eine Showdatei, doppelter Menüklick). */
+let fileBusy = false;
 async function fileCommand(cmd: FileCmd, json: string, filePath?: string): Promise<{ ok: boolean; name?: string; message?: string }> {
+  if (!files || !control || fileBusy) return { ok: false };
+  fileBusy = true;
+  try { return await fileCommandNow(cmd, json, filePath); } finally { fileBusy = false; }
+}
+async function fileCommandNow(cmd: FileCmd, json: string, filePath?: string): Promise<{ ok: boolean; name?: string; message?: string }> {
   if (!files || !control) return { ok: false };
   if (cmd === "save" || cmd === "saveAs") return saveTo(json, cmd === "saveAs");
   if (!(await confirmDiscard(json))) return { ok: false };
@@ -291,7 +337,7 @@ async function fileCommand(cmd: FileCmd, json: string, filePath?: string): Promi
   // Ausgänge: Grafiken neu verteilen; Oberfläche lädt das Projekt frisch
   if (outputs.size) {
     const media = await storage!.allMedia();
-    for (const w of outputs.values()) if (!w.isDestroyed()) for (const item of media) w.webContents.send("media", { type: "add", item });
+    for (const w of viewers()) for (const item of media) w.webContents.send("media", { type: "add", item });
   }
   control.webContents.reload();
   return { ok: true, name: files.name };
@@ -538,18 +584,26 @@ function openNdiOutput(id: number): void {
   const o = ndiOuts[ndiIndex(id)];
   if (!o) return;
   if (!findRuntime()) { o.sender.state = { live: false, fps: 0, conns: 0, error: "runtime-missing" }; return; }
-  const win = secureWindow({ width: o.size[0], height: o.size[1], useContentSize: true, show: false, title: `VJ-Link ${t("NDI-Ausgang")} ${o.name}` },
+  const win = secureWindow({ width: o.size[0], height: o.size[1], useContentSize: true, show: false, enableLargerThanScreen: true, title: `VJ-Link ${t("NDI-Ausgang")} ${o.name}` },
     { offscreen: { deviceScaleFactor: 1 } });
+  // Windows begrenzt Fenster sonst auf den Bildschirm (bei 125 % Skalierung ist 1920 × 1080 größer als er)
+  win.setContentSize(o.size[0], o.size[1]);
   win.webContents.setFrameRate(o.fps);
+  let warned = "";
   // VJLINK_DEBUG: gemalte und weitergegebene Bilder je Sekunde, Zeit fürs Kopieren
   const dbg = process.env.VJLINK_DEBUG ? { paints: 0, copied: 0, ms: 0, at: Date.now() } : null;
   win.webContents.on("paint", (_e, _dirty, image) => {
-    const { width, height } = image.getSize();
     if (dbg) { dbg.paints++; if (Date.now() - dbg.at >= 1000) { console.log(`[ndi] ${o.name}: gemalt ${dbg.paints}/s, gesendet ${dbg.copied}/s, kopieren ${(dbg.ms / Math.max(1, dbg.copied)).toFixed(1)} ms`); dbg.paints = dbg.copied = dbg.ms = 0; dbg.at = Date.now(); } }
     // Nur wenn NDI frei ist: sonst entfällt das Kopieren des Bildes (bei 4K rund 33 MB je Bild).
-    if (width !== o.size[0] || height !== o.size[1] || !o.sender.ready()) return;
+    if (!o.sender.ready()) return;
     const t0 = dbg ? performance.now() : 0;
-    o.sender.frame(image.toBitmap(), width, height);
+    const [w, h] = o.size;
+    const bm = ndiBitmap(image, w, h);
+    if (!bm) return;
+    // Malt das Fenster in einer anderen Größe, einmal im Protokoll sagen (Fehlerbericht), das Bild wird angepasst
+    const p = `${bm.painted.w}×${bm.painted.h}`;
+    if ((bm.painted.w !== w || bm.painted.h !== h) && warned !== p) { warned = p; console.warn(`[ndi] ${o.name}: Fenster malt ${p} statt ${w}×${h} (Bildschirm-Skalierung?), Bild wird auf ${w}×${h} gebracht`); }
+    o.sender.frame(bm.data, w, h);
     if (dbg) { dbg.copied++; dbg.ms += performance.now() - t0; }
   });
   win.on("closed", () => o.sender.stop());
@@ -617,6 +671,74 @@ function reopenOutput(id: number, win: BrowserWindow): void {
   setTimeout(() => { if (!outputs.has(id)) { if (id === WINDOW_OUTPUT) openWindowOutput(); else if (isNdiOutput(id)) openNdiOutput(id); else toggleOutput(id); } }, 500);
 }
 
+// ---- Vorschau-Fenster (zweiter Bildschirm) ------------------------------------------------------------------
+// Ebenen-Vorschau und Live-Bild in einem eigenen, normalen Fenster (kein Ausgang): bekommt dieselben Bilder wie die
+// Ausgänge und rechnet selbst. Offen/zu und Lage bleiben über einen Neustart erhalten.
+let monitor: BrowserWindow | null = null;
+let monitorByApp = false;
+const monitorFile = (): string => path.join(app.getPath("userData"), "monitor.json");
+interface MonitorSaved { open: boolean; bounds?: Electron.Rectangle }
+function monitorSaved(): MonitorSaved {
+  try {
+    const j = JSON.parse(readFileSync(monitorFile(), "utf8")) as Partial<MonitorSaved>;
+    const b = j.bounds;
+    const okB = b && [b.x, b.y, b.width, b.height].every(Number.isFinite) && b.width >= 320 && b.height >= 200 ? b : undefined;
+    return { open: j.open === true, ...(okB ? { bounds: okB } : {}) };
+  } catch { return { open: false }; }
+}
+function saveMonitor(m: MonitorSaved): void {
+  try { writeFileSync(monitorFile(), JSON.stringify(m)); } catch { /* Datenordner schreibgeschützt */ }
+}
+/** Gespeicherte Lage, wenn sie noch auf einem Bildschirm liegt; sonst auf dem zweiten Bildschirm (falls da) mittig. */
+function monitorBounds(saved?: Electron.Rectangle): Electron.Rectangle {
+  if (saved) {
+    const d = screen.getDisplayMatching(saved).workArea;
+    const ix = Math.min(saved.x + saved.width, d.x + d.width) - Math.max(saved.x, d.x);
+    const iy = Math.min(saved.y + saved.height, d.y + d.height) - Math.max(saved.y, d.y);
+    if (ix > 100 && iy > 100) return saved;
+  }
+  const prim = screen.getPrimaryDisplay();
+  const wa = (screen.getAllDisplays().find(d => d.id !== prim.id) ?? prim).workArea;
+  const width = Math.min(1280, Math.round(wa.width * 0.8)), height = Math.min(800, Math.round(wa.height * 0.8));
+  return { x: wa.x + Math.round((wa.width - width) / 2), y: wa.y + Math.round((wa.height - height) / 2), width, height };
+}
+function openMonitor(): void {
+  if (monitor && !monitor.isDestroyed()) { monitor.show(); monitor.focus(); return; }
+  const win = secureWindow({ ...monitorBounds(monitorSaved().bounds), minWidth: 480, minHeight: 320, title: `VJ-Link ${t("Vorschau")}`, show: false });
+  monitor = win;
+  win.setMenuBarVisibility(false);
+  win.loadFile(rendererFile("monitor.html"));
+  win.once("ready-to-show", async () => {
+    win.show();
+    for (const item of (await storage?.allMedia()) ?? []) if (!win.isDestroyed()) win.webContents.send("media", { type: "add", item });
+    for (const ev of liveMedia.values()) if (!win.isDestroyed()) win.webContents.send("media", ev);
+    if (lastFrame && !win.isDestroyed()) win.webContents.send("frame", lastFrame);
+  });
+  win.webContents.on("did-finish-load", () => win.webContents.setZoomFactor(1));
+  let timer: NodeJS.Timeout | undefined;
+  const keep = () => { clearTimeout(timer); timer = setTimeout(() => { if (!win.isDestroyed()) saveMonitor({ open: true, bounds: win.getNormalBounds() }); }, 400); };
+  win.on("move", keep); win.on("resize", keep);
+  win.on("close", () => { clearTimeout(timer); saveMonitor({ open: monitorByApp, bounds: win.getNormalBounds() }); });
+  win.on("closed", () => { if (monitor === win) monitor = null; monitorByApp = false; control?.webContents.send("control", { type: "monitor", open: false }); });
+  win.webContents.on("render-process-gone", (_e, d) => {
+    if (d.reason === "clean-exit") return;
+    console.error("Vorschau-Fenster abgestürzt:", d.reason);
+    monitorByApp = true; win.destroy(); setTimeout(openMonitor, 500);
+  });
+  saveMonitor({ open: true, bounds: win.getBounds() });
+  control?.webContents.send("control", { type: "monitor", open: true });
+}
+function toggleMonitor(): boolean {
+  if (monitor && !monitor.isDestroyed()) { monitor.close(); return false; }
+  openMonitor(); return true;
+}
+/** Alle Fenster, die Bilder rechnen: Ausgänge und das Vorschau-Fenster. */
+function viewers(): BrowserWindow[] {
+  const all = [...outputs.values()];
+  if (monitor) all.push(monitor);
+  return all.filter(w => !w.isDestroyed());
+}
+
 /** Solange Ausgänge offen sind, dürfen Bildschirme und Beamer nicht in den Ruhezustand gehen. */
 let awakeId: number | null = null;
 function keepAwake(): void {
@@ -667,7 +789,7 @@ app.whenReady().then(async () => {
     if (process.env.VJLINK_DEBUG) console.log("[perm request]", perm, wc === control?.webContents, JSON.stringify(details));
     const types = (details as { mediaTypes?: string[] }).mediaTypes ?? [];
     // Ausgangsfenster: nur Kamera (sie zeigen Kamera-Clips selbst an)
-    const isOutput = [...outputs.values()].some(w => !w.isDestroyed() && w.webContents === wc);
+    const isOutput = viewers().some(w => w.webContents === wc);
     if (isOutput) return cb(perm === "media" && types.length > 0 && types.every(t => t === "video"));
     if (wc !== control?.webContents) return cb(false);
     // Web MIDI: neuere Electron-Versionen fragen auch ohne SysEx als „midiSysex“ an
@@ -677,7 +799,7 @@ app.whenReady().then(async () => {
   });
   session.defaultSession.setPermissionCheckHandler((wc, perm, origin) => {
     if (process.env.VJLINK_DEBUG) console.log("[perm check]", perm, wc === control?.webContents, origin);
-    const isOutput = [...outputs.values()].some(w => !w.isDestroyed() && w.webContents === wc);
+    const isOutput = viewers().some(w => w.webContents === wc);
     if (isOutput) return perm === "media";
     return wc === control?.webContents && (perm === "midi" || perm === "midiSysex" || perm === "media");
   });
@@ -806,24 +928,42 @@ app.whenReady().then(async () => {
   });
   ipcMain.handle("project:export-show", async (e, json: unknown) => {
     if (!fromControl(e) || !control || !files || typeof json !== "string") return null;
-    const pick = await dialog.showOpenDialog(control, { properties: ["openDirectory"], title: t("Ordner für USB-Showpaket wählen") });
-    if (pick.canceled || !pick.filePaths[0]) return null;
-    try { return await files.exportShow(json, pick.filePaths[0]); }
+    // Name der Show und Ort (z. B. USB-Stick); es entsteht ein Ordner mit diesem Namen
+    let target = process.env.VJLINK_DATA && process.env.VJLINK_TEST_EXPORT ? process.env.VJLINK_TEST_EXPORT : "";
+    if (!target) {
+      const pick = await dialog.showSaveDialog(control, {
+        title: t("ShowPaket exportieren"), buttonLabel: t("Exportieren"), nameFieldLabel: t("Name der Show:"),
+        message: t("Name der Show und Ort wählen, z. B. einen USB-Stick. Es entsteht ein Ordner mit diesem Namen: Showdatei und alle Medien."),
+        defaultPath: path.join(app.getPath("documents"), showName(projName())), properties: ["createDirectory"],
+      });
+      if (pick.canceled || !pick.filePath) return null;
+      target = pick.filePath;
+    }
+    try { return await files.exportShow(json, path.dirname(target), path.basename(target)); }
     catch (error) { return { error: (error as Error).message }; }
   });
   ipcMain.handle("project:verify-show", async e => {
     if (!fromControl(e) || !control) return null;
     const pick = await dialog.showOpenDialog(control, {
-      properties: ["openFile"], title: t("Showpaket prüfen"), filters: [{ name: "VJ-Link", extensions: [PROJECT_EXT] }],
+      properties: ["openFile"], title: t("ShowPaket prüfen"), filters: [{ name: "VJ-Link", extensions: [PROJECT_EXT] }],
     });
     if (pick.canceled || !pick.filePaths[0]) return null;
     try { return await verifyShowPackage(pick.filePaths[0]); }
     catch (error) { return { error: (error as Error).message }; }
   });
+  ipcMain.handle("monitor:toggle", e => (fromControl(e) ? toggleMonitor() : false));
+  ipcMain.on("monitor:select", (e, layer: unknown) => {
+    if (!monitor || e.sender !== monitor.webContents || !Number.isInteger(layer) || (layer as number) < 0 || (layer as number) > 63) return;
+    control?.webContents.send("control", { type: "monitor-select", layer });
+  });
+  ipcMain.on("monitor:image", (e, image: unknown) => {
+    if (!monitor || e.sender !== monitor.webContents || typeof image !== "string" || !/^[\w-]{1,40}$/.test(image)) return;
+    control?.webContents.send("control", { type: "monitor-image", image });
+  });
   ipcMain.on("frame", (e, f: Frame) => {
     if (e.sender !== control?.webContents) return; // nur die Hauptoberfläche darf Bilder liefern
     lastFrame = f;
-    for (const w of outputs.values()) if (!w.isDestroyed()) w.webContents.send("frame", f);
+    for (const w of viewers()) w.webContents.send("frame", f);
   });
   // Live-Grafiken an die Ausgänge (nur feste IDs, nur vom Hauptfenster)
   ipcMain.on("media:live", (e, ev: MediaEvent) => {
@@ -834,7 +974,7 @@ app.whenReady().then(async () => {
       : ev.type === "remove" && LIVE_IDS.has(ev.id);
     if (!ok) return;
     if (ev.type === "remove") liveMedia.delete(ev.id); else liveMedia.set(ev.type === "add" ? ev.item.id : ev.id, ev);
-    for (const w of outputs.values()) if (!w.isDestroyed()) w.webContents.send("media", ev);
+    for (const w of viewers()) w.webContents.send("media", ev);
   });
   // Cover und Wellenform von LJ-Link holen: nur feste Pfade, nur vom verbundenen LJ-Link, höchstens 8 MB
   ipcMain.handle("lj:fetch", async (e, p: unknown) => {
@@ -904,11 +1044,11 @@ app.whenReady().then(async () => {
   ipcMain.on("media:add", async (e, p: unknown) => {
     if (!fromControl(e)) return;
     const item = await storage!.addMedia(p);
-    if (item) for (const w of outputs.values()) if (!w.isDestroyed()) w.webContents.send("media", { type: "add", item });
+    if (item) for (const w of viewers()) w.webContents.send("media", { type: "add", item });
   });
   ipcMain.on("media:remove", async (e, id: unknown) => {
     if (!fromControl(e)) return;
-    if (await storage!.removeMedia(id)) for (const w of outputs.values()) if (!w.isDestroyed()) w.webContents.send("media", { type: "remove", id });
+    if (await storage!.removeMedia(id)) for (const w of viewers()) w.webContents.send("media", { type: "remove", id });
   });
   // Automatische Sicherung. Schlägt sie fehl (zu groß, Platte voll), einmal pro Minute Bescheid sagen statt still zu verlieren.
   let saveWarned = 0;

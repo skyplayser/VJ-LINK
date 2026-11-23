@@ -1,6 +1,6 @@
 // Verbindet alle Eingänge (OSC, LJ-Link, Oberfläche) mit dem Show-Zustand.
 import { TempoClock } from "./tempo";
-import { matchRules, reduceLj, type LjMessage, type LjState, type Rule, type RuleAction } from "./ljlink";
+import { alignBeat, matchRules, reduceLj, type LjMessage, type LjState, type Rule, type RuleAction } from "./ljlink";
 import type { OscMessage } from "./osc";
 import { SLOT_NAMES, allStacks, applyScene, clamp01, cloneLayers, cloneSideStacks, mainLayers, syncStacks, transitionProgress, type Scene, type SceneTransition, type ShowState } from "./show";
 import { READY_GENERATORS } from "./effects";
@@ -187,7 +187,11 @@ export function handleOsc(c: ControlContext, m: OscMessage, nowMs: number): bool
 /** LJ-Link-Nachricht verarbeiten: Zustand, Takt, Audio-Werte und Regeln. */
 export function handleLj(c: ControlContext, m: LjMessage, nowMs: number): RuleAction[] {
   reduceLj(c.lj, m, nowMs);
-  if (m.t === "tempo") c.tempo.update("ljlink", m.bpm, nowMs, m.beat);
+  if (m.t === "tempo") {
+    // Takt-Eins und Phrasen-Anfang aus dem Raster des Tracks, damit „Takt 1“ und „Alle 2/4 Takte“ auf der Musik sitzen
+    c.lj.beatOff = alignBeat(c.lj.beatOff, m.beat, m.bar, m.phraseBeat);
+    c.tempo.update("ljlink", m.bpm, nowMs, m.beat + c.lj.beatOff);
+  }
   if (m.t === "wave" && (c.lj.masterDeck === null || m.deck === c.lj.masterDeck)) {
     Object.assign(c.show.audio, { bass: clamp01(m.bass), mid: clamp01(m.mid), high: clamp01(m.high) });
   }

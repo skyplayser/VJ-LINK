@@ -15,7 +15,9 @@ export const GEN_IDS = ["bar-spectrum", "radial-eq", "oscilloscope", "pulse-ring
   "outrun-sun", "vhs-tape", "pixel-space", "c64-load", "op-waves", "bulge-grid", "concentric-shift", "vasarely", "zebra-twist", "spectrum-circle", "wave-ribbon", "eq-tower", "bass-ring", "audio-mesh", "single-line", "dot-pulse", "crosshair", "bars-3", "frame-zoom", "radar", "matrix-grid", "world-map",
   "neon-triangles", "kaleido-burst", "infinity-loop",
   // Eigener Weg in der Engine (src/engine/particles.ts): Partikel-Objekte, kein Generator-Shader
-  "pobj-cross", "pobj-cube", "pobj-sphere", "pobj-torus", "pobj-star"] as const;
+  "pobj-cross", "pobj-cube", "pobj-sphere", "pobj-torus", "pobj-star",
+  // Eigener Weg in der Engine (src/engine/timeclip.ts): Uhrzeit, Countdown, Stoppuhr, Datum, BPM als Schrift
+  "time-clock", "time-countdown", "time-timer", "time-stopwatch", "time-date", "time-bpm", "time-timecode"] as const;
 export type GenId = typeof GEN_IDS[number];
 
 export const VERT = `#version 300 es

@@ -7,7 +7,7 @@ import { BLEND_MODES, COLOR_SOURCES, DRIVES, LASER_LIMITS, MAIN_STACK, MAX_IMAGE
 import { EFFECT_BY_ID } from "./effects";
 import { CHASE_ORDERS, CHASE_STEPS, defaultChase, type ChaseOrder } from "./chase";
 import { t } from "./i18n";
-import { PARTICLE_LIMITS, PARTICLE_TRIGGERS, defaultParticles, type ParticleNumKey, type ParticleSettings, type ParticleTrigger } from "./particles";
+import { PARTICLE_LIMITS, PARTICLE_MODES, PARTICLE_TRIGGERS, defaultParticles, particleSolid, type ParticleMode, type ParticleNumKey, type ParticleSettings, type ParticleTrigger } from "./particles";
 
 export const DRIVE_LABEL: Record<"auto" | "bpm" | "audio" | "static", string> = { auto: "Auto", bpm: t("Takt"), audio: "Audio", static: t("Statisch") };
 export const CHASE_ORDER_LABEL: Record<ChaseOrder, string> = { forward: t("Vorwärts"), pingpong: t("Hin und her"), random: t("Zufall") };
@@ -17,16 +17,19 @@ export const PARTICLE_FADER_LABEL: Record<ParticleNumKey, string> = {
   explode: t("Partikel-Explosion"), ret: t("Partikel-Rückkehr"), scatter: t("Partikel-Streuung"),
   rpmX: t("Partikel-Drehtempo X"), rpm: t("Partikel-Drehtempo Y"), rpmZ: t("Partikel-Drehtempo Z"),
   angX: t("Partikel-Winkel X"), angY: t("Partikel-Winkel Y"), angZ: t("Partikel-Winkel Z"),
-  size: t("Partikelgröße"), length: t("Partikel-Länge"), count: t("Partikel-Anzahl"),
+  size: t("Partikelgröße"), count: t("Partikel-Anzahl"),
 };
 /** Wert eines Partikel-Reglers mit Einheit (für Modulation und Anzeigen). */
 export function particleFormat(k: ParticleNumKey, v: number): string {
-  if (k === "explode" || k === "scatter" || k === "size" || k === "length") return `${Math.round(v * 100)} %`;
+  if (k === "explode" || k === "scatter" || k === "size") return `${Math.round(v * 100)} %`;
   if (k === "ret") return `${Number(v.toFixed(2))} Beats`;
   if (k === "count") return `${Math.round(v)} ${t("Tsd.")}`;
   if (k.startsWith("ang")) return `${Math.round(v)}°`;
   return `${Number(v.toFixed(1))} ${t("U/min")}`;
 }
+export const PARTICLE_MODE_LABEL: Record<ParticleMode, string> = {
+  burst: t("Partikel"), melt: t("Schmelzen"), jelly: t("Jelly"), dissolve: t("Auflösen"), twist: t("Verdrehen"), shatter: t("Zersplittern"), still: t("Ohne"), drift: t("Verwehen"),
+};
 export const PARTICLE_TRIGGER_LABEL: Record<ParticleTrigger, string> = {
   beat: t("Jeder Beat"), bar: t("Takt 1"), "2bars": t("Alle 2 Takte"), "4bars": t("Alle 4 Takte"), bass: t("Bass (Audio)"), hold: t("Halten (Regler)"),
 };
@@ -174,7 +177,7 @@ export function buildControls(): ControlDef[] {
         get: c => clamp01(((c.show.layers[i]?.chase?.gate ?? 1) - 0.05) / 0.95),
         set: (c, v) => { const x = ch(c); if (x) x.gate = 0.05 + clamp01(v) * 0.95; } },
     );
-    // Partikel-Objekt: Explosion, Drehung, Stäbchen (wirken, sobald die Ebene ein Partikel-Objekt zeigt)
+    // Partikel-Objekt: Explosion, Drehung, Größe, Anzahl (wirken, sobald die Ebene ein Partikel-Objekt zeigt)
     const pt = (c: ControlContext): ParticleSettings | null => { const l = c.show.layers[i]; return l ? (l.particles ??= defaultParticles()) : null; };
     const pget = (c: ControlContext) => c.show.layers[i]?.particles ?? defaultParticles();
     list.push(
@@ -184,10 +187,16 @@ export function buildControls(): ControlDef[] {
         get: (c: ControlContext) => { const [lo, hi] = PARTICLE_LIMITS[k]; return clamp01((pget(c)[k] - lo) / (hi - lo)); },
         set: (c: ControlContext, v: number) => { const x = pt(c); if (!x) return; const [lo, hi] = PARTICLE_LIMITS[k]; x[k] = lo + clamp01(v) * (hi - lo); },
       })),
+      { id: `layer.${i + 1}.particles.mode`, label: t("E{n} Objekt-Effekt", { n: i + 1 }), group: "Ebenen", kind: "fader", quick: false,
+        get: c => Math.max(0, PARTICLE_MODES.indexOf(pget(c).mode ?? "burst")) / (PARTICLE_MODES.length - 1),
+        set: (c, v) => { const x = pt(c); if (x) x.mode = PARTICLE_MODES[stepIndex(v, PARTICLE_MODES.length)]!; },
+        format: c => PARTICLE_MODE_LABEL[pget(c).mode ?? "burst"] },
       { id: `layer.${i + 1}.particles.trigger`, label: t("E{n} Partikel-Auslöser", { n: i + 1 }), group: "Ebenen", kind: "fader", quick: false,
         get: c => Math.max(0, PARTICLE_TRIGGERS.indexOf(pget(c).trigger)) / (PARTICLE_TRIGGERS.length - 1),
         set: (c, v) => { const x = pt(c); if (x) x.trigger = PARTICLE_TRIGGERS[stepIndex(v, PARTICLE_TRIGGERS.length)]!; },
         format: c => PARTICLE_TRIGGER_LABEL[pget(c).trigger] },
+      { id: `layer.${i + 1}.particles.solid`, label: t("E{n} Partikel-Form deckend", { n: i + 1 }), group: "Ebenen", kind: "toggle", quick: false,
+        get: c => (particleSolid(pget(c), c.show.layers[i]?.clip) ? 1 : 0), set: (c, v) => { const x = pt(c); if (x) x.solid = on(v); } },
       { id: `layer.${i + 1}.particles.spin`, label: t("E{n} Partikel-Drehung an", { n: i + 1 }), group: "Ebenen", kind: "toggle", quick: false,
         get: c => (pget(c).spin ? 1 : 0), set: (c, v) => { const x = pt(c); if (x) x.spin = on(v); } },
     );

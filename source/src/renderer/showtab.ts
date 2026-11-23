@@ -4,7 +4,7 @@ import { camClip, ensureCamera } from "../core/camera";
 import type { ControlContext } from "../core/control";
 import { showBack, showGo, showStop } from "../core/control";
 import {
-  cueSetNext, cueStatus, cueTime, goLabel, isVideoClip, newCue, newCueId, videoIdOf,
+  cueSetNext, cueStatus, cueTime, goLabel, isVideoClip, newCue, newCueId, nextClockStart, videoIdOf,
   type Cue, type CueEnd, type CueEnv, type CueLoop, type CueOver, type CueStart, type Fit,
 } from "../core/video";
 import type { MediaLibrary } from "./medialib";
@@ -12,6 +12,7 @@ import { formatFrames, formatTc, parseTc, type TcFps, type TcNow } from "../core
 import type { VideoLibrary } from "./videolib";
 import { TimelineView } from "./timelineview";
 import { t } from "../core/i18n";
+import { formatClock, parseClock } from "../core/timeclip";
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls = "", text = ""): HTMLElementTagNameMap[K] {
   const e = document.createElement(tag); if (cls) e.className = cls; if (text) e.textContent = text; return e;
@@ -19,7 +20,7 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls = "", text = ""):
 const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 const fmt1 = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toFixed(1).padStart(4, "0")}`;
 
-const START_LABEL: Record<CueStart, string> = { manual: t("von Hand"), after: t("nach vorigem"), with: t("mit vorigem"), timecode: t("Timecode") };
+const START_LABEL: Record<CueStart, string> = { manual: t("von Hand"), after: t("nach vorigem"), with: t("mit vorigem"), timecode: t("Timecode"), clock: t("Uhrzeit") };
 const END_LABEL: Record<CueEnd, string> = { hold: t("stehen bleiben"), fade: t("ausblenden"), next: t("weiter") };
 const LOOP_LABEL: Record<CueLoop, string> = { off: t("aus"), count: t("x-mal"), untilGo: t("bis WEITER"), forever: t("endlos") };
 const FIT_LABEL: Record<Fit, string> = { fill: t("füllen"), fit: t("einpassen"), original: t("original") };
@@ -160,8 +161,8 @@ export class ShowTab {
         : c.kind === "scene" ? t("Szene {n} „{name}“", { n: c.scene, name: this.d.ctx.scenes[c.scene - 1]?.name ?? "?" })
         : c.kind === "tcsignal" ? (c.tcAction === "stop" ? t("Timecode anhalten") : c.tcAction === "start" ? t("Timecode starten ab {tc}", { tc: c.tcTarget }) : t("Timecode springen auf {tc}", { tc: c.tcTarget })) : t("Bild aus");
       nm.append(el("small", (sub === t("Datei fehlt") ? "missing" : ""), sub + (c.kind === "video" && c.volume > 0 ? t(" · Ton") : "")));
-      const start = el("span", `chip${c.start === "with" ? " with" : c.start === "timecode" ? " tc" : ""}`,
-        c.start === "timecode" ? `TC ${c.tc}` : START_LABEL[c.start] + (c.wait > 0 ? ` +${c.wait} s` : ""));
+      const start = el("span", `chip${c.start === "with" ? " with" : c.start === "timecode" || c.start === "clock" ? " tc" : ""}`,
+        c.start === "timecode" ? `TC ${c.tc}` : c.start === "clock" ? t("um {time}", { time: c.clock }) : START_LABEL[c.start] + (c.wait > 0 ? ` +${c.wait} s` : ""));
       const du = this.dur(c);
       row.append(nm, start, el("span", "cdur", du === null ? "–" : fmt(du)), el("span", `chip${c.loop !== "off" && c.kind === "video" ? " loop" : ""}`, this.endChip(c)));
       row.append(el("span", "cstate"), el("i", "cprog"));
@@ -229,6 +230,27 @@ export class ShowTab {
         this.update(true);
       });
       w.append(i, learn); r.append(w); box.append(r);
+    } else if (c.start === "clock") {
+      const r = el("div", "cd-row"); r.append(el("span", "", t("Uhrzeit")));
+      const w = el("span", "inline");
+      const i = el("input", "tc-in"); i.value = c.clock; i.setAttribute("aria-label", t("Uhrzeit für den Start")); i.placeholder = "hh:mm:ss";
+      i.addEventListener("change", () => {
+        const sec = parseClock(i.value);
+        if (sec !== null) c.clock = formatClock(sec); else this.d.toast(t("Uhrzeit als hh:mm oder hh:mm:ss eingeben, z. B. 22:00."));
+        this.update(true);
+      });
+      const soon = el("button", "btn small-btn", t("In 1 Minute"));
+      soon.title = t("Zum Ausprobieren: Startzeit auf die nächste volle Minute");
+      soon.addEventListener("click", () => {
+        const d = new Date(Date.now() + 60_000);
+        c.clock = formatClock(d.getHours() * 3600 + d.getMinutes() * 60);
+        this.update(true);
+      });
+      w.append(i, soon); r.append(w); box.append(r);
+      const nx = nextClockStart(c, Date.now());
+      const mins = nx === null ? 0 : Math.round((nx - Date.now()) / 60_000);
+      box.append(el("p", "muted small", nx === null ? "" : t("Startet um {time} (Uhr dieses Rechners), {when}. Jeden Tag, solange VJ-Link mit dieser Show läuft. Mit WEITER startest du den Cue trotzdem jederzeit von Hand.",
+        { time: c.clock, when: mins < 60 ? t("in {n} Minuten", { n: Math.max(0, mins) }) : t("in {h} Std. {m} Min.", { h: Math.floor(mins / 60), m: mins % 60 }) })));
     } else num(t("Wartezeit"), () => c.wait, v => { c.wait = v; }, "s");
 
     if (c.kind === "scene") {

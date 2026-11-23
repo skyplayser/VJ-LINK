@@ -34,6 +34,12 @@ export interface Frame {
   monitorPixels?: Record<number, { w: number; h: number }>;
   /** Gemeinsame Animationszeit der Ebenen (vom Hauptfenster). */
   layerClock?: LayerClockSnap;
+  /** Für das Vorschau-Fenster: gewählte Ebene, bearbeitetes Bild und Seitenverhältnis des Ausgangs. */
+  monitor?: {
+    layer: number; image: string; aspect: number; imageName: string; layers: { name: string; clip: string }[];
+    /** Mehrere Bilder (Mapping, Getrennt): alle Bilder mit Namen und wo sie laufen (Ausgänge bzw. Leinwände); sonst leer. */
+    images: { id: string; name: string; on: string[] }[];
+  };
 }
 
 export const frameBeat = (f: Frame, nowMs: number): number =>
@@ -49,7 +55,10 @@ export type ControlEvent =
   | { type: "lj-connection"; clients: number }
   | { type: "status"; status: NetStatus }
   | { type: "link"; connected: boolean; peers: number; bpm: number; beat: number }
-  | { type: "timecode"; source: "artnet"; tc: Tc; fps: TcFps; from: string };
+  | { type: "timecode"; source: "artnet"; tc: Tc; fps: TcFps; from: string }
+  | { type: "monitor-select"; layer: number }
+  | { type: "monitor-image"; image: string }
+  | { type: "monitor"; open: boolean };
 
 export interface NetStatus {
   /** Gewählte Karte für Art-Net/sACN: verbunden (mit Adresse) oder nicht da (dann gelten alle Karten). */
@@ -187,6 +196,12 @@ export interface VjBridge {
   listDisplays(): Promise<DisplayInfo[]>;
   outputPreview?(displayId: number): Promise<string | null>;
   toggleOutput(displayId: number): Promise<DisplayInfo[]>;
+  /** Vorschau-Fenster (zweiter Bildschirm) öffnen/schließen; liefert, ob es danach offen ist. */
+  toggleMonitor?(): Promise<boolean>;
+  /** Vorschau-Fenster: Ebene wählen (geht ans Hauptfenster, das die Auswahl übernimmt). */
+  monitorSelect?(layer: number): void;
+  /** Vorschau-Fenster: Bild zum Bearbeiten wählen (mehrere Bilder). */
+  monitorImage?(image: string): void;
   /** Größe des Fenster-Ausgangs in Pixeln festlegen (öffnet ihn nicht). */
   windowOutputSize(w: number, h: number): Promise<DisplayInfo[]>;
   /** NDI®-Ausgang: Bildgröße, Bildrate und Name (gilt sofort, auch während er läuft). */

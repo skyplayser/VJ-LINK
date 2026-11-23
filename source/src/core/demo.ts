@@ -213,10 +213,12 @@ function demoCues(m: DemoMedia): Cue[] {
 /** Farbslots: Pink, Gold, Cyan, Violett, Acid-Grün (Pop-House trifft Techno, kräftig auf LED-Wänden). */
 const DEMO_SLOTS: Rgb[] = [[1, 0.08, 0.5], [1, 0.68, 0.08], [0.05, 0.8, 1], [0.55, 0.15, 1], [0.45, 1, 0.1]];
 
+const DEMO_LAYER_COUNT = 8;
 /** Demo in den laufenden Zustand schreiben. Danach Szene 1 aktiv und „Auto“ an. */
 export function applyDemo(c: ControlContext, m: DemoMedia): void {
   const s = c.show;
-  while (s.layers.length < MAX_LAYERS && addLayer(s) >= 0) { /* auffüllen */ }
+  // Demo: acht Ebenen (mehr gehen, aber das Demo bleibt übersichtlich)
+  while (s.layers.length < Math.min(MAX_LAYERS, DEMO_LAYER_COUNT) && addLayer(s) >= 0) { /* auffüllen */ }
   demoLayers(m).forEach((patch, i) => {
     const l = s.layers[i];
     if (!l) return;

@@ -36,3 +36,31 @@ it("exportiert ein prüfbares Showpaket, ohne das aktuelle Projekt umzuschalten"
     await fs.rm(dir, { recursive: true, force: true });
   }
 });
+
+it("ShowPaket mit eigenem Namen: Ordner und Datei heißen wie die Show, gleicher Name → „Name 2“", async () => {
+  const dir = await fs.mkdtemp(path.join(tmpdir(), "vj-show-name-"));
+  try {
+    const storage = new Storage(path.join(dir, "library"));
+    await storage.init();
+    const project = new ProjectFiles(storage, path.join(dir, "state.json"));
+    const json = JSON.stringify({ version: 1 });
+    const a = await project.exportShow(json, dir, "Gibson Club 12/24");
+    expect(a.file).toBe(path.join(dir, "Gibson Club 12 24", "Gibson Club 12 24.vjlink"));
+    const b = await project.exportShow(json, dir, "Gibson Club 12/24.vjlink");
+    expect(b.file).toBe(path.join(dir, "Gibson Club 12 24 2", "Gibson Club 12 24 2.vjlink"));
+    expect(await verifyShowPackage(b.file!)).toEqual({ file: b.file, missing: [] });
+  } finally {
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+});
+
+it("Name der Show: erlaubte Datei- und Ordnernamen", async () => {
+  const { showName } = await import("../src/core/projectfile");
+  expect(showName("  Queer Paradise  ")).toBe("Queer Paradise");
+  expect(showName('a:b*c?"d<e>f|g\\\\h')).toBe("a b c d e f g h");
+  expect(showName("Show.vjlink")).toBe("Show");
+  expect(showName("Ende...")).toBe("Ende");
+  expect(showName("")).toBe("Show");
+  expect(showName("CON")).toBe("CON Show");
+  expect(showName("x".repeat(200)).length).toBe(80);
+});
