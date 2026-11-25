@@ -15,6 +15,7 @@
 - [Free VJ software for Mac and Windows](https://skyplayser.github.io/VJ-LINK/free-vj-software.html): what the free VJ software can do and what to look for. German: https://skyplayser.github.io/VJ-LINK/de/free-vj-software.html
 - [Control visuals from a grandMA](https://skyplayser.github.io/VJ-LINK/grandma-visuals.html): grandMA2 and grandMA3 over Art-Net or sACN, patching VJ-Link as a 91-channel fixture. German: https://skyplayser.github.io/VJ-LINK/de/grandma-visuals.html
 - [Free projection mapping software](https://skyplayser.github.io/VJ-LINK/projection-mapping-software.html): canvases, corner pin, grid warp, masks and several projectors. German: https://skyplayser.github.io/VJ-LINK/de/projection-mapping-software.html
+- [Free show software for events](https://skyplayser.github.io/VJ-LINK/show-software-free.html): running order of video, image, camera and scene cues with GO, timeline and timecode. German: https://skyplayser.github.io/VJ-LINK/de/show-software-free.html
 
 ## Wiki
 
