@@ -159,8 +159,8 @@ export class ShowTab {
         : c.kind === "image" ? (this.d.images.items.find(m => `img:${m.id}` === c.media)?.name ?? t("Datei fehlt"))
         : c.kind === "camera" ? (this.d.ctx.show.cameras.find(k => `cam:${k.id}` === c.media)?.label || t("Kamera"))
         : c.kind === "scene" ? t("Szene {n} „{name}“", { n: c.scene, name: this.d.ctx.scenes[c.scene - 1]?.name ?? "?" })
-        : c.kind === "tcsignal" ? (c.tcAction === "stop" ? t("Timecode anhalten") : c.tcAction === "start" ? t("Timecode starten ab {tc}", { tc: c.tcTarget }) : t("Timecode springen auf {tc}", { tc: c.tcTarget })) : t("Bild aus");
-      nm.append(el("small", (sub === t("Datei fehlt") ? "missing" : ""), sub + (c.kind === "video" && c.volume > 0 ? t(" · Ton") : "")));
+        : c.kind === "tcsignal" ? (c.tcAction === "stop" ? t("Timecode anhalten") : c.tcAction === "start" ? (c.start === "with" ? t("Timecode mit dem Video ab {tc}", { tc: c.tcTarget }) : t("Timecode starten ab {tc}", { tc: c.tcTarget })) : t("Timecode springen auf {tc}", { tc: c.tcTarget })) : t("Bild aus");
+      nm.append(el("small", (sub === t("Datei fehlt") ? "missing" : ""), sub + (c.kind === "video" && c.volume > 0 ? t(" · Ton") : "") + (c.tcOut && c.kind !== "tcsignal" ? ` · TC ▲ ${c.tcOut}` : "")));
       const start = el("span", `chip${c.start === "with" ? " with" : c.start === "timecode" || c.start === "clock" ? " tc" : ""}`,
         c.start === "timecode" ? `TC ${c.tc}` : c.start === "clock" ? t("um {time}", { time: c.clock }) : START_LABEL[c.start] + (c.wait > 0 ? ` +${c.wait} s` : ""));
       const du = this.dur(c);
@@ -299,8 +299,32 @@ export class ShowTab {
         r.append(i); box.append(r);
       }
       box.append(el("p", "muted small", t("Steuert die Timecode-Uhr von VJ-Link. Ist unter Einstellungen → Timecode „Senden“ eingeschaltet, empfängt z. B. eine MA den Timecode, und ihre Timecode-Show löst Befehle aus.")));
+      if (c.tcAction === "start") box.append(el("p", "muted small", c.start === "with"
+        ? t("Mit vorigem: Der Timecode startet mit dem Video (oder Bild) darüber, läuft mit ihm und hält an seinem Ende an – wie in QLab.")
+        : t("Tipp: Unter ein Video setzen und Start auf „mit vorigem“ stellen. Dann startet der Timecode mit dem Video und hält an seinem Ende an – wie in QLab.")));
+      if (!this.d.ctx.tc?.sendOn) box.append(el("p", "muted small warn", t("⚠ Das Senden ist ausgeschaltet: Einstellungen → Timecode → Senden.")));
     }
     if (c.kind === "image" || c.kind === "camera" || c.kind === "black") num(t("Dauer"), () => c.hold, v => { c.hold = v; }, t("s · 0 = bis WEITER"));
+    if (c.kind !== "tcsignal") {
+      // Der Cue gibt den Timecode vor (VJ-Link als Timecode-Master)
+      box.append(el("h4", "", t("Timecode senden")));
+      const r = el("div", "cd-row"); r.append(el("span", "", t("Timecode ab")));
+      const w = el("span", "inline");
+      const i = el("input", "tc-in"); i.value = c.tcOut ?? ""; i.placeholder = t("aus"); i.setAttribute("aria-label", t("Timecode ab"));
+      i.addEventListener("change", () => {
+        const v = i.value.trim();
+        if (!v) delete c.tcOut;
+        else { const tc = parseTc(v, 30); if (tc) c.tcOut = formatTc(tc, 25); else this.d.toast(t("Zeit als hh:mm:ss:ff eingeben.")); }
+        this.update(true);
+      });
+      w.append(i);
+      if (c.tcOut) { const off = el("button", "btn small-btn", t("Aus")); off.addEventListener("click", () => { delete c.tcOut; this.update(true); }); w.append(off); }
+      r.append(w); box.append(r);
+      box.append(el("p", "muted small", c.kind === "scene"
+        ? t("Beim Abruf der Szene springt der Timecode auf diese Zeit und läuft weiter.")
+        : t("Solange der Cue läuft, sendet VJ-Link diese Zeit plus die Stelle im Cue (z. B. 01:00:00:00, nach 30 s 01:00:30:00). Pause und Ende halten den Timecode an. So kann ein Lichtpult seine Timecode-Show zu diesem Cue abspielen.")));
+      if (c.tcOut && !this.d.ctx.tc?.sendOn) box.append(el("p", "muted small warn", t("⚠ Das Senden ist ausgeschaltet: Einstellungen → Timecode → Senden.")));
+    }
     if (c.kind !== "scene" && c.kind !== "tcsignal") {
       box.append(el("h4", "", t("Ende und Blenden")));
       seg(t("Am Ende"), END_LABEL, () => c.end, v => { c.end = v; });

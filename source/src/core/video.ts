@@ -110,6 +110,11 @@ export interface Cue {
   tc: string;
   /** Start um Uhrzeit (Uhr dieses Rechners), „HH:MM“ oder „HH:MM:SS“. */
   clock: string;
+  /**
+   * Timecode ab (z. B. „01:00:00:00“, leer = keiner): Solange der Cue läuft, gibt er die Zeit der eigenen
+   * Timecode-Uhr vor (Startzeit + Stelle im Cue). Endet er oder wird er ausgeblendet, hält die Uhr an.
+   */
+  tcOut?: string;
   /** Timecode-Befehl: eigene Uhr starten (ab Zeit), anhalten oder auf eine Zeit springen. */
   tcAction: TcAction;
   tcTarget: string;
@@ -166,10 +171,15 @@ export interface ActiveCue {
   lastT?: number;
   /** Timeline: Szene (1…), die beim Start des Cues lief; in Lücken zwischen Blöcken gilt wieder sie. */
   baseScene?: number;
+  /**
+   * Gekoppelter Timecode-Cue („+ Timecode“ mit vorigem, wie in QLab): Startzeit und ab welcher Sekunde im Cue er
+   * gilt. Der Timecode läuft dann mit diesem Cue und hält an seinem Ende an.
+   */
+  tcFrom?: { tc: string; at: number };
 }
 
 export interface CueRun { active: ActiveCue[]; next: number; current: number }
-export interface CueState { list: Cue[]; run: CueRun; /** Letzter gesehener Timecode (Bilder). */ lastTc?: number | null; /** Zeit des letzten WEITER (Doppelklick-Schutz). */ lastGoMs?: number;
+export interface CueState { list: Cue[]; run: CueRun; /** Cue (uid), der gerade den Timecode vorgibt. */ tcUid?: string; /** Letzter gesehener Timecode (Bilder). */ lastTc?: number | null; /** Zeit des letzten WEITER (Doppelklick-Schutz). */ lastGoMs?: number;
   /** Uhrzeit beim letzten Durchlauf (Start um Uhrzeit). */ lastClockMs?: number }
 export const newCueState = (): CueState => ({ list: [], run: { active: [], next: 0, current: -1 }, lastTc: null });
 
@@ -289,6 +299,8 @@ export interface CueEnv {
   recallScene(index: number, othersOnly?: boolean): void;
   /** Timecode-Befehl für die eigene Uhr (Start ab Zeit, Stopp, Springen). */
   tcCommand?(action: TcAction, target: string): void;
+  /** Cue gibt die Zeit vor: Startzeit + Sekunden im Cue, läuft oder steht; `null` = Uhr anhalten (Cue vorbei). */
+  tcFollow?(target: string | null, seconds: number, running: boolean): void;
   /** Aktueller Timecode, falls einer läuft. */
   timecode?(): TcNow | null;
   /** Videos folgen dem Timecode (sonst nur Start). */
@@ -436,16 +448,59 @@ export function nextClockStart(c: Pick<Cue, "clock">, nowMs: number): number | n
   return today > nowMs ? today : clockAt(nowMs + 86_400_000, sec);
 }
 
+/**
+ * „Timecode ab“: Der zuletzt gestartete laufende Cue mit Zeit gibt die eigene Uhr vor (läuft mit, steht bei Pause oder
+ * am Ende). Ist er vorbei und übernimmt kein anderer, hält die Uhr an.
+ */
+function tickTcOut(s: CueState, nowMs: number, env: CueEnv): void {
+  let drv: { c: Cue; ac: ActiveCue; tc: string; at: number } | null = null;
+  for (const ac of s.run.active) {
+    const c = byId(s, ac.cueId);
+    if (!c || c.kind === "scene" || c.kind === "tcsignal" || ac.fadeOutMs !== null || nowMs < ac.startMs) continue;
+    // Eigene Zeit des Cues, sonst ein gekoppelter Timecode-Cue
+    if (c.tcOut) drv = { c, ac, tc: c.tcOut, at: 0 };
+    else if (ac.tcFrom) drv = { c, ac, tc: ac.tcFrom.tc, at: ac.tcFrom.at };
+  }
+  if (drv) {
+    const tm = cueTime(drv.c, drv.ac, nowMs, env.duration(drv.c.media));
+    const until = tm.ended && tm.endMs !== null ? Math.min(nowMs, tm.endMs) : nowMs;
+    env.tcFollow?.(drv.tc, Math.max(0, (until - drv.ac.startMs) / 1000 - drv.at), !drv.ac.frozen && !tm.ended);
+    s.tcUid = drv.ac.uid;
+  } else if (s.tcUid) {
+    s.tcUid = undefined;
+    env.tcFollow?.(null, 0, false);
+  }
+}
+
+/** Der laufende Video-/Bild-Cue, mit dem ein Cue „mit vorigem“ zusammen gestartet wurde (seine Gruppe). */
+function boundCue(s: CueState, c: Cue): ActiveCue | undefined {
+  for (let j = s.list.indexOf(c) - 1; j >= 0; j--) {
+    const cj = s.list[j]!;
+    if (cj.kind !== "scene" && cj.kind !== "tcsignal") {
+      const a = s.run.active.find(x => x.cueId === cj.id && x.fadeOutMs === null);
+      if (a) return a;
+    }
+    if (cj.start !== "with") break;
+  }
+  return undefined;
+}
+
 export function cueTick(s: CueState, nowMs: number, env: CueEnv): void {
   tickTimecode(s, nowMs, env);
   tickClock(s, nowMs);
+  tickTcOut(s, nowMs, env);
   for (const ac of [...s.run.active]) {
     const c = byId(s, ac.cueId);
     if (!c) { s.run.active = s.run.active.filter(x => x !== ac); continue; }
     if (c.kind === "scene" || c.kind === "tcsignal") {
       if (!ac.fired && nowMs >= ac.startMs) {
         ac.fired = true;
-        if (c.kind === "scene") env.recallScene(c.scene - 1); else env.tcCommand?.(c.tcAction, c.tcTarget);
+        // „+ Timecode“ (Start) mit vorigem neben einem Video/Bild: an diesen Cue koppeln wie in QLab
+        const bound = c.kind === "tcsignal" && c.tcAction === "start" && c.start === "with" && env.tcFollow ? boundCue(s, c) : undefined;
+        if (bound) bound.tcFrom = { tc: c.tcTarget, at: Math.max(0, (ac.startMs - bound.startMs) / 1000) }; // ab dem geplanten Start (inkl. Wartezeit)
+        else if (c.kind === "scene") env.recallScene(c.scene - 1); else env.tcCommand?.(c.tcAction, c.tcTarget);
+        // Szene mit „Timecode ab“: setzt die Uhr und startet sie (läuft danach frei weiter)
+        if (c.kind === "scene" && c.tcOut) env.tcFollow?.(c.tcOut, 0, true);
       }
       if (ac.fired) { ac.endHandled = true; ac.fadeOutMs ??= nowMs; ac.fadeOutDur = 0; }
     } else if (!ac.endHandled && nowMs >= ac.startMs) {

@@ -5,11 +5,15 @@ import {
   TC_RATES, buildArtTimecode, formatFrames, framesToTc, mtcQuarterFrames, parseTc, tcToFrames,
   type TcFps, type TcSendFrom, type TcSource, type TimecodeClock,
 } from "../core/timecode";
+import { LtcOut, audioOutputs } from "./ltcout";
 
 export interface TcSettings {
   receive: boolean; send: boolean; sendFrom: TcSendFrom;
   source: TcSource; fps: TcFps; chase: boolean; offset: string; freewheel: number;
   via: "artnet" | "mtc" | "both"; host: string; midiOut: string; start: string;
+  /** Wege zum Senden (unabhängig): Art-Net, MIDI (MTC), Audio (LTC). Ohne Angabe gilt `via` (ältere Einstellungen). */
+  outArt?: boolean; outMtc?: boolean;
+  ltc: boolean; ltcDevice: string; ltcChannel: number; ltcLevel: number;
   /** Alt (vor Version mit getrenntem Empfangen/Senden). */
   mode?: "off" | "receive" | "send";
 }
@@ -17,6 +21,7 @@ export const defaultTcSettings = (): TcSettings => ({
   receive: false, send: false, sendFrom: "own",
   source: "artnet", fps: 25, chase: true, offset: "00:00:00:00", freewheel: 2,
   via: "artnet", host: "255.255.255.255", midiOut: "", start: "00:00:00:00",
+  outArt: true, outMtc: false, ltc: false, ltcDevice: "", ltcChannel: 1, ltcLevel: -12,
 });
 
 export interface TcDeps {
@@ -41,10 +46,13 @@ export class TcPanel {
   private qf = 0;
   private latched = 0;
   private timer = 0;
+  readonly ltc: LtcOut;
 
   constructor(private clock: TimecodeClock, private s: TcSettings, private save: () => void, private d: TcDeps) {
     // Alte Einstellung übernehmen
     if (s.mode) { s.receive = s.mode === "receive"; s.send = s.mode === "send"; delete s.mode; }
+    if (s.outArt === undefined || s.outMtc === undefined) { s.outArt = s.via !== "mtc"; s.outMtc = s.via !== "artnet"; }
+    this.ltc = new LtcOut(clock);
     this.apply();
   }
 
@@ -55,8 +63,15 @@ export class TcPanel {
     c.source = s.source; c.chase = s.chase; c.freewheel = s.freewheel; c.sendFps = s.fps;
     // Bildanteil bis 29 erlauben; umgerechnet wird erst mit der Bildrate des empfangenen Signals
     c.offsetTc = parseTc(s.offset, 30);
+    // Für ältere Versionen: `via` aus den Wegen ableiten
+    s.via = s.outArt && s.outMtc ? "both" : s.outMtc ? "mtc" : "artnet";
     clearInterval(this.timer);
-    if (s.send) this.timer = window.setInterval(() => this.tick(), 1000 / (realRate(s.fps) * 4));
+    if (s.send && (s.outArt || s.outMtc)) this.timer = window.setInterval(() => this.tick(), 1000 / (realRate(s.fps) * 4));
+    void this.ltc.set(s.send && s.ltc ? { device: s.ltcDevice, channel: s.ltcChannel, levelDb: s.ltcLevel } : null).then(() => {
+      // Kanalzahl des Geräts erst nach dem Start bekannt: Auswahl dann neu aufbauen
+      if (this.root?.isConnected && this.s.ltc && this.ltc.state.channels !== this.builtCh) this.build(this.root);
+      else this.update();
+    });
   }
 
   /** Viermal pro Bild: MTC-Viertelbilder, einmal pro Bild Art-Net. */
@@ -64,11 +79,11 @@ export class TcPanel {
     const now = this.clock.outgoing(Date.now());
     if (!now || !now.running) return;
     const s = this.s, fps = now.fps;
-    if (s.via !== "artnet" && s.midiOut) {
+    if (s.outMtc && s.midiOut) {
       if (this.qf === 0) this.latched = Math.floor(now.frames);
       this.d.sendMidi(s.midiOut, [0xf1, mtcQuarterFrames(framesToTc(this.latched, fps), fps)[this.qf]!]);
     }
-    if (s.via !== "mtc" && this.qf % 4 === 0) this.d.sendArt(buildArtTimecode(framesToTc(Math.floor(now.frames), fps), fps), s.host);
+    if (s.outArt && this.qf % 4 === 0) this.d.sendArt(buildArtTimecode(framesToTc(Math.floor(now.frames), fps), fps), s.host);
     this.qf = (this.qf + 1) % 8;
   }
 
@@ -118,11 +133,27 @@ export class TcPanel {
     onOff(t("Senden"), () => s.send, v => { s.send = v; }, t("VJ-Link sendet Timecode, z. B. an eine MA, deren Timecode-Show dann Befehle auslöst."));
     if (s.send) {
       root.append(this.outBig, this.outStatus);
-      seg(t("Was senden"), [["own", t("eigene Uhr")], ["thru", t("Empfangenen weitergeben")]], () => s.sendFrom, v => { s.sendFrom = v; });
+      seg(t("Was senden"), [["own", t("VJ-Link ist Master")], ["thru", t("Empfangenen weitergeben")]], () => s.sendFrom, v => { s.sendFrom = v; });
       if (s.sendFrom === "own") seg(t("Bildrate"), TC_RATES.map(f => [String(f), fpsLabel(f)] as [string, string]), () => String(s.fps), v => { s.fps = Number(v) as TcFps; });
-      seg(t("Senden über"), [["artnet", "Art-Net"], ["mtc", "MIDI (MTC)"], ["both", t("beides")]], () => s.via, v => { s.via = v; });
-      if (s.via !== "mtc") text(t("Art-Net-Ziel"), () => s.host, v => { if (!/^\d{1,3}(\.\d{1,3}){3}$/.test(v)) return false; s.host = v; return true; }, t("IP der MA oder 255.255.255.255 für alle"), true);
-      if (s.via !== "artnet") {
+      {
+        // Mehrere Wege gleichzeitig möglich
+        const r = el("div", "set-row"); r.append(el("span", "", t("Senden über")));
+        const g = el("div", "seg2");
+        const ways: [string, () => boolean, (v: boolean) => void][] = [
+          ["Art-Net", () => !!s.outArt, v => { s.outArt = v; }],
+          ["MIDI (MTC)", () => !!s.outMtc, v => { s.outMtc = v; }],
+          [t("Audio (LTC)"), () => s.ltc, v => { s.ltc = v; }],
+        ];
+        for (const [lbl, get, set] of ways) {
+          const b = el("button", get() ? "on" : "", lbl); b.setAttribute("aria-pressed", String(get()));
+          b.addEventListener("click", () => { set(!get()); rebuild(); });
+          g.append(b);
+        }
+        r.append(g); root.append(r);
+        if (!s.outArt && !s.outMtc && !s.ltc) root.append(el("p", "am-hint warn", t("Kein Weg gewählt: Es wird nichts gesendet.")));
+      }
+      if (s.outArt) text(t("Art-Net-Ziel"), () => s.host, v => { if (!/^\d{1,3}(\.\d{1,3}){3}$/.test(v)) return false; s.host = v; return true; }, t("IP der MA oder 255.255.255.255 für alle"), true);
+      if (s.outMtc) {
         const r = el("div", "set-row"); r.append(el("span", "", t("MIDI-Ausgang")));
         const g = el("div", "am-list");
         const outs = this.d.midiOutputs();
@@ -134,6 +165,7 @@ export class TcPanel {
         }
         r.append(g); root.append(r);
       }
+      if (s.ltc) this.buildLtc(root, rebuild);
       if (s.sendFrom === "own") {
         text(t("Startzeit"), () => s.start, v => { if (!parseTc(v, s.fps)) return false; s.start = v; return true; });
         const act = el("div", "set-row"); act.append(el("span", "", t("Uhr")));
@@ -145,11 +177,46 @@ export class TcPanel {
         const zero = el("button", "btn small-btn", t("Auf Startzeit")); zero.dataset.ctl = "tc.zero";
         zero.addEventListener("click", () => { const t = parseTc(s.start, s.fps); this.clock.locate(t ? tcToFrames(t, s.fps) : 0, Date.now()); });
         w.append(go, st, zero); act.append(w); root.append(act);
-        root.append(el("p", "am-hint", t("Steuern lässt sich die Uhr auch aus dem SHOW-Ablauf (Cue „+ Timecode“: Start ab Zeit, Stopp, Springen) und per Mapping.")));
+        root.append(el("p", "am-hint", t("Die Zeit kann auch der SHOW-Ablauf vorgeben: Bei jedem Cue lässt sich „Timecode ab“ eintragen; läuft der Cue, folgt der Timecode seiner Stelle. Dazu Cue „+ Timecode“ (Start ab Zeit, Stopp, Springen) und Mapping.")));
       }
     }
     this.update();
   }
+
+  /** LTC: Ausgabegerät, Kanal, Pegel. */
+  private buildLtc(root: HTMLElement, rebuild: () => void): void {
+    const s = this.s;
+    root.append(el("h4", "tc-sub", t("Audio (LTC)")));
+    const r = el("div", "set-row"); r.append(el("span", "", t("Ausgang")));
+    const g = el("div", "am-list");
+    const item = (id: string, label: string) => {
+      const b = el("button", "am-item", label); b.setAttribute("role", "radio"); b.setAttribute("aria-checked", String(s.ltcDevice === id));
+      b.addEventListener("click", () => { s.ltcDevice = id; rebuild(); });
+      g.append(b);
+    };
+    item("", t("Standard des Systems"));
+    void audioOutputs().then(list => {
+      for (const d of list) item(d.id, d.label);
+      if (s.ltcDevice && !list.some(d => d.id === s.ltcDevice)) item(s.ltcDevice, t("Gerät nicht verbunden"));
+    });
+    r.append(g); root.append(r);
+    this.builtCh = this.ltc.state.channels;
+    const n = Math.max(2, Math.min(16, this.ltc.state.channels));
+    const chs: [string, string][] = [];
+    for (let i = 1; i <= Math.max(n, s.ltcChannel); i++) chs.push([String(i), i === 1 && n === 2 ? t("1 links") : i === 2 && n === 2 ? t("2 rechts") : String(i)]);
+    const seg = (label: string, opts: [string, string][], get: () => string, set: (v: string) => void) => {
+      const rr = el("div", "set-row"); rr.append(el("span", "", label));
+      const gg = el("div", "seg2");
+      for (const [k, lbl] of opts) { const b = el("button", get() === k ? "on" : "", lbl); b.addEventListener("click", () => { set(k); rebuild(); }); gg.append(b); }
+      rr.append(gg); root.append(rr);
+    };
+    seg(t("Kanal"), chs, () => String(s.ltcChannel), v => { s.ltcChannel = Number(v); });
+    seg(t("Pegel"), [["-18", "−18 dBFS"], ["-12", "−12 dBFS"], ["-6", "−6 dBFS"]], () => String(s.ltcLevel), v => { s.ltcLevel = Number(v); });
+    root.append(el("p", "am-hint", t("LTC ist ein Audiosignal, das Lichtpulte, Medienserver und Recorder über einen Audio-Eingang lesen. Leg es auf einen eigenen Ausgang oder einen freien Kanal, nicht auf den Kanal mit dem Ton der Videos. Bei 25 fps sendet VJ-Link 25 Bilder/s mit 2000 Bit/s.")));
+    root.append(this.ltcStatus);
+  }
+  private ltcStatus = el("p", "am-hint");
+  private builtCh = 0;
 
   /** Anzeigen nachführen (wenn sichtbar). */
   update(): void {
@@ -161,6 +228,13 @@ export class TcPanel {
     this.inStatus.textContent = i ? `${i.stale ? t("Kein Signal mehr · ") : i.running ? t("läuft · ") : t("steht · ")}${fpsLabel(c.fps)} fps${c.from ? t(" · von {host}", { host: c.from }) : ""}` : t("Wartet auf Timecode …");
     this.outBig.textContent = o ? formatFrames(Math.floor(o.frames), o.fps) : "--:--:--:--";
     this.outBig.classList.toggle("run", !!o?.running);
-    this.outStatus.textContent = o ? (o.running ? `${t("sendet")} · ${fpsLabel(o.fps)} fps · ${this.s.via === "artnet" ? "Art-Net" : this.s.via === "mtc" ? "MIDI" : t("Art-Net und MIDI")}` : t("angehalten")) : t("nichts zu senden (kein Eingang)");
+    const ways = [this.s.outArt ? "Art-Net" : "", this.s.outMtc ? "MIDI" : "", this.s.ltc ? "LTC" : ""].filter(Boolean).join(" + ") || t("kein Weg");
+    this.outStatus.textContent = o ? (o.running ? `${t("sendet")} · ${fpsLabel(o.fps)} fps · ${ways}` : t("angehalten")) : t("nichts zu senden (kein Eingang)");
+    const ls = this.ltc.state;
+    this.ltcStatus.textContent = !this.s.ltc ? "" : ls.error === "device" ? t("⚠ Das gewählte Gerät ist nicht verfügbar – LTC läuft über den Standard-Ausgang.")
+      : ls.error === "channel" ? t("⚠ Das Gerät hat nur {n} Kanäle – LTC läuft auf Kanal {n}.", { n: ls.channels })
+      : ls.error ? t("⚠ Audio-Ausgabe nicht möglich: {err}", { err: ls.error })
+      : !ls.on ? t("LTC ist aus.") : ls.frames !== null ? t("LTC läuft auf Kanal {ch} ({n} Kanäle am Gerät).", { ch: Math.min(this.s.ltcChannel, ls.channels), n: ls.channels }) : t("LTC bereit, wartet auf laufenden Timecode.");
+    this.ltcStatus.classList.toggle("warn", !!ls.error);
   }
 }

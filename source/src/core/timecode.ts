@@ -177,6 +177,11 @@ export class TimecodeClock {
   // Eigene Uhr steuern (Tasten, Cues, Einstellungen)
   start(nowMs: number): void { if (!this.own.running) this.own = { frames: this.ownNow(nowMs).frames, at: nowMs, running: true }; }
   stop(nowMs: number): void { this.own = { frames: this.ownNow(nowMs).frames, at: nowMs, running: false }; }
+  /** Ein Cue gibt die Zeit vor: nur nachstellen, wenn die Uhr mehr als ein Bild abweicht oder Laufen/Stehen wechselt. */
+  follow(frames: number, running: boolean, nowMs: number): void {
+    const cur = this.ownNow(nowMs).frames;
+    if (running !== this.own.running || Math.abs(cur - frames) > 1) this.own = { frames: Math.max(0, frames), at: nowMs, running };
+  }
   locate(frames: number, nowMs: number): void { this.own = { frames: Math.max(0, frames), at: nowMs, running: this.own.running }; }
   get sending(): boolean { return this.sendOn && (this.sendFrom === "thru" ? !!this.incoming(Date.now())?.running : this.own.running); }
 }

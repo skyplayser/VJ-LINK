@@ -481,6 +481,7 @@ body.mapping .cell-x{display:none}
 .cthumb.k-tcsignal{background:linear-gradient(135deg,#4a3410,#1a1206);color:#ffcf6a}
 .tc-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;border-top:1px solid var(--line);padding-top:12px;margin-top:6px}
 .tc-head h3{margin:0 0 2px}
+.tc-sub{margin:12px 0 2px;font:600 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--dim)}
 .test-pats{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:8px}
 .test-pat{background:var(--raise);border:1px solid var(--line);border-radius:4px;color:var(--text);padding:7px 4px;font:600 11px system-ui,sans-serif;cursor:pointer}
 .test-pat:hover{border-color:var(--dim)}
@@ -1059,3 +1060,5 @@ input[type=range].modded{accent-color:color-mix(in srgb,var(--accent) calc(35% +
 .clk-dots{height:21px;color:#f5a623;display:block}
 .clk-side{font:10px var(--mono);color:#8a8f98;white-space:nowrap}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+.muted.small.warn{color:var(--warn)}

@@ -152,6 +152,7 @@ function cue(v: unknown): Cue | null {
   c.tcTarget = typeof v.tcTarget === "string" && /^\d{2}:\d{2}:\d{2}[:;]\d{2}$/.test(v.tcTarget) ? v.tcTarget : "00:00:00:00";
   c.tc = typeof v.tc === "string" && /^\d{2}:\d{2}:\d{2}[:;]\d{2}$/.test(v.tc) ? v.tc : "00:00:00:00";
   c.clock = typeof v.clock === "string" && parseClock(v.clock) !== null ? v.clock.trim() : "20:00";
+  if (typeof v.tcOut === "string" && /^\d{2}:\d{2}:\d{2}[:;]\d{2}$/.test(v.tcOut)) c.tcOut = v.tcOut;
   return c;
 }
 

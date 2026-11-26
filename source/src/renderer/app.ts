@@ -33,7 +33,7 @@ import { editDeviceOutput } from "./deviceoutput";
 import { OutputTab } from "./outputtab";
 import { ResPanel } from "./respanel";
 import { assignSeparate, canvasBounds, defaultLayout, imageForScreen, resAspect, type DeviceEffects, type DeviceOutput, type OutputLayout, type OutputRes } from "../core/layout";
-import { TimecodeClock, MtcDecoder, formatFrames, parseTc, tcToFrames } from "../core/timecode";
+import { TimecodeClock, MtcDecoder, formatFrames, parseTc, realFps, tcToFrames } from "../core/timecode";
 import { TcPanel, defaultTcSettings, type TcSettings } from "./tcpanel";
 import { cueRenders, cueSetNext, cueStatus, cueTick, goLabel, isVideoClip, newCueState, videoClip, videoIdOf, type CueEnv } from "../core/video";
 import { TIME_CLIP_NAME, defaultTime, isTimeClip, parseClock } from "../core/timeclip";
@@ -401,8 +401,21 @@ const cueEnv: CueEnv = {
     if (action === "stop") tcClock.stop(now);
     else { if (tc) tcClock.locate(tcToFrames(tc, tcClock.sendFps), now); if (action === "start") tcClock.start(now); }
   },
+  tcFollow: (target, seconds, running) => {
+    const now = Date.now();
+    if (target === null) { tcClock.stop(now); tcFollowTarget = ""; return; }
+    const fps = tcClock.sendFps, tc = parseTc(target, fps);
+    if (!tc) return;
+    if (target !== tcFollowTarget) {
+      tcFollowTarget = target;
+      if (!tcClock.sendOn) toast(t("Cue mit Timecode: Das Senden ist ausgeschaltet (Einstellungen → Timecode)."));
+    }
+    tcClock.follow(tcToFrames(tc, fps) + seconds * realFps(fps), running, now);
+  },
   get chase() { return tcClock.chase; },
 };
+/** Zuletzt von einem Cue vorgegebene Startzeit (für den Hinweis bei ausgeschaltetem Senden). */
+let tcFollowTarget = "";
 ctx.cueEnv = cueEnv;
 
 const libraryPanel = new LibraryPanel(ctx, library, videoLib, () => rebuildGrid(), l => { importTarget = l; $<HTMLInputElement>("file-input").click(); }, l => { libraryPanel.close(); addText(l); });
@@ -2549,6 +2562,8 @@ requestAnimationFrame(frame);
   scene: (i: number) => recallScene(ctx, i),
   // Test: Stand der Shader-Übersetzung (tests/e2e/smoke.cjs)
   gpu: () => Engine.progress(),
+  // Test: Timecode-Uhr, Einstellungen und LTC-Ausgabe
+  tc: { clock: tcClock, panel: tcPanel, settings: settings.tc, ltc: tcPanel.ltc, apply: () => { saveSettings(); tcPanel.apply(); } },
   genIds: () => READY_GENERATORS.map(g => g.id), fxIds: () => POST_EFFECTS.map(e => e.id),
   file: (cmd: ProjectFileCmd, p?: string) => runFileCmd(cmd, p),
   fps: () => engine?.info ?? null,

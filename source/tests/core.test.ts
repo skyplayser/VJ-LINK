@@ -937,14 +937,20 @@ describe("Timecode ein und aus gleichzeitig", () => {
     c.sendFrom = "thru";
     expect(c.outgoing(0)!.frames).toBe(250);    // oder der Eingang wird weitergereicht
   });
-  it("Timecode-Cue startet die eigene Uhr ab einer Zeit", () => {
+  it("Timecode-Cue startet die eigene Uhr ab einer Zeit (mit vorigem: gekoppelt an das Video)", () => {
     const st = ncs(); const calls: string[] = [];
-    const env: CueEnv = { duration: () => 0, recallScene: () => {}, tcCommand: (a, t) => calls.push(`${a} ${t}`) };
+    const env: CueEnv = { duration: () => 0, recallScene: () => {}, tcCommand: (a, t) => calls.push(`${a} ${t}`),
+      tcFollow: (t, _s, run) => { if (!calls.length || !calls[calls.length - 1]!.startsWith("folgt")) calls.push(`folgt ${t} ${run}`); } };
     const v = newCue("video", "Intro", "vid:aaaaaa");
     const q = newCue("tcsignal", "MA-Show starten"); q.start = "with"; q.tcAction = "start"; q.tcTarget = "01:00:00:00";
     st.list.push(v, q);
     cueGo(st, 0, env); cueTick(st, 10, env); cueTick(st, 20, env);
-    expect(calls).toEqual(["start 01:00:00:00"]);
+    expect(calls).toEqual(["folgt 01:00:00:00 true"]);
+    // Ohne vorigem: freier Start wie bisher
+    const st2 = ncs(); const c2: string[] = [];
+    const q2 = newCue("tcsignal", "Start"); q2.tcTarget = "02:00:00:00"; st2.list.push(q2);
+    cueGo(st2, 0, { ...env, tcCommand: (a, t) => c2.push(`${a} ${t}`) }); cueTick(st2, 10, { ...env, tcCommand: (a, t) => c2.push(`${a} ${t}`) });
+    expect(c2).toEqual(["start 02:00:00:00"]);
     expect(cueRenders(st, 30, env).map(r => r.kind)).toEqual(["video"]); // Signal blendet nichts aus
   });
 });
