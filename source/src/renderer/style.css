@@ -706,6 +706,9 @@ body.mapping [data-ctl][data-mapped][data-map-sel]{outline:3px solid #fff!import
 .mp-mask.sel .mp-mpoly{stroke-width:2.5;fill:rgba(255,59,59,.32)}
 .mp-mask.off{opacity:.4}
 .mp-mcorner{fill:#0c0e13;stroke:#ff3b3b;stroke-width:2;cursor:crosshair}
+.mp-mcorner.shape{fill:#ff3b3b;stroke:#fff}
+.mp-shapes{display:inline-flex;flex-wrap:wrap;gap:3px;align-items:center}
+.mp-shapes small{margin-right:2px}
 .mp-mcorner.sel{fill:#ff3b3b}
 .mp-photo{pointer-events:none}
 .display .win-size{display:block;margin-top:6px;max-width:100%}

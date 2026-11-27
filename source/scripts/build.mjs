@@ -109,6 +109,7 @@ ${(await readFile("vendor/licenses/MIT-ndi-sdk-headers.txt", "utf8")).trim()}
 
 ${terms}`);
   }
+  parts.push(`FFmpeg\n\n${(await readFile("vendor/licenses/ffmpeg-NOTICE.txt", "utf8")).trim()}`);
   parts.push(`Logo lettering: Inter Display (https://github.com/rsms/inter), converted to outlines.\n\n${(await readFile("assets/fonts/Inter-OFL.txt", "utf8")).trim()}`);
   await writeFile("dist/THIRD_PARTY_LICENSES.txt", parts.join(sep) + "\n");
   // Lizenzseite im Windows-Installer

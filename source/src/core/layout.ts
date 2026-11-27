@@ -37,9 +37,17 @@ export interface Surface {
 
 export interface Grid { n: number; pts: [number, number][] }
 
+/** Formen für Masken: „free“ = frei gezogenes Vieleck, sonst eine Form in einem Viereck (perspektivisch verzerrbar). */
+export const MASK_SHAPES = ["free", "rect", "rounded", "circle", "portal", "triangle", "hexagon", "star"] as const;
+export type MaskShape = typeof MASK_SHAPES[number];
+
 /** Maske im Bild eines Beamers (Projektionsmapping): Vieleck, das schwärzt (umgekehrt: nur innen zeigen). */
 export interface Mask {
   id: string; screen: number; name: string;
+  /** Form (fehlt = frei). Bei einer Form ergeben sich die Punkte aus `quad`. */
+  shape?: MaskShape;
+  /** Vier Ecken der Form (oben links, oben rechts, unten rechts, unten links) im Bild des Beamers (0–1). */
+  quad?: [number, number][];
   /** Punkte im Bild des Beamers (0–1, oben links = 0/0), mindestens 3. */
   pts: [number, number][];
   /** true = nur innerhalb zeigen, außen schwarz. */
@@ -361,12 +369,50 @@ function cachedMesh(g: Grid): Float32Array {
 
 // ---- Masken ---------------------------------------------------------------------------------
 
-export const MAX_MASK_POINTS = 32;
+export const MAX_MASK_POINTS = 64;
 
-/** Neue Maske: Rechteck in der Mitte. */
-export function newMask(screen: number, n: number): Mask {
-  return { id: `m${Date.now().toString(36)}${Math.floor(Math.random() * 1e4).toString(36)}`, screen, name: t("Maske {n}", { n }),
-    pts: [[0.4, 0.4], [0.6, 0.4], [0.6, 0.6], [0.4, 0.6]], invert: false, feather: 0, on: true };
+/** Umriss einer Form im Einheitsquadrat (0–1, y nach unten), im Uhrzeigersinn. */
+export function shapeUnit(shape: Exclude<MaskShape, "free">): [number, number][] {
+  const arc = (cx: number, cy: number, rx: number, ry: number, a0: number, a1: number, n: number): [number, number][] =>
+    Array.from({ length: n }, (_, i) => { const a = a0 + ((a1 - a0) * i) / (n - 1); return [cx + rx * Math.cos(a), cy + ry * Math.sin(a)] as [number, number]; });
+  const P = Math.PI;
+  switch (shape) {
+    case "rect": return [[0, 0], [1, 0], [1, 1], [0, 1]];
+    case "circle": return arc(0.5, 0.5, 0.5, 0.5, -P / 2, (3 * P) / 2, 61).slice(0, 60);
+    // Torbogen: unten gerade, oben ein Halbkreis über die ganze Breite
+    case "portal": return [[1, 1], [0, 1], ...arc(0.5, 0.5, 0.5, 0.5, P, 2 * P, 40)];
+    case "rounded": { const r = 0.18; return [...arc(1 - r, r, r, r, -P / 2, 0, 9), ...arc(1 - r, 1 - r, r, r, 0, P / 2, 9), ...arc(r, 1 - r, r, r, P / 2, P, 9), ...arc(r, r, r, r, P, (3 * P) / 2, 9)]; }
+    case "triangle": return [[0.5, 0], [1, 1], [0, 1]];
+    case "hexagon": return Array.from({ length: 6 }, (_, i) => { const a = -P / 2 + (i * P) / 3; return [0.5 + 0.5 * Math.cos(a), 0.5 + 0.5 * Math.sin(a)] as [number, number]; });
+    case "star": return Array.from({ length: 10 }, (_, i) => { const a = -P / 2 + (i * P) / 5, r = i % 2 ? 0.2 : 0.5; return [0.5 + r * Math.cos(a), 0.5 + r * Math.sin(a) * 1.05 + 0.03] as [number, number]; });
+  }
+}
+
+/** Punkte einer Form-Maske aus ihren vier Ecken neu berechnen (perspektivisch). Freie Masken bleiben unverändert. */
+export function shapeMask(m: Mask): Mask {
+  if (!m.shape || m.shape === "free" || !m.quad || m.quad.length !== 4) return m;
+  const h = squareToQuad(m.quad);
+  m.pts = shapeUnit(m.shape).map(([x, y]) => applyH(h, x, y));
+  return m;
+}
+
+/** Form einer Maske wechseln. Von „frei“ kommend wird das umschließende Rechteck die Form; „frei“ behält die Punkte. */
+export function setMaskShape(m: Mask, shape: MaskShape): Mask {
+  if (shape === "free") { delete m.shape; delete m.quad; return m; }
+  if (!m.quad || m.quad.length !== 4) {
+    const xs = m.pts.map(p => p[0]), ys = m.pts.map(p => p[1]);
+    const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+    m.quad = [[x0, y0], [x1, y0], [x1, y1], [x0, y1]];
+  }
+  m.shape = shape;
+  return shapeMask(m);
+}
+
+/** Neue Maske: Rechteck in der Mitte (als Form, mit vier Ecken zum Ziehen). */
+export function newMask(screen: number, n: number, shape: Exclude<MaskShape, "free"> = "rect"): Mask {
+  const m: Mask = { id: `m${Date.now().toString(36)}${Math.floor(Math.random() * 1e4).toString(36)}`, screen, name: t("Maske {n}", { n }),
+    shape, quad: [[0.4, 0.35], [0.6, 0.35], [0.6, 0.65], [0.4, 0.65]], pts: [], invert: false, feather: 0, on: true };
+  return shapeMask(m);
 }
 
 /** Masken dieses Ausgangs (nur im Mapping-Modus). */

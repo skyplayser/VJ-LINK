@@ -32,7 +32,7 @@ export interface ShowDeps {
   videos: VideoLibrary;
   images: MediaLibrary;
   /** Dateien übernehmen; gibt die Clip-IDs (vid:/img:) zurück. */
-  importFiles(files: File[]): Promise<{ id: string; name: string }[]>;
+  importFiles(files: File[]): Promise<{ id: string; name: string; alpha?: boolean }[]>;
   toast(msg: string): void;
   /** Laufender Timecode (oder null) und seine Bildrate. */
   tcNow(): TcNow | null;
@@ -105,6 +105,8 @@ export class ShowTab {
       const kind = isVideoClip(a.id) ? "video" : "image";
       const c = newCue(kind, a.name, a.id);
       if (kind === "image") { c.end = "hold"; c.hold = 0; }
+      // Transparentes Video (Logo): über die Visuals legen statt sie auszublenden
+      if (a.alpha) c.over = "over";
       this.insert(c);
     }
     if (added.length) this.d.toast(added.length === 1 ? t("1 Cue angelegt.") : t("{n} Cues angelegt.", { n: added.length }));

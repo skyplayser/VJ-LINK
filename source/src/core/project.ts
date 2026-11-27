@@ -8,7 +8,7 @@ import { POST_BY_ID } from "./effects";
 import { isValidMediaId, type MediaItem } from "./media";
 import { parseMappings, type Mapping } from "./mapping";
 import { FITS, newCue, type Cue, type VideoItem, type VideoSettings } from "./video";
-import { DEVICE_KINDS, defaultDeviceEffects, type DeviceEffects, MAX_RES, RES_FITS, defaultLayout, limitOutputRect, parseAspect, type DeviceOutput, type OutputLayout, type OutputRes } from "./layout";
+import { DEVICE_KINDS, MASK_SHAPES, MAX_MASK_POINTS, shapeMask, type Mask, defaultDeviceEffects, type DeviceEffects, MAX_RES, RES_FITS, defaultLayout, limitOutputRect, parseAspect, type DeviceOutput, type OutputLayout, type OutputRes } from "./layout";
 import { parseMods, type Modulation } from "./modulation";
 import { parseTextSpec } from "./text";
 import { CHASE_ORDERS } from "./chase";
@@ -182,9 +182,12 @@ function layout(v: unknown): OutputLayout {
   });
   const masks = (Array.isArray(v.masks) ? v.masks : []).filter(isObj).slice(0, 64).map((m, i) => ({
     id: str(m.id, `m${i}`, 40) || `m${i}`, screen: num(m.screen, 0, -1e12, 1e12), name: str(m.name, t("Maske {n}", { n: i + 1 }), 40),
-    pts: (Array.isArray(m.pts) ? m.pts : []).slice(0, 32).map((c: unknown) => Array.isArray(c) ? [cl(c[0], 0.5), cl(c[1], 0.5)] as [number, number] : [0.5, 0.5] as [number, number]),
+    pts: (Array.isArray(m.pts) ? m.pts : []).slice(0, MAX_MASK_POINTS).map((c: unknown) => Array.isArray(c) ? [cl(c[0], 0.5), cl(c[1], 0.5)] as [number, number] : [0.5, 0.5] as [number, number]),
     invert: m.invert === true, feather: num(m.feather, 0, 0, 400), on: m.on !== false,
-  })).filter(m => m.pts.length >= 3);
+    // Form-Masken: Form und vier Ecken (die Punkte werden daraus neu berechnet)
+    ...(oneOf(m.shape, MASK_SHAPES, "free") !== "free" && Array.isArray(m.quad) && m.quad.length === 4
+      ? { shape: oneOf(m.shape, MASK_SHAPES, "free"), quad: (m.quad as unknown[]).map(c => Array.isArray(c) ? [cl(c[0], 0.5), cl(c[1], 0.5)] as [number, number] : [0.5, 0.5] as [number, number]) } : {}),
+  })).map(m => shapeMask(m as Mask)).filter(m => m.pts.length >= 3);
   const r = isObj(v.res) ? v.res : null;
   const res: OutputRes | undefined = r ? {
     mode: oneOf(r.mode, ["auto", "pixels", "format"] as const, "auto"),

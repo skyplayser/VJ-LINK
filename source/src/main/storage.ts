@@ -1,4 +1,5 @@
 // Projekt und Grafiken im Benutzerverzeichnis der App (z. B. ~/Library/Application Support/VJ-Link).
+import type { ImportPlan, VideoInfo } from "../core/videoformat";
 import { createReadStream, promises as fs } from "node:fs";
 import { Readable } from "node:stream";
 import { randomBytes } from "node:crypto";
@@ -22,6 +23,13 @@ export class Storage {
   private models = new Map<string, IndexEntry>();
   private projectFile: string;
   private index = new Map<string, IndexEntry>();
+
+  /** Prüfen und Umwandeln von Videos beim Import (ffmpeg, aus main.ts gesetzt; ohne: Datei wird nur kopiert). */
+  converter: {
+    probe(file: string): Promise<VideoInfo | null>;
+    plan(info: VideoInfo): ImportPlan;
+    convert(src: string, dst: string, plan: Exclude<ImportPlan, "copy">, info: VideoInfo, onProgress: (p: number) => void): Promise<string | null>;
+  } | null = null;
 
   constructor(root: string) {
     this.mediaDir = path.join(root, "media");
@@ -95,20 +103,36 @@ export class Storage {
   // ---- Videos: werden in den Ordner „videos“ kopiert und über vjmedia://video/<id> gestreamt ----
 
   /** Video vom Rechner übernehmen (Kopie). Gibt ID und Endung oder eine Fehlermeldung zurück. */
-  async addVideo(src: unknown, name: unknown): Promise<{ id: string; ext: string; name: string } | string> {
+  async addVideo(src: unknown, name: unknown, onProgress?: (p: number) => void): Promise<{ id: string; ext: string; name: string; converted?: "alpha" | "plain" } | string> {
     if (typeof src !== "string" || !path.isAbsolute(src)) return "Datei nicht gefunden.";
-    const ext = path.extname(src).slice(1).toLowerCase();
+    let ext = path.extname(src).slice(1).toLowerCase();
     if (!["mp4", "m4v", "mov", "webm"].includes(ext)) return "Nur MP4, MOV, M4V oder WebM.";
     let st;
     try { st = await fs.stat(src); } catch { return "Datei nicht gefunden."; }
     if (!st.isFile() || st.size === 0) return "Datei ist leer oder kein Video.";
     const id = randomBytes(8).toString("hex");
-    const file = `${id}.${ext}`;
-    await fs.copyFile(src, path.join(this.videoDir, file));
+    // Formate, die Chromium nicht abspielt (ProRes, Animation, PNG-MOV …), umwandeln; Transparenz bleibt erhalten
+    const conv = this.converter;
+    const info = conv ? await conv.probe(src).catch(() => null) : null;
+    const plan = info && conv ? conv.plan(info) : "copy";
+    let file: string;
+    if (plan === "copy") {
+      file = `${id}.${ext}`;
+      await fs.copyFile(src, path.join(this.videoDir, file));
+    } else {
+      ext = plan === "alpha" ? "webm" : "mp4";
+      file = `${id}.${ext}`;
+      const tmp = path.join(this.videoDir, `${id}.part.${ext}`);
+      onProgress?.(0);
+      const err = await conv!.convert(src, tmp, plan, info!, p => onProgress?.(p));
+      if (err) { await fs.rm(tmp, { force: true }); return err; }
+      await fs.rename(tmp, path.join(this.videoDir, file));
+      onProgress?.(1);
+    }
     const nm = (typeof name === "string" ? name : path.basename(src)).slice(0, 80);
     this.videos.set(id, { id, name: nm, file });
     await this.writeAtomic(path.join(this.videoDir, "index.json"), JSON.stringify([...this.videos.values()]));
-    return { id, ext, name: nm };
+    return { id, ext, name: nm, ...(plan !== "copy" ? { converted: plan } : {}) };
   }
 
   async removeVideo(id: unknown): Promise<boolean> {

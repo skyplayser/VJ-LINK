@@ -1,3 +1,4 @@
+import { convertVideo, planImport, probeVideo } from "./ffmpeg";
 import { existsSync, mkdirSync, promises as fsp, readFileSync, statSync, unlinkSync, writeFileSync } from "node:fs";
 import { BrowserWindow, Menu, app, dialog, ipcMain, nativeImage, powerMonitor, powerSaveBlocker, protocol, screen, session, shell, systemPreferences, type Display, type MenuItemConstructorOptions } from "electron";
 import path from "node:path";
@@ -806,6 +807,8 @@ app.whenReady().then(async () => {
     return wc === control?.webContents && (perm === "midi" || perm === "midiSysex" || perm === "media");
   });
   storage = new Storage(app.getPath("userData"));
+  // MOV mit ProRes/Animation/PNG usw.: beim Import mit ffmpeg umwandeln
+  storage.converter = { probe: probeVideo, plan: info => planImport(info, process.platform), convert: convertVideo };
   await storage.init();
   // Lag running.lock noch da, ist der letzte Lauf abgestürzt: dann keine Startanimation.
   try { introCrashed = existsSync(runningLock()); writeFileSync(runningLock(), String(process.pid)); } catch { /* egal */ }
@@ -1084,7 +1087,14 @@ app.whenReady().then(async () => {
     if (files.dirty !== !!dirty) { files.dirty = !!dirty; updateTitle(); }
   });
   ipcMain.on("project:baseline", (e, hash: unknown) => { if (fromControl(e) && typeof hash === "string" && /^[0-9a-f]{16}$/.test(hash)) void files?.setBaseline(hash); });
-  ipcMain.handle("video:add", async (e, src: unknown, name: unknown) => fromControl(e) ? storage!.addVideo(src, name) : "Nicht erlaubt.");
+  ipcMain.handle("video:add", async (e, src: unknown, name: unknown) => {
+    if (!fromControl(e)) return "Nicht erlaubt.";
+    let last = -1;
+    return storage!.addVideo(src, name, p => {
+      const step = Math.floor(p * 20);
+      if (step !== last && !e.sender.isDestroyed()) { last = step; e.sender.send("video:progress", typeof name === "string" ? name : "", p); }
+    });
+  });
   ipcMain.on("tc:artnet", (e, b: unknown, host: unknown) => {
     if (fromControl(e) && b instanceof Uint8Array && b.length === 19 && typeof host === "string") net?.sendArtnet(b, host);
   });

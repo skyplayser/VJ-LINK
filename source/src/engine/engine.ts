@@ -842,7 +842,10 @@ export class Engine {
       this.videoTex.set(key, tex);
     }
     gl.bindTexture(gl.TEXTURE_2D, tex);
+    // Vormultipliziert wie Grafiken: Videos mit Alpha (WebM/HEVC, umgewandeltes ProRes 4444) ohne helle Säume
+    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
     try { gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE, src.el); } catch { /* Bild gerade nicht lesbar */ }
+    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
     return { tex, w: src.w, h: src.h };
   }
 
@@ -921,10 +924,10 @@ export class Engine {
     gl.uniform2f(this.loc(m, "uRes"), w, h);
     gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     for (const mk of masks) {
-      const pts = new Float32Array(64);
-      mk.pts.slice(0, 32).forEach((p, i) => { pts[i * 2] = p[0]; pts[i * 2 + 1] = p[1]; });
+      const pts = new Float32Array(128);
+      mk.pts.slice(0, 64).forEach((p, i) => { pts[i * 2] = p[0]; pts[i * 2 + 1] = p[1]; });
       gl.uniform2fv(this.loc(m, "uPts"), pts);
-      gl.uniform1i(this.loc(m, "uN"), Math.min(32, mk.pts.length));
+      gl.uniform1i(this.loc(m, "uN"), Math.min(64, mk.pts.length));
       gl.uniform1i(this.loc(m, "uInv"), mk.invert ? 1 : 0);
       gl.uniform1f(this.loc(m, "uFeather"), mk.feather);
       this.draw();

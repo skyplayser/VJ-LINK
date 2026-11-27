@@ -11,6 +11,8 @@ export function isVideoFile(f: File): boolean {
 
 export class VideoLibrary {
   items: VideoItem[] = [];
+  /** Hinweis an die Oberfläche (z. B. „umgewandelt, mit Transparenz“). */
+  notice: ((msg: string) => void) | null = null;
   /** Vorschaubild je Video (für Clip-Raster, Bibliothek und Ablauf). */
   posters = new Map<string, HTMLCanvasElement>();
   private blobs = new Map<string, string>();
@@ -51,6 +53,9 @@ export class VideoLibrary {
       if (!path) return t("„{name}“ lässt sich nicht lesen.", { name: file.name });
       const r = await bridge.addVideo(path, name);
       if (typeof r === "string") return `„${file.name}“: ${t(r)}`;
+      if (r.converted) this.notice?.(r.converted === "alpha"
+        ? t("„{name}“ wurde umgewandelt (WebM mit Transparenz).", { name: file.name })
+        : t("„{name}“ wurde umgewandelt (MP4/H.264).", { name: file.name }));
       item = { id: r.id, name: r.name, ext: r.ext, duration: 0, width: 0, height: 0 };
     } else {
       const b = new Uint8Array(8); crypto.getRandomValues(b);
@@ -98,7 +103,13 @@ export class VideoLibrary {
         const c = document.createElement("canvas");
         const k = 320 / Math.max(1, v.videoWidth);
         c.width = 320; c.height = Math.max(1, Math.round(v.videoHeight * k));
-        try { c.getContext("2d")!.drawImage(v, 0, 0, c.width, c.height); this.posters.set(item.id, c); } catch { /* ohne Vorschaubild */ }
+        try {
+          const g = c.getContext("2d")!;
+          g.drawImage(v, 0, 0, c.width, c.height); this.posters.set(item.id, c);
+          // Transparenz erkennen: Ränder und ein grobes Raster auf Deckkraft prüfen
+          const px = g.getImageData(0, 0, c.width, c.height).data;
+          for (let y = 0; y < c.height && !item.alpha; y += 8) for (let x = 0; x < c.width; x += 8) if (px[(y * c.width + x) * 4 + 3]! < 250) { item.alpha = true; break; }
+        } catch { /* ohne Vorschaubild */ }
         done(true);
       }, { once: true });
     });

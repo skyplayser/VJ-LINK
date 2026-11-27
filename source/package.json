@@ -1,6 +1,6 @@
 {
   "name": "vj-link",
-  "version": "0.1.17",
+  "version": "0.1.18",
   "productName": "VJ-Link",
   "description": "Einfache VJ-Software für LJs: Lichtpult, OSC und LJ-Link steuern die Visuals.",
   "private": true,
@@ -13,8 +13,9 @@
     "web": "npm run build && node scripts/serve.mjs",
     "check": "npm run typecheck && npm test",
     "test:e2e": "npm run build && node tests/e2e/smoke.cjs dev release/e2e",
-    "dist:mac": "node scripts/koffi-native.mjs mac && npm run build && electron-builder --mac --arm64 --x64 --publish never && node scripts/rename-dist.mjs",
-    "dist:win": "node scripts/koffi-native.mjs win && npm run build && electron-builder --win --x64 --publish never && node scripts/rename-dist.mjs"
+    "dist:mac": "node scripts/koffi-native.mjs mac && node scripts/fetch-ffmpeg.mjs mac && npm run build && electron-builder --mac --arm64 --x64 --publish never && node scripts/rename-dist.mjs",
+    "dist:win": "node scripts/koffi-native.mjs win && node scripts/fetch-ffmpeg.mjs win && npm run build && electron-builder --win --x64 --publish never && node scripts/rename-dist.mjs",
+    "ffmpeg": "node scripts/fetch-ffmpeg.mjs"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "1.2.2",
@@ -87,7 +88,18 @@
           "_ljlink._tcp",
           "_ndi._tcp"
         ]
-      }
+      },
+      "extraResources": [
+        {
+          "from": "vendor/ffmpeg/darwin-${arch}",
+          "to": "ffmpeg",
+          "filter": [
+            "ffmpeg",
+            "LICENSE",
+            "README"
+          ]
+        }
+      ]
     },
     "dmg": {
       "title": "VJ-Link ${version}"
@@ -108,7 +120,18 @@
           ]
         }
       ],
-      "artifactName": "VJ-Link-windows.${ext}"
+      "artifactName": "VJ-Link-windows.${ext}",
+      "extraResources": [
+        {
+          "from": "vendor/ffmpeg/win32-x64",
+          "to": "ffmpeg",
+          "filter": [
+            "ffmpeg.exe",
+            "LICENSE",
+            "README"
+          ]
+        }
+      ]
     },
     "nsis": {
       "oneClick": false,

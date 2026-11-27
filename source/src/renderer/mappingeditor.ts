@@ -1,7 +1,7 @@
 // AUSGABE → Projektionsmapping: auf das Bild eines Beamers Leinwände legen (Vierecke mit vier Ecken).
 // Ecke ziehen = verzerren (Trapez, Objekt), Mitte ziehen = verschieben, Pfeiltasten = pixelgenau.
 // Jede Leinwand zeigt das ganze Bild oder einen Ausschnitt; außerhalb bleibt der Beamer schwarz.
-import { MAX_MASK_POINTS, applyH, gridCorners, gridFromCorners, gridPoint, newMask, newSurface, snapCorner, squareToQuad, type Mask, type OutputLayout, type Surface } from "../core/layout";
+import { MASK_SHAPES, MAX_MASK_POINTS, applyH, gridCorners, gridFromCorners, gridPoint, newMask, newSurface, setMaskShape, shapeMask, snapCorner, squareToQuad, type Mask, type MaskShape, type OutputLayout, type Surface } from "../core/layout";
 import { t } from "../core/i18n";
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls = "", text = ""): HTMLElementTagNameMap[K] {
@@ -125,8 +125,9 @@ export class MappingEditor {
       const name = svg("text", { x: P([cx, cy])[0], y: P([cx, cy])[1], class: "mp-name", "text-anchor": "middle" });
       name.textContent = `${m.name}${m.invert ? t(" (nur innen)") : ""}`;
       g.append(name);
-      m.pts.forEach((p, i) => {
-        const h = svg("circle", { cx: P(p)[0], cy: P(p)[1], r: sel ? 6 : 4, class: `mp-mcorner${sel && this.selCorner === i ? " sel" : ""}` });
+      // Form-Masken: vier Ecken zum Ziehen (perspektivisch), freie Masken: alle Punkte
+      maskHandles(m).forEach((p, i) => {
+        const h = svg("circle", { cx: P(p)[0], cy: P(p)[1], r: sel ? (m.shape ? 8 : 6) : 4, class: `mp-mcorner${m.shape ? " shape" : ""}${sel && this.selCorner === i ? " sel" : ""}` });
         h.addEventListener("pointerdown", e => this.dragMask(e, m, i));
         g.append(h);
       });
@@ -187,7 +188,7 @@ export class MappingEditor {
     const now = performance.now();
     if (i === null && this.lastDown.id === m.id && now - this.lastDown.at < 350) {
       this.lastDown = { id: "", at: 0 };
-      if (m.pts.length < MAX_MASK_POINTS) {
+      if (!m.shape && m.pts.length < MAX_MASK_POINTS) {
         // nächste Kante suchen und dort einfügen
         let best = 0, bd = Infinity;
         m.pts.forEach((a, k) => {
@@ -206,16 +207,18 @@ export class MappingEditor {
     const first = this.sel !== m.id;
     this.sel = m.id; this.selCorner = i;
     this.stage?.focus();
-    const start = m.pts.map(p => [...p] as [number, number]);
+    const hs = maskHandles(m);
+    const start = hs.map(p => [...p] as [number, number]);
     const sx = e.clientX, sy = e.clientY, tol = 10 / Math.min(f.w, f.h);
-    const others = [...this.mine().flatMap(o => handles(o)), ...this.myMasks().filter(o => o !== m).flatMap(o => o.pts)];
+    const others = [...this.mine().flatMap(o => handles(o)), ...this.myMasks().filter(o => o !== m).flatMap(o => maskHandles(o))];
     const move = (ev: PointerEvent) => {
       const dx = (ev.clientX - sx) / f.w, dy = (ev.clientY - sy) / f.h;
-      if (i === null) start.forEach((p, k) => { m.pts[k] = [p[0] + dx, p[1] + dy]; });
+      if (i === null) start.forEach((p, k) => { hs[k] = [p[0] + dx, p[1] + dy]; });
       else {
         const p: [number, number] = [start[i]![0] + dx, start[i]![1] + dy];
-        m.pts[i] = this.snap && !ev.altKey ? snapCorner(p, [...others, ...start.filter((_, k) => k !== i)], tol) : p;
+        hs[i] = this.snap && !ev.altKey ? snapCorner(p, [...others, ...start.filter((_, k) => k !== i)], tol) : p;
       }
+      shapeMask(m);
       this.drawStage();
     };
     const up = () => { window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up); this.changed(); if (first) this.drawTools(document.getElementById("cv-tools")!); };
@@ -228,13 +231,15 @@ export class MappingEditor {
     const mk = this.curMask();
     if (mk) {
       const d = ({ ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] } as Record<string, [number, number]>)[e.key];
-      if ((e.key === "Delete" || e.key === "Backspace") && this.selCorner !== null && mk.pts.length > 3) { e.preventDefault(); mk.pts.splice(this.selCorner, 1); this.selCorner = null; this.drawStage(); this.changed(); return; }
+      if ((e.key === "Delete" || e.key === "Backspace") && !mk.shape && this.selCorner !== null && mk.pts.length > 3) { e.preventDefault(); mk.pts.splice(this.selCorner, 1); this.selCorner = null; this.drawStage(); this.changed(); return; }
       if (!d) return;
       e.preventDefault();
       const scr = this.open.find(o => o.id === this.screen)!, step = e.shiftKey ? 10 : 1;
       const dx = d[0] * step / scr.w, dy = d[1] * step / scr.h;
-      if (this.selCorner === null) mk.pts.forEach((p, k) => { mk.pts[k] = [p[0] + dx, p[1] + dy]; });
-      else mk.pts[this.selCorner] = [mk.pts[this.selCorner]![0] + dx, mk.pts[this.selCorner]![1] + dy];
+      const hs = maskHandles(mk);
+      if (this.selCorner === null) hs.forEach((p, k) => { hs[k] = [p[0] + dx, p[1] + dy]; });
+      else if (hs[this.selCorner]) hs[this.selCorner] = [hs[this.selCorner]![0] + dx, hs[this.selCorner]![1] + dy];
+      shapeMask(mk);
       this.drawStage(); this.changed();
       return;
     }
@@ -323,6 +328,17 @@ export class MappingEditor {
       const nm = el("input", "mp-nm"); nm.value = mk.name; nm.maxLength = 40; nm.id = "mp-name";
       nm.addEventListener("change", () => { mk.name = nm.value.trim() || mk.name; this.changed(); this.drawStage(); });
       nameLab.append(nm);
+      // Form: frei gezogenes Vieleck oder Rechteck, Kreis, Portal … (vier Ecken, perspektivisch)
+      const shapeLab = el("span", "mp-shapes");
+      shapeLab.append(el("small", "muted", t("Form")));
+      const SHAPE_LABEL: Record<MaskShape, string> = { free: t("Frei"), rect: t("Rechteck"), rounded: t("Abgerundet"), circle: t("Kreis"), portal: t("Portal"),
+        triangle: t("Dreieck"), hexagon: t("Sechseck"), star: t("Stern") };
+      for (const sh of MASK_SHAPES) {
+        const b = el("button", `btn small-btn${(mk.shape ?? "free") === sh ? " on" : ""}`, SHAPE_LABEL[sh]);
+        b.setAttribute("aria-pressed", String((mk.shape ?? "free") === sh));
+        b.addEventListener("click", () => { setMaskShape(mk, sh); this.selCorner = null; this.changed(); this.drawStage(); this.drawTools(tools); });
+        shapeLab.append(b);
+      }
       const inv = el("button", `btn small-btn${mk.invert ? " on" : ""}`, mk.invert ? t("Nur innen zeigen") : t("Innen schwärzen"));
       inv.title = t("Umschalten: Bereich schwärzen ↔ nur diesen Bereich zeigen");
       inv.addEventListener("click", () => { mk.invert = !mk.invert; this.changed(); this.drawStage(); this.drawTools(tools); });
@@ -333,13 +349,16 @@ export class MappingEditor {
       fl.append(fr, fv);
       const delPt = el("button", "btn small-btn", t("Punkt löschen"));
       delPt.disabled = this.selCorner === null || mk.pts.length <= 3;
+      delPt.hidden = !!mk.shape;
       delPt.addEventListener("click", () => { if (this.selCorner !== null && mk.pts.length > 3) { mk.pts.splice(this.selCorner, 1); this.selCorner = null; this.changed(); this.drawStage(); this.drawTools(tools); } });
       const tog = el("button", `btn small-btn${mk.on ? " on" : ""}`, mk.on ? t("An") : t("Aus"));
       tog.addEventListener("click", () => { mk.on = !mk.on; this.changed(); this.drawStage(); this.drawTools(tools); });
       const del = el("button", "btn small-btn", t("Maske löschen"));
       del.addEventListener("click", () => { const l = this.get(); l.masks = this.masks().filter(x => x !== mk); this.sel = null; this.selCorner = null; this.changed(); this.drawStage(); this.drawTools(tools); });
-      tools.append(nameLab, inv, fl, delPt, tog, del,
-        el("small", "muted", t("Doppelklick auf die Maske: Punkt einfügen · Punkt wählen + Entf: löschen")));
+      tools.append(nameLab, shapeLab, inv, fl, delPt, tog, del,
+        el("small", "muted", mk.shape
+          ? t("Ecken ziehen: Form verzerren, auch schräg für die Perspektive · „Nur innen zeigen“: nur diese Form anstrahlen, z. B. ein Portal oder einen Kreis")
+          : t("Doppelklick auf die Maske: Punkt einfügen · Punkt wählen + Entf: löschen")));
       return;
     }
     const s = this.cur();
@@ -415,4 +434,9 @@ export class MappingEditor {
     });
     tools.append(rect, tog, del);
   }
+}
+
+/** Ziehpunkte einer Maske: bei Formen die vier Ecken, sonst alle Punkte (dieselben Arrays, zum Ändern). */
+function maskHandles(m: Mask): [number, number][] {
+  return m.shape && m.quad?.length === 4 ? m.quad : m.pts;
 }

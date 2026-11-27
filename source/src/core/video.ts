@@ -14,6 +14,8 @@ export interface VideoItem {
   ext: string;
   /** Sekunden; 0, solange noch nicht gemessen. */
   duration: number;
+  /** Hat durchsichtige Bereiche (z. B. Logo als WebM/HEVC mit Alpha oder umgewandeltes ProRes 4444). */
+  alpha?: boolean;
   width: number;
   height: number;
 }

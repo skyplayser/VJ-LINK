@@ -14,6 +14,7 @@ Stand: Beta 0.1.3. VJ-Link selbst steht unter der Eclipse Public License 2.0 (`L
 | MediaPipe Selfie Segmenter (Modell `vendor/mediapipe/selfie_segmenter.tflite`) | Modell der Personen-Erkennung | Apache-2.0 |
 | [Koffi](https://github.com/Koromix/koffi) 3.3.8 (`koffi`, `@koromix/koffi-*`) | Aufruf der vom Nutzer installierten NDI®-Laufzeit (nur im NDI-Prozess) | MIT |
 | [qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator) 2.0.4 | Lokale QR-Kopplung für die Handy-Fernsteuerung | MIT |
+| [FFmpeg](https://ffmpeg.org) 6.1.1 als eigenes Programm (`resources/ffmpeg`), Builds aus [ffmpeg-static b6.1.1](https://github.com/eugeneware/ffmpeg-static/releases/tag/b6.1.1), geladen und per SHA-256 geprüft von `scripts/fetch-ffmpeg.mjs` | Videos beim Import prüfen und umwandeln (MOV mit ProRes/Animation/PNG → WebM mit Transparenz oder MP4/H.264); VJ-Link ruft es nur als Programm auf, kein Linken | GPL (macOS-Builds GPL, Windows-Build von gyan.dev GPLv3); Lizenz und Build-Hinweise liegen neben dem Programm; Hinweis in `vendor/licenses/ffmpeg-NOTICE.txt` |
 | Inter Display ExtraBold (`assets/fonts`) | Schriftzug in Logo und App-Icon, in Pfade umgewandelt | SIL Open Font License 1.1 (`assets/fonts/Inter-OFL.txt`) |
 
 ## NDI®

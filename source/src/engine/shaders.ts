@@ -2780,7 +2780,7 @@ export const MASK_FRAG = `#version 300 es
 precision highp float;
 in vec2 vUv;
 out vec4 outColor;
-uniform vec2 uPts[32];
+uniform vec2 uPts[64];
 uniform int uN;
 uniform int uInv;
 uniform float uFeather;  // Pixel
@@ -2790,7 +2790,7 @@ void main(){
   vec2 p = vec2(vUv.x, 1.0 - vUv.y) * uRes;
   bool inside = false;
   float d = 1e9;
-  for (int i = 0; i < 32; i++) {
+  for (int i = 0; i < 64; i++) {
     if (i >= uN) break;
     int j = i == 0 ? uN - 1 : i - 1;
     vec2 a = uPts[i] * uRes, b = uPts[j] * uRes;

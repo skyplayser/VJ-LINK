@@ -43,6 +43,7 @@ const bridge: VjBridge = {
   openPrivacy: kind => { ipcRenderer.send("privacy:open", kind); },
   pathForFile: f => webUtils.getPathForFile(f),
   addVideo: (p, n) => ipcRenderer.invoke("video:add", p, n),
+  onVideoProgress: cb => { ipcRenderer.on("video:progress", (_e, name: string, p: number) => cb(name, p)); },
   removeVideo: id => { ipcRenderer.send("video:remove", id); },
   addModel: (p, n) => ipcRenderer.invoke("model:add", p, n),
   removeModel: id => { ipcRenderer.send("model:remove", id); },

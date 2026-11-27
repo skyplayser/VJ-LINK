@@ -379,6 +379,9 @@ function layerClips(l: number): { id: string; name: string }[] {
 }
 // ---- Videos --------------------------------------------------------------------------
 const videoLib = new VideoLibrary();
+videoLib.notice = msg => toast(msg);
+// MOV mit ProRes/Animation usw. wird beim Import umgewandelt: Fortschritt anzeigen
+bridge?.onVideoProgress((name, p) => toast(p >= 1 ? t("„{name}“ umgewandelt.", { name }) : t("„{name}“ wird umgewandelt … {p} %", { name, p: Math.round(p * 100) })));
 /** Eigene 3D-Modelle (Partikel-Objekt). */
 const modelLib = new ModelLibrary();
 /** Abspieler für die Vorschau im Hauptfenster (darf Ton ausgeben). */
@@ -612,8 +615,8 @@ const modMode = new ModMode(ctx, () => ctx.tempo.beatAt(Date.now()), () => liveB
 
 /** Dateien laden; die erste Grafik kommt auf die Ziel-Ebene. */
 /** Dateien in die Bibliotheken übernehmen (Videos und Bilder). Gibt Clip-IDs und Namen zurück. */
-async function importToLibrary(files: FileList | File[]): Promise<{ id: string; name: string }[]> {
-  const out: { id: string; name: string }[] = [];
+async function importToLibrary(files: FileList | File[]): Promise<{ id: string; name: string; alpha?: boolean }[]> {
+  const out: { id: string; name: string; alpha?: boolean }[] = [];
   for (const f of Array.from(files)) {
     if (isModelFile(f)) {
       toast(t("3D-Modell „{name}“ wird umgewandelt …", { name: f.name }));
@@ -624,7 +627,7 @@ async function importToLibrary(files: FileList | File[]): Promise<{ id: string; 
       toast(t("„{name}“ wird übernommen …", { name: f.name }));
       const r = await videoLib.importFile(f);
       if (typeof r === "string") { toast(r); continue; }
-      out.push({ id: videoClip(r.id), name: r.name });
+      out.push({ id: videoClip(r.id), name: r.name, ...(r.alpha ? { alpha: true } : {}) });
     } else {
       const r = await library.importFile(f);
       if (typeof r === "string") { toast(r); continue; }

@@ -1,0 +1,13 @@
+FFmpeg 6.1.1 (https://ffmpeg.org), included as a separate program (resources/ffmpeg).
+
+VJ-Link runs it only to inspect and convert video files when you import them (e.g. MOV with ProRes, Animation or PNG
+into WebM with transparency or MP4/H.264). VJ-Link does not link to FFmpeg; FFmpeg keeps its own license.
+
+The builds come from ffmpeg-static, release b6.1.1 (https://github.com/eugeneware/ffmpeg-static/releases/tag/b6.1.1):
+- macOS: static builds of FFmpeg 6.1.1 with GPL components (libx264, libvpx and others), GNU General Public License.
+- Windows: "release-essentials" build 6.1.1 from www.gyan.dev, GNU General Public License version 3.
+  Source code: https://github.com/FFmpeg/FFmpeg/commit/e38092ef93
+
+The license and the build notes of each build lie next to the program (resources/ffmpeg/LICENSE and README).
+FFmpeg source code: https://ffmpeg.org/download.html and https://github.com/FFmpeg/FFmpeg/tree/n6.1.1
+FFmpeg is a trademark of Fabrice Bellard, originator of the FFmpeg project.

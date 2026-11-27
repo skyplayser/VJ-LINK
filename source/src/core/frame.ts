@@ -235,7 +235,9 @@ export interface VjBridge {
   /** Pfad einer gezogenen bzw. gewählten Datei (nur in der App). */
   pathForFile(f: File): string;
   /** Video in die Bibliothek kopieren. Gibt ID und Endung oder eine Fehlermeldung zurück. */
-  addVideo(path: string, name: string): Promise<{ id: string; ext: string; name: string } | string>;
+  addVideo(path: string, name: string): Promise<{ id: string; ext: string; name: string; converted?: "alpha" | "plain" } | string>;
+  /** Fortschritt beim Umwandeln eines Videos (MOV mit ProRes/Animation usw.), 0…1. */
+  onVideoProgress(cb: (name: string, p: number) => void): void;
   /** 3D-Modell (OBJ/STL) übernehmen: wird im Hauptprozess in eine Punktwolke umgewandelt. */
   addModel(path: string, name: string): Promise<{ id: string; name: string; colors: boolean } | string>;
   removeModel(id: string): void;
