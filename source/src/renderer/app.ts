@@ -2553,6 +2553,32 @@ void loadProject().catch(err => console.error(err)).then(async () => {
 for (const g of READY_GENERATORS) if (!GEN_IDS.includes(g.id as typeof GEN_IDS[number]) || !EFFECT_BY_ID.has(g.id)) console.error("Generator fehlt in der Engine:", g.id);
 requestAnimationFrame(frame);
 
+// ---- Suite-Diagnose: Zustand alle 5 s an den Hauptprozess (nur Zahlen und Schalter, keine Namen) -------------------
+function diagSnapshot(): Record<string, unknown> {
+  const known = new Set(videoLib.items.map(v => v.id));
+  const used = new Set([...ctx.show.layers.flatMap(l => l.clips), ...ctx.cues.list.map(c => c.media ?? "")].filter(isVideoClip).map(videoIdOf));
+  const tcS = settings.tc;
+  return {
+    layers: ctx.show.layers.length, scenes: ctx.scenes.length, images: imageList(ctx.show).length,
+    cues: ctx.cues.list.length, cueLive: ctx.cues.run.active.length > 0,
+    mode: outLayout.mode, masks: (outLayout.masks ?? []).length,
+    tempo: ctx.tempo.source, bpm: ctx.tempo.bpm,
+    fps: engine?.info.fps ?? 0, frameMs: engine?.info.frameMs ?? 0, shadersPending: Engine.progress().pending,
+    tcReceive: tcClock.receiveOn, tcSend: tcClock.sendOn, tcRunning: !!tcClock.now(Date.now())?.running,
+    tcWays: tcS.send ? [tcS.outArt ? "artnet" : "", tcS.outMtc ? "mtc" : "", tcS.ltc ? "ltc" : ""].filter(Boolean) : [],
+    audioIn: audioIn.active, videos: videoLib.items.length, missingVideos: [...used].filter(id => !known.has(id)).length,
+    blackout: ctx.show.blackout, testPattern: ctx.show.testCard,
+  };
+}
+if (bridge) {
+  const sendDiag = () => { try { bridge!.diagState(diagSnapshot()); } catch { /* Diagnose darf nie stören */ } };
+  setTimeout(sendDiag, 3000);
+  setInterval(sendDiag, 5000);
+  // Fehler der Oberfläche: nur die erste Zeile (der Hauptprozess säubert Pfade und Adressen)
+  window.addEventListener("error", e => bridge!.diagError(`Oberfläche: ${String(e.message || e.error || "Fehler").split("\n")[0]}`));
+  window.addEventListener("unhandledrejection", e => bridge!.diagError(`Oberfläche (async): ${String((e.reason as Error)?.message ?? e.reason).split("\n")[0]}`));
+}
+
 // Entwicklungshilfe: im Browser-Modus Zustand von außen setzen.
 (window as unknown as { __vj: unknown }).__vj = {
   // Test: Kamerabild ersetzen (ohne echte Kamera)

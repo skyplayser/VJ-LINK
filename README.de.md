@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <img alt="Stand: Beta 0.1.18" src="https://img.shields.io/badge/Stand-Beta%200.1.18-FF5C93">
+  <img alt="Stand: Beta 0.1.19" src="https://img.shields.io/badge/Stand-Beta%200.1.19-FF5C93">
   <img alt="macOS und Windows, kostenlos" src="https://img.shields.io/badge/macOS%20%7C%20Windows-kostenlos-3DDC84">
   <img alt="Lizenz: EPL-2.0" src="https://img.shields.io/badge/Lizenz-EPL--2.0-60a5fa">
   <a href="https://github.com/skyplayser/VJ-LINK/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/skyplayser/VJ-LINK/total?label=Downloads&color=a78bfa"></a>
@@ -38,7 +38,7 @@ und danach höchstens einmal pro Stunde bei GitHub nach der neuesten Version; ab
 Fehlermeldung, wenn du eine schickst.
 
 > [!WARNING]
-> **Das ist die Beta 0.1.18.** Nach einem kompletten Testtag (Fehler, Arbeitsabläufe, Oberfläche und Sicherheitstest) ist sie
+> **Das ist die Beta 0.1.19.** Nach einem kompletten Testtag (Fehler, Arbeitsabläufe, Oberfläche und Sicherheitstest) ist sie
 > deutlich robuster als die erste Alpha, aber große Teile haben noch keine echte Bühnentechnik gesehen. Probier sie bitte vor
 > einer wichtigen Show aus, und sag uns, was dir auffällt: **Hilfe → Fehler melden** im Programm.
 
@@ -75,6 +75,7 @@ Fehlermeldung, wenn du eine schickst.
   Leuchten, Kontur und Kasten.
 - **Aus LJ-Link:** Tempo, Beat-Phase, Phrasen und Trackwechsel, eine *Now-Playing*-Bauchbinde und die DJ-Waveform als Clips.
 - **Neu in 0.1.12:** das **Partikel-Objekt**: 3D-Körper aus Tausenden Stäbchen, die auf den Beat oder den Bass explodieren und zurückschnellen, Drehung je Achse, fünf eingebaute Körper und eigene **OBJ/STL**-Modelle ([Wiki](https://link-suite.de/vj-link/wiki/particles/), braucht eine starke Grafikkarte); die Anordnung **Getrennt**, bei der jeder Ausgang sein eigenes Bild zeigt, z. B. zwei gleiche Bildschirme mit verschiedenen Visuals ([Wiki](https://link-suite.de/vj-link/wiki/outputs/#each-output-its-own-picture)); **Modulation mit Bereich** von–bis ([Wiki](https://link-suite.de/vj-link/wiki/modulation/#range)); und *Neues Projekt* **mit Start-Aufbau oder leer**.
+- **Neu in 0.1.19:** **Diagnose für den Hilfe-Assistenten der Link-Suite**: VJ-Link hält eine kleine Statusdatei aktuell (Ausgänge, Anordnung, Takt, Bildrate, Show, Timecode, Netz, Prüfungen und die letzten Fehler – nur Zahlen und feste Wörter, keine Namen, Pfade oder Dateinamen). Link-Suite schickt sie nur mit, wenn du im Hilfe-Assistenten *Diagnose mitschicken* ankreuzt; ab Werk ist das aus.
 - **Neu in 0.1.18:** **MOV-Dateien jeder Art**, auch **transparente**: ProRes 4444, Animation und PNG-MOV werden beim Import in WebM mit Alpha umgewandelt, damit Logos über den Visuals liegen, in Ebenen und in der SHOW ([Wiki](https://link-suite.de/vj-link/wiki/media/#transparent-videos)). **Projektionsmapping**: Masken als **Kreis, Portal**, Rechteck, abgerundet, Dreieck, Sechseck oder Stern, mit vier Ecken für die Perspektive – nur innen zeigen, um nur ein Portal oder einen Kreis anzustrahlen ([Wiki](https://link-suite.de/vj-link/wiki/mapping-projection/)).
 - **Neu in 0.1.17:** **Timecode wie in QLab**: einen *+ Timecode*-Cue *mit vorigem* unter ein Video setzen, dann startet der Timecode mit dem Video und hält an seinem Ende an; oder jedem Cue ein *Timecode ab* geben. VJ-Link ist **Timecode-Master** und sendet über Art-Net, MIDI (MTC) und jetzt auch **LTC über einen Audio-Ausgang** (Ausgang, Kanal, Pegel) ([Wiki](https://link-suite.de/vj-link/wiki/timecode/)).
 - **Neu in 0.1.16:** die **Handy-Fernsteuerung** mit vier Reitern: **Start** (Live-Bild, Blackout, Master, Szene, WEITER, Tempo, Testbild, Bildschirm wach halten), **Szenen** (alle Szenen, Blende, Übergang), **Ebenen** (Mixer mit der Deckkraft jeder Ebene, Clips, Mischmodus, Text-Clips ändern, Uhr-Clips, Farben) und **Show** (WEITER, Zurück, Alles stoppen, Ablauf); sie lässt sich wie eine App auf den Home-Bildschirm legen ([Wiki](https://link-suite.de/vj-link/wiki/phone-remote/)). **Behoben:** In der Galerie zeigt die Ziel-Ebene die Namen der Ebenen, und die Vorschaubilder der Partikel-Objekte zeigen den richtigen Körper.

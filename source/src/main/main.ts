@@ -1,4 +1,6 @@
-import { convertVideo, planImport, probeVideo } from "./ffmpeg";
+import { convertVideo, ffmpegPath, planImport, probeVideo } from "./ffmpeg";
+import { startDiagnose } from "./diagnose-writer";
+import { buildVjDiag, cleanDiagText, parseRendererDiag, type VjDiagRenderer } from "../core/diagnose";
 import { existsSync, mkdirSync, promises as fsp, readFileSync, statSync, unlinkSync, writeFileSync } from "node:fs";
 import { BrowserWindow, Menu, app, dialog, ipcMain, nativeImage, powerMonitor, powerSaveBlocker, protocol, screen, session, shell, systemPreferences, type Display, type MenuItemConstructorOptions } from "electron";
 import path from "node:path";
@@ -22,7 +24,7 @@ import { execFile } from "node:child_process";
 import os from "node:os";
 import { findAdapter, listAdapters, ndiConfigWithAdapter, parseHardwarePorts, type IfaceEntry, type NetAdapter } from "../core/netiface";
 import { NDI_FPS, NDI_HOME_URL, findRuntime, ndiRuntimeUrl } from "./ndi/ndi-paths";
-import { NDI_OUTPUT, WINDOW_OUTPUT, WINDOW_SIZES, type ControlEvent, type DisplayInfo, type Frame, type MediaEvent, type NdiSettingsInfo, type NetConfig, type OutputStats, NDI_MAX, NDI_MAX_SIZE, NDI_MIN_SIZE, isNdiOutput } from "../core/frame";
+import { NDI_OUTPUT, WINDOW_OUTPUT, displayPixels, WINDOW_SIZES, type ControlEvent, type DisplayInfo, type Frame, type MediaEvent, type NdiSettingsInfo, type NetConfig, type OutputStats, NDI_MAX, NDI_MAX_SIZE, NDI_MIN_SIZE, isNdiOutput } from "../core/frame";
 import { LANGS, detectLang, setLang, t, type Lang } from "../core/i18n";
 
 // Eigenes Protokoll für Videos: streamt aus dem Bibliotheksordner, spulbar, für WebGL freigegeben.
@@ -209,6 +211,7 @@ function createControl(): void {
   control.webContents.on("render-process-gone", (_e, d) => {
     if (d.reason === "clean-exit" || !control || control.isDestroyed()) return;
     console.error("Oberfläche abgestürzt:", d.reason);
+    diag?.error(`Oberfläche abgestürzt (${d.reason}), wird neu geladen`);
     setTimeout(() => { if (control && !control.isDestroyed()) control.webContents.reload(); }, 500);
   });
   // Beenden, während Ausgänge live sind: nachfragen (⌘Q aus Versehen mitten in der Show).
@@ -661,6 +664,7 @@ function wireOutput(win: BrowserWindow, id: number): void {
   win.webContents.on("render-process-gone", (_e, d) => {
     if (d.reason === "clean-exit") return;
     console.error("Ausgang abgestürzt:", id, d.reason);
+    diag?.error(`Ausgang abgestürzt (${d.reason}), wird neu geöffnet`);
     reopenOutput(id, win);
   });
   outputs.set(id, win);
@@ -842,6 +846,7 @@ app.whenReady().then(async () => {
   resumeNdiOutputs();
   net = new Network((e: ControlEvent) => { control?.webContents.send("control", e); });
   net.start();
+  startDiag();
   link = new LinkClient(s => control?.webContents.send("control", { type: "link", ...s }));
   link.start();
   // Testinstanzen (eigener Datenordner) chatten ohne VJLINK_CHAT_PORT in einem eigenen Raum, nie im echten.
@@ -924,8 +929,8 @@ app.whenReady().then(async () => {
   ipcMain.on("gpu:lost", e => {
     const entry = [...outputs.entries()].find(([, w]) => !w.isDestroyed() && w.webContents === e.sender);
     if (entry) {
-      const [id, w] = entry; console.error("Ausgang: WebGL-Kontext verloren", id); reopenOutput(id, w);
-    } else if (fromControl(e)) { console.error("Oberfläche: WebGL-Kontext verloren"); setTimeout(() => control?.webContents.reload(), 500); }
+      const [id, w] = entry; console.error("Ausgang: WebGL-Kontext verloren", id); diag?.error("Ausgang: WebGL-Kontext verloren, wird neu geöffnet"); reopenOutput(id, w);
+    } else if (fromControl(e)) { console.error("Oberfläche: WebGL-Kontext verloren"); diag?.error("Oberfläche: WebGL-Kontext verloren, wird neu geladen"); setTimeout(() => control?.webContents.reload(), 500); }
   });
   ipcMain.on("output:stats", (e, stats: OutputStats) => {
     const entry = [...outputs].find(([, win]) => win.webContents === e.sender);
@@ -1090,11 +1095,17 @@ app.whenReady().then(async () => {
   ipcMain.handle("video:add", async (e, src: unknown, name: unknown) => {
     if (!fromControl(e)) return "Nicht erlaubt.";
     let last = -1;
-    return storage!.addVideo(src, name, p => {
+    const r = await storage!.addVideo(src, name, p => {
       const step = Math.floor(p * 20);
       if (step !== last && !e.sender.isDestroyed()) { last = step; e.sender.send("video:progress", typeof name === "string" ? name : "", p); }
     });
+    // Diagnose: nur dass es schiefging, ohne Dateinamen
+    if (typeof r === "string" && r.startsWith("Umwandeln")) diag?.error(r.startsWith("Umwandeln nicht möglich") ? "Video-Umwandlung: ffmpeg fehlt" : "Video-Umwandlung fehlgeschlagen");
+    return r;
   });
+  // Diagnose: Zustand und Fehler aus der Oberfläche (nur Zahlen/Schalter bzw. gesäuberter Text)
+  ipcMain.on("diag:state", (e, v: unknown) => { if (fromControl(e)) { diagRenderer = parseRendererDiag(v); refreshDiag(); } });
+  ipcMain.on("diag:error", (e, text: unknown) => { if (fromControl(e) && typeof text === "string") diag?.error(cleanDiagText(text, os.homedir(), os.tmpdir(), 300, os.hostname().replace(/\.local$/i, ""))); });
   ipcMain.on("tc:artnet", (e, b: unknown, host: unknown) => {
     if (fromControl(e) && b instanceof Uint8Array && b.length === 19 && typeof host === "string") net?.sendArtnet(b, host);
   });
@@ -1179,11 +1190,42 @@ app.on("window-all-closed", () => { net?.stop(); app.quit(); });
 // Wer beendet? Der Hinweis und die Warnung bei live Ausgängen kommen nur, wenn du selbst beendest (Fenster schließen,
 // Menü oder ⌘Q). Beendet das System (Signal, Herunterfahren, Abmelden, Update), schließt VJ-Link ohne Rückfrage,
 // sonst bliebe es offen bzw. hielte das Herunterfahren auf.
+// ---- Suite-Diagnose (diagnose/vj.json im Link-Suite-Ordner, SPEC.md im Suite-Launcher) --------------------------
+// Nur der Launcher liest die Datei, und nur wenn der Nutzer im Hilfe-Assistenten „Diagnose mitschicken“ ankreuzt.
+// Testinstanzen (eigener Datenordner) schreiben in ihren eigenen Ordner, nie in den echten der Link-Suite.
+let diag: ReturnType<typeof startDiagnose> | null = null;
+let diagRenderer: VjDiagRenderer | null = null;
+let diagSig = "", diagAt = 0;
+function startDiag(): void {
+  try {
+    // Testinstanz: eigener „Link-Suite“-Ordner im Datenordner (der Schreiber legt ihn selbst nie an)
+    const testDir = process.env.VJLINK_DATA ? path.join(process.env.VJLINK_DATA, "suite") : null;
+    if (testDir) mkdirSync(testDir, { recursive: true });
+    diag = startDiagnose({ id: "vj", app: "VJ-Link", version: app.getVersion(), ...(testDir ? { dir: testDir } : {}) });
+  } catch { diag = null; return; }
+  refreshDiag(true);
+  setInterval(() => refreshDiag(), 5_000).unref();
+}
+/** Neu melden bei wichtigen Änderungen (Ausgänge, Prüfungen, Modus), sonst höchstens alle 30 s. */
+function refreshDiag(force = false): void {
+  if (!diag) return;
+  try {
+    const outputs = listDisplays().filter(d => d.open).map(d => ({ kind: d.ndi ? "ndi" as const : d.window ? "window" as const : "display" as const, ...displayPixels(d) }));
+    const st = buildVjDiag(diagRenderer, { outputs, net: net?.status ?? null, phone: !!phone.info().url, ffmpeg: !!ffmpegPath() });
+    const s = st.summary ?? {};
+    const sig = JSON.stringify([st.checks?.map(c => [c.name, c.ok]), s["Ausgänge"], s["Anordnung"], s["Timecode"], s["Handy-Fernsteuerung"], s["Blackout"], s["Testbild"], diagRenderer?.tempo]);
+    if (!force && sig === diagSig && Date.now() - diagAt < 30_000) return;
+    diagSig = sig; diagAt = Date.now();
+    diag.report(st);
+  } catch { /* Diagnose darf nie stören */ }
+}
+
 app.on("before-quit", () => { quitting = true; });
 // Suite-Chat: „bye“ beim wirklichen Beenden, damit die anderen es sofort sehen (sonst nach 15 s). Das Senden ist
 // asynchron: einmal kurz aufhalten, damit es hinausgeht, dann wirklich beenden.
 let chatBye = false;
 app.on("will-quit", e => {
+  if (diag) { diag.stop(); diag = null; }
   phone.stop();
   for (const o of ndiOuts) o.sender.kill();
   // Sauber beendet: nächster Start darf die Startanimation zeigen

@@ -280,6 +280,9 @@ export interface VjBridge {
   openLj(): void;
   /** Sprache der Oberfläche an den Hauptprozess (Menü, Dialoge); reload = Oberfläche danach neu laden (Sprachwechsel). */
   setLang(lang: string, reload?: boolean): void;
+  /** Suite-Diagnose: Zustand (nur Zahlen/Schalter) und Fehler an den Hauptprozess. */
+  diagState(state: unknown): void;
+  diagError(text: string): void;
   /** Beim Beenden: Hauptprozess fragt die Oberfläche (Hinweis „Community-Projekt“). */
   onFarewell(cb: () => void): void;
   /** Antwort: "shown" = Hinweis ist offen, "quit" = beenden, "stay" = weiterarbeiten. */

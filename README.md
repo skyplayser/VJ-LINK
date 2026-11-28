@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <img alt="Status: beta 0.1.18" src="https://img.shields.io/badge/status-beta%200.1.18-FF5C93">
+  <img alt="Status: beta 0.1.19" src="https://img.shields.io/badge/status-beta%200.1.19-FF5C93">
   <img alt="macOS and Windows, free" src="https://img.shields.io/badge/macOS%20%7C%20Windows-free-3DDC84">
   <img alt="License: EPL-2.0" src="https://img.shields.io/badge/license-EPL--2.0-60a5fa">
   <a href="https://github.com/skyplayser/VJ-LINK/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/skyplayser/VJ-LINK/total?label=downloads&color=a78bfa"></a>
@@ -38,7 +38,7 @@ It runs locally. There is no account, no cloud and no telemetry. The only connec
 and a problem report, when you send one.
 
 > [!WARNING]
-> **This is the beta 0.1.18.** After a full test day (bugs, workflows, interface and a security test) it is a lot more robust
+> **This is the beta 0.1.19.** After a full test day (bugs, workflows, interface and a security test) it is a lot more robust
 > than the first alpha, but large parts have still not met real stage hardware. Please try it before an important show, and
 > tell us what you find: **Help → Report a problem** in the program.
 
@@ -74,6 +74,7 @@ and a problem report, when you send one.
   with font, glow, outline and box.
 - **From LJ-Link:** tempo, beat phase, phrases and track changes, a *Now Playing* lower third and the DJ waveform as clips.
 - **New in 0.1.12:** the **particle object**: 3D bodies made of thousands of sticks that explode on the beat or the bass and snap back, rotation per axis, five built-in bodies and your own **OBJ/STL** models ([wiki](https://link-suite.de/en/vj-link/wiki/particles/), needs a strong graphics card); the arrangement **Separate**, where every output shows its own image, e.g. two identical screens with different visuals ([wiki](https://link-suite.de/en/vj-link/wiki/outputs/#each-output-its-own-picture)); **modulation with a range** from–to ([wiki](https://link-suite.de/en/vj-link/wiki/modulation/#range)); and *New project* **with starter setup or empty**.
+- **New in 0.1.19:** **diagnosis for the help assistant of Link-Suite**: VJ-Link keeps a small status file (outputs, arrangement, tempo, frame rate, show, timecode, network, checks and the last errors – only numbers and fixed words, no names, paths or file names). Link-Suite only sends it along if you tick *Send diagnosis* in the help assistant; it is off by default.
 - **New in 0.1.18:** **MOV files of every kind**, also **transparent** ones: ProRes 4444, Animation and PNG-MOV are converted on import into WebM with alpha, so logos lie over the visuals, in layers and in the SHOW ([wiki](https://link-suite.de/en/vj-link/wiki/media/#transparent-videos)). **Projection mapping**: masks as **circle, portal**, rectangle, rounded, triangle, hexagon or star, with four corners for perspective – show only inside to light just a portal or a circle ([wiki](https://link-suite.de/en/vj-link/wiki/mapping-projection/)).
 - **New in 0.1.17:** **timecode like in QLab**: put a *+ Timecode* cue *with previous* below a video, and the timecode starts with the video and stops at its end; or give any cue a *Timecode from*. VJ-Link is the **timecode master** and sends over Art-Net, MIDI (MTC) and now also **LTC over an audio output** (output, channel, gain) ([wiki](https://link-suite.de/en/vj-link/wiki/timecode/)).
 - **New in 0.1.16:** the **phone remote** with four tabs: **Start** (live picture, blackout, master, scene, GO, tempo, test pattern, keep the screen awake), **Scenes** (all scenes, fade, transition), **Layers** (mixer with the opacity of every layer, clips, blend mode, change text clips, clock clips, colours) and **Show** (GO, back, stop all, running order); it can sit on the home screen like an app ([wiki](https://link-suite.de/en/vj-link/wiki/phone-remote/)). **Fixed:** in the gallery the target layer shows the layer names, and the previews of the particle objects show the right body.
