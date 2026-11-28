@@ -10,11 +10,11 @@
 </p>
 
 <p align="center">
-  <a href="https://skyplayser.github.io/VJ-LINK/">Website</a> &nbsp;·&nbsp;
-  <a href="https://skyplayser.github.io/Link-Suite/">Download</a> &nbsp;·&nbsp;
+  <a href="https://link-suite.de/en/vj-link/">Website</a> &nbsp;·&nbsp;
+  <a href="https://link-suite.de/en/launcher/">Download</a> &nbsp;·&nbsp;
   <a href="#quick-start">Quick start</a> &nbsp;·&nbsp;
   <a href="README.de.md">Deutsch</a> &nbsp;·&nbsp;
-  <a href="https://skyplayser.github.io/VJ-LINK/wiki.html">Wiki</a> &nbsp;·&nbsp;
+  <a href="https://link-suite.de/en/vj-link/wiki/">Wiki</a> &nbsp;·&nbsp;
   <a href="https://discord.gg/N6DMca4Bjk">Discord</a> &nbsp;·&nbsp;
   <a href="https://github.com/skyplayser/VJ-LINK/tree/main/source">Source code</a>
 </p>
@@ -73,19 +73,19 @@ and a problem report, when you send one.
 - **Media and text:** logos and images with automatic background removal, videos with a loop locked to the beat, and text clips
   with font, glow, outline and box.
 - **From LJ-Link:** tempo, beat phase, phrases and track changes, a *Now Playing* lower third and the DJ waveform as clips.
-- **New in 0.1.12:** the **particle object**: 3D bodies made of thousands of sticks that explode on the beat or the bass and snap back, rotation per axis, five built-in bodies and your own **OBJ/STL** models ([wiki](https://skyplayser.github.io/VJ-LINK/wiki-particles.html), needs a strong graphics card); the arrangement **Separate**, where every output shows its own image, e.g. two identical screens with different visuals ([wiki](https://skyplayser.github.io/VJ-LINK/wiki-outputs.html#each-output-its-own-picture)); **modulation with a range** from–to ([wiki](https://skyplayser.github.io/VJ-LINK/wiki-modulation.html#range)); and *New project* **with starter setup or empty**.
-- **New in 0.1.18:** **MOV files of every kind**, also **transparent** ones: ProRes 4444, Animation and PNG-MOV are converted on import into WebM with alpha, so logos lie over the visuals, in layers and in the SHOW ([wiki](https://skyplayser.github.io/VJ-LINK/wiki-media.html#transparent-videos)). **Projection mapping**: masks as **circle, portal**, rectangle, rounded, triangle, hexagon or star, with four corners for perspective – show only inside to light just a portal or a circle ([wiki](https://skyplayser.github.io/VJ-LINK/wiki-mapping-projection.html)).
-- **New in 0.1.17:** **timecode like in QLab**: put a *+ Timecode* cue *with previous* below a video, and the timecode starts with the video and stops at its end; or give any cue a *Timecode from*. VJ-Link is the **timecode master** and sends over Art-Net, MIDI (MTC) and now also **LTC over an audio output** (output, channel, gain) ([wiki](https://skyplayser.github.io/VJ-LINK/wiki-timecode.html)).
-- **New in 0.1.16:** the **phone remote** with four tabs: **Start** (live picture, blackout, master, scene, GO, tempo, test pattern, keep the screen awake), **Scenes** (all scenes, fade, transition), **Layers** (mixer with the opacity of every layer, clips, blend mode, change text clips, clock clips, colours) and **Show** (GO, back, stop all, running order); it can sit on the home screen like an app ([wiki](https://skyplayser.github.io/VJ-LINK/wiki-phone-remote.html)). **Fixed:** in the gallery the target layer shows the layer names, and the previews of the particle objects show the right body.
-- **New in 0.1.15:** a **preview window** for a second screen with the layer preview and the live picture ([wiki](https://skyplayser.github.io/VJ-LINK/wiki-outputs.html#preview-window)); **clock and time clips**: clock, countdown to a time or for a duration, stopwatch, date, BPM and timecode ([wiki](https://skyplayser.github.io/VJ-LINK/wiki-media.html#clock-and-time)); a SHOW cue can **start at a time of day** ([wiki](https://skyplayser.github.io/VJ-LINK/wiki-show.html#start-at-a-time)); **Export show package** with the name of the show, and **.vjlink files open with a double click** ([wiki](https://skyplayser.github.io/VJ-LINK/wiki-projects.html#show-package)); particle objects as a **real 3D body** with the effects Particles, **Drift**, Melt, Jelly, Dissolve, Twist and Shatter (separate parts fly on their own) ([wiki](https://skyplayser.github.io/VJ-LINK/wiki-particles.html#effects)); up to **20 layers**; with LJ-Link **bar 1 and every 2/4 bars land on the downbeat and the phrase**.
+- **New in 0.1.12:** the **particle object**: 3D bodies made of thousands of sticks that explode on the beat or the bass and snap back, rotation per axis, five built-in bodies and your own **OBJ/STL** models ([wiki](https://link-suite.de/en/vj-link/wiki/particles/), needs a strong graphics card); the arrangement **Separate**, where every output shows its own image, e.g. two identical screens with different visuals ([wiki](https://link-suite.de/en/vj-link/wiki/outputs/#each-output-its-own-picture)); **modulation with a range** from–to ([wiki](https://link-suite.de/en/vj-link/wiki/modulation/#range)); and *New project* **with starter setup or empty**.
+- **New in 0.1.18:** **MOV files of every kind**, also **transparent** ones: ProRes 4444, Animation and PNG-MOV are converted on import into WebM with alpha, so logos lie over the visuals, in layers and in the SHOW ([wiki](https://link-suite.de/en/vj-link/wiki/media/#transparent-videos)). **Projection mapping**: masks as **circle, portal**, rectangle, rounded, triangle, hexagon or star, with four corners for perspective – show only inside to light just a portal or a circle ([wiki](https://link-suite.de/en/vj-link/wiki/mapping-projection/)).
+- **New in 0.1.17:** **timecode like in QLab**: put a *+ Timecode* cue *with previous* below a video, and the timecode starts with the video and stops at its end; or give any cue a *Timecode from*. VJ-Link is the **timecode master** and sends over Art-Net, MIDI (MTC) and now also **LTC over an audio output** (output, channel, gain) ([wiki](https://link-suite.de/en/vj-link/wiki/timecode/)).
+- **New in 0.1.16:** the **phone remote** with four tabs: **Start** (live picture, blackout, master, scene, GO, tempo, test pattern, keep the screen awake), **Scenes** (all scenes, fade, transition), **Layers** (mixer with the opacity of every layer, clips, blend mode, change text clips, clock clips, colours) and **Show** (GO, back, stop all, running order); it can sit on the home screen like an app ([wiki](https://link-suite.de/en/vj-link/wiki/phone-remote/)). **Fixed:** in the gallery the target layer shows the layer names, and the previews of the particle objects show the right body.
+- **New in 0.1.15:** a **preview window** for a second screen with the layer preview and the live picture ([wiki](https://link-suite.de/en/vj-link/wiki/outputs/#preview-window)); **clock and time clips**: clock, countdown to a time or for a duration, stopwatch, date, BPM and timecode ([wiki](https://link-suite.de/en/vj-link/wiki/media/#clock-and-time)); a SHOW cue can **start at a time of day** ([wiki](https://link-suite.de/en/vj-link/wiki/show/#start-at-a-time)); **Export show package** with the name of the show, and **.vjlink files open with a double click** ([wiki](https://link-suite.de/en/vj-link/wiki/projects/#show-package)); particle objects as a **real 3D body** with the effects Particles, **Drift**, Melt, Jelly, Dissolve, Twist and Shatter (separate parts fly on their own) ([wiki](https://link-suite.de/en/vj-link/wiki/particles/#effects)); up to **20 layers**; with LJ-Link **bar 1 and every 2/4 bars land on the downbeat and the phrase**.
 - **Fixed in 0.1.15:** the NDI output sends again on Windows with display scaling (e.g. 125 %); before, receivers were connected but got 0 frames/s.
-- **New in 0.1.14:** **Settings → NDI** shows the version of the NDI runtime, lets you choose the **network adapter** NDI sends over and shows every NDI output with receivers and data rate ([wiki](https://skyplayser.github.io/VJ-LINK/wiki-ndi.html#ndi-settings)); a **network adapter for Art-Net and sACN**, so another console on the Wi-Fi does not interfere ([wiki](https://skyplayser.github.io/VJ-LINK/wiki-connections.html#network-adapter)).
+- **New in 0.1.14:** **Settings → NDI** shows the version of the NDI runtime, lets you choose the **network adapter** NDI sends over and shows every NDI output with receivers and data rate ([wiki](https://link-suite.de/en/vj-link/wiki/ndi/#ndi-settings)); a **network adapter for Art-Net and sACN**, so another console on the Wi-Fi does not interfere ([wiki](https://link-suite.de/en/vj-link/wiki/connections/#network-adapter)).
 - **Fixed in 0.1.14:** dots and edges of the particle object cover fully, also over other layers, and bright highlights no longer clip to white. Since 0.1.13 the list in *+ Clips* stays where it is when you pick a clip.
-- **New in 0.1.10:** **NDI® output** (up to four sources with own name, free size and frame rate; [wiki](https://skyplayser.github.io/VJ-LINK/wiki-ndi.html)),
+- **New in 0.1.10:** **NDI® output** (up to four sources with own name, free size and frame rate; [wiki](https://link-suite.de/en/vj-link/wiki/ndi/)),
   **image area, device and output profiles** per output, e.g. an LED wall that uses only 280 × 112 pixels of a 1280 × 1024 controller signal,
-  strobe and blinder per device ([wiki](https://skyplayser.github.io/VJ-LINK/wiki-output-area.html)), a **phone remote** in the local Wi-Fi with QR pairing
-  ([wiki](https://skyplayser.github.io/VJ-LINK/wiki-phone-remote.html)), a **show package for USB** and moving clips in the grid. *Community function! Thanks to Fabi!*
-- **Start animation and Link-Suite (new in 0.1.9):** the short animation every program of the [Link-Suite](https://skyplayser.github.io/Link-Suite/) shares, at most 2.5 s, any key skips it. If the launcher is missing, the start screen shows a small card *Get Link-Suite*. [Wiki](https://skyplayser.github.io/VJ-LINK/wiki-projects.html#start-animation)
+  strobe and blinder per device ([wiki](https://link-suite.de/en/vj-link/wiki/output-area/)), a **phone remote** in the local Wi-Fi with QR pairing
+  ([wiki](https://link-suite.de/en/vj-link/wiki/phone-remote/)), a **show package for USB** and moving clips in the grid. *Community function! Thanks to Fabi!*
+- **Start animation and Link-Suite (new in 0.1.9):** the short animation every program of the [Link-Suite](https://link-suite.de/en/launcher/) shares, at most 2.5 s, any key skips it. If the launcher is missing, the start screen shows a small card *Get Link-Suite*. [Wiki](https://link-suite.de/en/vj-link/wiki/projects/#start-animation)
 - **Suite chat (Alpha, new in 0.1.8):** one chat room with LJ Link and [LJL Link](https://github.com/skyplayser/LJL-Link) (the DJs) in the same network, no server needed. An
   **EMERGENCY** button shows a pop-up with a yellow blinking border at everyone else at once. Only in the control window,
   never on the outputs; switch it off in *Settings → Suite chat*. [Protocol](https://github.com/skyplayser/LJ-Link/blob/main/docs/suite-chat.md).
@@ -125,7 +125,7 @@ Round surfaces bend with a 3×3 or 5×5 grid, masks black out doors and people.
 
 ## Install
 
-> **New: install and update through the [Link-Suite launcher](https://skyplayser.github.io/Link-Suite/).** Download the launcher ([macOS Apple Silicon](https://github.com/skyplayser/Link-Suite/releases/latest/download/Link-Suite-macos-arm64.dmg) · [macOS Intel](https://github.com/skyplayser/Link-Suite/releases/latest/download/Link-Suite-macos-intel.dmg) · [Windows](https://github.com/skyplayser/Link-Suite/releases/latest/download/Link-Suite-windows.exe)), open it and click *Install* next to VJ-Link. The launcher downloads VJ-Link straight from this repository's releases, checks the file and keeps VJ-Link and every other program of the Link-Suite up to date. The single installers of VJ-Link stay in this repository's releases.
+> **New: install and update through the [Link-Suite launcher](https://link-suite.de/en/launcher/).** Download the launcher ([macOS Apple Silicon](https://github.com/skyplayser/Link-Suite/releases/latest/download/Link-Suite-macos-arm64.dmg) · [macOS Intel](https://github.com/skyplayser/Link-Suite/releases/latest/download/Link-Suite-macos-intel.dmg) · [Windows](https://github.com/skyplayser/Link-Suite/releases/latest/download/Link-Suite-windows.exe)), open it and click *Install* next to VJ-Link. The launcher downloads VJ-Link straight from this repository's releases, checks the file and keeps VJ-Link and every other program of the Link-Suite up to date. The single installers of VJ-Link stay in this repository's releases.
 
 Download the Link-Suite launcher for your computer and install VJ-Link from it.
 
@@ -157,7 +157,7 @@ VJ-Link needs a graphics card with WebGL 2, which almost every computer from the
 5. Running LJ-Link on the same network? VJ-Link finds it by itself and follows the DJ’s tempo.
 
 The program starts in the language of your system; the start screen switches between English and German. The
-[wiki](https://skyplayser.github.io/VJ-LINK/wiki.html) walks through every screen.
+[wiki](https://link-suite.de/en/vj-link/wiki/) walks through every screen.
 
 ## Light desk
 
@@ -225,7 +225,7 @@ Please tell us what you tested: **Help → Report a problem**, or on [Discord](h
   reads chat messages. Networks that block multicast (guest Wi-Fi with client isolation) have no chat. Chat texts are kept only
   in memory, never in a file or problem report, but other programs in the room keep your messages and pass the last 20 on to
   newcomers; name and position are kept in `chat.json`. Details in the
-  [privacy policy](https://skyplayser.github.io/VJ-LINK/datenschutz.html). EMERGENCY is a heads-up pop-up for the team, not an alarm or safety system. It is an alpha, can fail or arrive late, and anyone in the same network can trigger it. It does not replace announcements, radios or the event's safety plan.
+  [privacy policy](https://link-suite.de/en/datenschutz/). EMERGENCY is a heads-up pop-up for the team, not an alarm or safety system. It is an alpha, can fail or arrive late, and anyone in the same network can trigger it. It does not replace announcements, radios or the event's safety plan.
 - **Showing titles and covers in public:** if you put track titles, artists or cover art on screens the audience can see (for
   example with the *Now Playing* clip), you may need permission from the rights holders or the venue. LJ-Link’s privacy mode
   hides titles and covers.
@@ -269,7 +269,7 @@ Art-Net™ Designed by and Copyright Artistic Licence Holdings Ltd
 VJ-Link is an independent project and not an official product of, or endorsed by, any of the manufacturers named. All product
 names and trademarks belong to their respective owners and are used only to describe compatibility. Ableton and Link are
 trademarks of Ableton AG. NDI® is a registered trademark of Vizrt NDI AB; VJ-Link is not a product of NDI and ships no NDI files
-(the NDI runtime is installed by the user, see [NDI output](https://skyplayser.github.io/VJ-LINK/wiki-ndi.html)).
+(the NDI runtime is installed by the user, see [NDI output](https://link-suite.de/en/vj-link/wiki/ndi/)).
 
 ## License
 
@@ -282,6 +282,6 @@ the website and the documentation. The licenses of the bundled libraries are in 
 <p align="center">
   <sub>Idea SKYPLAYSER/NEXTPHILM<br>
   Prompted with ❤️ made by Claude<br>
-  <a href="https://skyplayser.github.io/VJ-LINK/impressum.html">Legal notice (Impressum)</a> ·
-  <a href="https://skyplayser.github.io/VJ-LINK/datenschutz.html">Privacy</a></sub>
+  <a href="https://link-suite.de/en/impressum/">Legal notice (Impressum)</a> ·
+  <a href="https://link-suite.de/en/datenschutz/">Privacy</a></sub>
 </p>
